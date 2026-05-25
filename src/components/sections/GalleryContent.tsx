@@ -4,7 +4,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 
-function LazyVideo({ src, className }: { src: string; className: string }) {
+function LazyVideo({ src, poster, className }: { src: string; poster?: string; className: string }) {
   const ref = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isVisible = useInView(containerRef, { margin: "100px" });
@@ -30,10 +30,16 @@ function LazyVideo({ src, className }: { src: string; className: string }) {
         loop
         playsInline
         preload="none"
+        poster={poster}
         className="w-full h-full object-cover"
       />
     </div>
   );
+}
+
+function videoPoster(src: string): string {
+  const name = src.split("/").pop()?.replace(".mp4", "");
+  return `/images/posters/${name}.jpg`;
 }
 
 const CATEGORIES = ["Hamısı", "Təsərrüfat", "Emal", "Texnologiya"] as const;
@@ -119,7 +125,7 @@ export function GalleryContent() {
                 >
                   <div className="aspect-video overflow-hidden relative img-hover-zoom">
                     {item.type === "video" ? (
-                      <LazyVideo src={item.src} className="w-full h-full" />
+                      <LazyVideo src={item.src} poster={videoPoster(item.src)} className="w-full h-full" />
                     ) : (
                       <Image
                         src={item.src}

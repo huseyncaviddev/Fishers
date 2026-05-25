@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect } from "react";
 
-function LazyVideo({ src, className }: { src: string; className: string }) {
+function LazyVideo({ src, poster, className }: { src: string; poster?: string; className: string }) {
   const ref = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isVisible = useInView(containerRef, { margin: "100px" });
@@ -31,6 +31,7 @@ function LazyVideo({ src, className }: { src: string; className: string }) {
         loop
         playsInline
         preload="none"
+        poster={poster}
         className="w-full h-full object-cover"
       />
     </div>
@@ -114,7 +115,7 @@ export function GalleryPreview() {
                 }`}
               >
                 {item.type === "video" ? (
-                  <LazyVideo src={item.src} className="w-full h-full" />
+                  <LazyVideo src={item.src} poster={`/images/posters/${item.src.split("/").pop()?.replace(".mp4", "")}.jpg`} className="w-full h-full" />
                 ) : (
                   <Image
                     src={item.src}

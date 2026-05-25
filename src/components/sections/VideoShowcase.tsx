@@ -36,7 +36,7 @@ export function VideoShowcase() {
             loop
             playsInline
             preload="none"
-            poster="/images/6.jpg"
+            poster="/images/posters/ras-system.jpg"
             onLoadedData={() => setVideoLoaded(true)}
             className="w-full h-[120%] object-cover"
           />

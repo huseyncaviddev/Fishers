@@ -1,11 +1,13 @@
 "use client";
 
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 
 export function VideoShowcase() {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
@@ -13,25 +15,35 @@ export function VideoShowcase() {
   const y = useTransform(scrollYProgress, [0, 1], [80, -80]);
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.95, 1, 0.95]);
 
+  useEffect(() => {
+    if (inView && videoRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [inView]);
+
   return (
     <section ref={ref} className="relative py-0 overflow-hidden">
-      {/* Full-width cinematic video */}
       <motion.div style={{ scale }} className="relative h-[60vh] sm:h-[70vh] lg:h-[80vh]">
         <motion.div style={{ y }} className="absolute inset-0">
+          {!videoLoaded && (
+            <div className="absolute inset-0 bg-navy animate-pulse" />
+          )}
           <video
-            src="/videos/ras-system.mp4"
+            ref={videoRef}
+            src={inView ? "/videos/ras-system.mp4" : undefined}
             autoPlay
             muted
             loop
             playsInline
             preload="none"
+            poster="/images/6.jpg"
+            onLoadedData={() => setVideoLoaded(true)}
             className="w-full h-[120%] object-cover"
           />
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/30 to-navy/70" />
         <div className="absolute inset-0 film-grain pointer-events-none" />
 
-        {/* Centered overlay content */}
         <div className="absolute inset-0 flex items-center justify-center z-10">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -80,7 +92,6 @@ export function VideoShowcase() {
           </motion.div>
         </div>
 
-        {/* Bottom wave */}
         <div className="absolute bottom-0 left-0 right-0 z-20">
           <svg
             viewBox="0 0 1440 60"

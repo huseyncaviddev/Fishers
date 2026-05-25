@@ -3,7 +3,39 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
+
+function LazyVideo({ src, className }: { src: string; className: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isVisible = useInView(containerRef, { margin: "100px" });
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    if (isVisible) {
+      video.src = src;
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+    }
+  }, [isVisible, src]);
+
+  return (
+    <div ref={containerRef} className={className}>
+      <video
+        ref={ref}
+        muted
+        loop
+        playsInline
+        preload="none"
+        className="w-full h-full object-cover"
+      />
+    </div>
+  );
+}
 
 const GALLERY_ITEMS = [
   { src: "/images/4.jpg", title: "RAS Sistemi", type: "image" as const },
@@ -82,15 +114,7 @@ export function GalleryPreview() {
                 }`}
               >
                 {item.type === "video" ? (
-                  <video
-                    src={item.src}
-                    muted
-                    loop
-                    playsInline
-                    autoPlay
-                    preload="none"
-                    className="w-full h-full object-cover"
-                  />
+                  <LazyVideo src={item.src} className="w-full h-full" />
                 ) : (
                   <Image
                     src={item.src}

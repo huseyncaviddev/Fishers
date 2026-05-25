@@ -13,12 +13,11 @@ interface PageHeroProps {
 export function PageHero({
   title,
   subtitle,
-  video = "/videos/farm-1.mp4",
   image,
 }: PageHeroProps) {
   return (
     <section className="relative h-[45vh] sm:h-[50vh] min-h-[300px] sm:min-h-[360px] flex items-center justify-center overflow-hidden">
-      {image ? (
+      {image && (
         <Image
           src={image}
           alt=""
@@ -26,15 +25,6 @@ export function PageHero({
           className="object-cover"
           sizes="100vw"
           priority
-        />
-      ) : (
-        <video
-          src={video}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
         />
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-navy/70 via-navy/40 to-navy/80" />

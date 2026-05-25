@@ -52,6 +52,7 @@ export function Hero() {
   const prevSlideRef = useRef(0);
   const rafRef = useRef(0);
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   const handleScroll = useCallback(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -106,6 +107,17 @@ export function Hero() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  useEffect(() => {
+    videoRefs.current.forEach((video, i) => {
+      if (!video) return;
+      if (i === current) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    });
+  }, [current]);
+
   const scrollToSlide = (index: number) => {
     const container = containerRef.current;
     if (!container) return;
@@ -138,14 +150,16 @@ export function Hero() {
             }}
           >
             <video
+              ref={(el) => { videoRefs.current[current] = el; }}
               src={SLIDES[current].video}
               autoPlay
               muted
               loop
               playsInline
+              preload={current === 0 ? "auto" : "metadata"}
+              poster={SLIDES[current].image}
               className="absolute inset-0 w-full h-full object-cover"
             />
-            {/* Cinematic overlay layers */}
             <div className="absolute inset-0 bg-gradient-to-b from-navy/70 via-navy/20 to-navy/80" />
             <div className="absolute inset-0 bg-gradient-to-r from-navy/40 via-transparent to-navy/30" />
           </motion.div>

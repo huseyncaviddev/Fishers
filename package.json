@@ -1,7 +1,8 @@
 {
   "name": "fishers-website",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "Premium aquaculture website for Fishers — built with Next.js 16, React 19, Tailwind CSS 4",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

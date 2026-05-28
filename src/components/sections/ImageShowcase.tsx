@@ -51,7 +51,6 @@ export function ImageShowcase() {
           </p>
         </motion.div>
 
-        {/* Masonry-style grid with parallax */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 auto-rows-[180px] sm:auto-rows-[220px] lg:auto-rows-[260px]">
           {SHOWCASE_IMAGES.map((img, i) => (
             <motion.div
@@ -77,7 +76,6 @@ export function ImageShowcase() {
                   </span>
                 </div>
               </div>
-              {/* Corner accent */}
               <div className="absolute top-3 right-3 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                 <div className="absolute top-0 right-0 w-3 h-[1px] bg-white/60" />
                 <div className="absolute top-0 right-0 h-3 w-[1px] bg-white/60" />

@@ -19,7 +19,6 @@ export function CTA() {
 
   return (
     <section ref={containerRef}>
-      {/* Partnership CTA with image */}
       <div className="bg-white section-fade" ref={ref}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12 py-20 lg:py-28">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -59,7 +58,6 @@ export function CTA() {
               </div>
             </motion.div>
 
-            {/* Image grid */}
             <motion.div
               initial={{ opacity: 0, x: 40 }}
               animate={inView ? { opacity: 1, x: 0 } : {}}
@@ -100,7 +98,6 @@ export function CTA() {
         </div>
       </div>
 
-      {/* Newsletter — cinematic ocean background */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0">
           <Image

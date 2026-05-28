@@ -6,7 +6,6 @@ import Image from "next/image";
 interface PageHeroProps {
   title: string;
   subtitle: string;
-  video?: string;
   image?: string;
 }
 

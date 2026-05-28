@@ -21,7 +21,6 @@ export function ProductsContent() {
     <PageTransition>
       <section className="py-20 lg:py-28 bg-white" ref={ref}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
-          {/* Category Filters */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -43,7 +42,6 @@ export function ProductsContent() {
             ))}
           </motion.div>
 
-          {/* Products Grid */}
           <motion.div
             layout
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
@@ -62,7 +60,6 @@ export function ProductsContent() {
                     href={`/products/${product.slug}`}
                     className="group block rounded-2xl overflow-hidden bg-mist hover:shadow-2xl hover:shadow-ocean/10 transition-all duration-500 border-glow"
                   >
-                    {/* Image Preview */}
                     <div className="relative aspect-[4/3] overflow-hidden">
                       <Image
                         src={product.image}
@@ -72,17 +69,14 @@ export function ProductsContent() {
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
 
-                      {/* Gradient overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-navy/70 via-navy/10 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
 
-                      {/* Category Badge */}
                       <div className="absolute top-4 left-4">
                         <span className="px-3 py-1 bg-white/15 backdrop-blur-md text-white text-[11px] font-medium rounded-full border border-white/20">
                           {product.category}
                         </span>
                       </div>
 
-                      {/* Hover Arrow */}
                       <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
                         <svg
                           className="w-4 h-4"
@@ -95,7 +89,6 @@ export function ProductsContent() {
                         </svg>
                       </div>
 
-                      {/* Bottom info on hover */}
                       <div className="absolute bottom-0 left-0 right-0 p-5">
                         <p className="text-white/70 text-xs font-medium tracking-widest uppercase">
                           {product.type}
@@ -103,7 +96,6 @@ export function ProductsContent() {
                       </div>
                     </div>
 
-                    {/* Card Info */}
                     <div className="p-5 sm:p-6">
                       <h3 className="font-display text-lg sm:text-xl font-semibold text-navy group-hover:text-ocean transition-colors duration-300">
                         {product.name}
@@ -112,7 +104,6 @@ export function ProductsContent() {
                         {product.shortDesc}
                       </p>
 
-                      {/* Features preview */}
                       <div className="mt-4 flex flex-wrap gap-1.5">
                         {product.features.slice(0, 3).map((feat, j) => (
                           <span

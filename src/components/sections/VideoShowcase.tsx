@@ -30,7 +30,7 @@ export function VideoShowcase() {
           )}
           <video
             ref={videoRef}
-            src={inView ? "/videos/ras-system.mp4" : undefined}
+            src={inView ? "/videos/ras-system-new.mp4" : undefined}
             autoPlay
             muted
             loop

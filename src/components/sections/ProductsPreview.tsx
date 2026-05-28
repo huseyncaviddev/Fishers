@@ -53,7 +53,6 @@ export function ProductsPreview() {
                 href={`/products/${product.slug}`}
                 className="group relative block aspect-[3/4] rounded-xl sm:rounded-2xl overflow-hidden border-glow"
               >
-                {/* Product image background */}
                 <Image
                   src={PRODUCT_IMAGES[i]}
                   alt={product.name}
@@ -63,7 +62,6 @@ export function ProductsPreview() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-navy/20 to-transparent group-hover:from-navy/90 transition-all duration-700" />
 
-                {/* Content */}
                 <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
                   <div className="mb-2 opacity-0 group-hover:opacity-100 -translate-y-2 group-hover:translate-y-0 transition-all duration-500">
                     <span className="text-sand text-[10px] tracking-[0.15em] uppercase font-light">
@@ -78,7 +76,6 @@ export function ProductsPreview() {
                   </p>
                 </div>
 
-                {/* Arrow icon */}
                 <div className="absolute top-3 right-3 sm:top-4 sm:right-4 w-8 h-8 sm:w-9 sm:h-9 rounded-full glass flex items-center justify-center text-white opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-500">
                   <svg
                     className="w-3.5 h-3.5"
@@ -95,7 +92,6 @@ export function ProductsPreview() {
           ))}
         </div>
 
-        {/* Mission statement */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}

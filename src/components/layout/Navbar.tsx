@@ -87,7 +87,6 @@ export function Navbar() {
       >
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <div className="flex h-20 items-center justify-between">
-            {/* Logo */}
             <Link href="/" className="flex items-center gap-3 shrink-0 group">
               <div
                 className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-700 ${
@@ -112,7 +111,6 @@ export function Navbar() {
               </div>
             </Link>
 
-            {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center gap-1">
               {NAV_LINKS.map((link) => {
                 const active = isActive(link.href);
@@ -161,7 +159,6 @@ export function Navbar() {
               })}
             </nav>
 
-            {/* Right controls */}
             <div className="flex items-center gap-2">
               <MagneticButton strength={0.15}>
                 <button
@@ -197,7 +194,6 @@ export function Navbar() {
         </div>
       </motion.header>
 
-      {/* Full-screen Menu */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -320,7 +316,6 @@ export function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Search Overlay */}
       <AnimatePresence>
         {searchOpen && (
           <motion.div

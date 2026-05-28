@@ -23,7 +23,6 @@ export function Footer() {
           <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         </div>
 
-        {/* Premium top CTA strip */}
         <div className="border-b border-white/[0.06]">
           <div className="mx-auto max-w-[1400px] px-6 lg:px-12 py-12 lg:py-16 flex flex-col lg:flex-row justify-between items-center gap-6">
             <div>
@@ -139,7 +138,6 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Copyright */}
         <div className="border-t border-white/[0.06]">
           <div className="mx-auto max-w-[1400px] px-6 lg:px-12 py-5 flex flex-col sm:flex-row justify-between items-center gap-3">
             <p className="text-white/20 text-xs font-light" suppressHydrationWarning>

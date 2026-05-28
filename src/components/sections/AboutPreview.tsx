@@ -44,7 +44,6 @@ export function AboutPreview() {
               məhsulları istehsal edirik.
             </p>
 
-            {/* Stats row with dividers */}
             <div className="mt-10 flex gap-8 sm:gap-10">
               {[
                 { num: "15+", label: "İllik Təcrübə" },
@@ -94,7 +93,6 @@ export function AboutPreview() {
             </motion.div>
           </motion.div>
 
-          {/* Image composition */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
@@ -105,7 +103,6 @@ export function AboutPreview() {
               style={{ y: imgY }}
               className="relative"
             >
-              {/* Main image */}
               <div className="aspect-[4/3] rounded-2xl overflow-hidden relative img-hover-zoom">
                 <Image
                   src="/images/1.jpg"
@@ -118,7 +115,6 @@ export function AboutPreview() {
                 <div className="absolute inset-0 bg-gradient-to-tr from-ocean/10 to-transparent" />
               </div>
 
-              {/* Floating secondary image */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={inView ? { opacity: 1, scale: 1 } : {}}
@@ -134,7 +130,6 @@ export function AboutPreview() {
                 />
               </motion.div>
 
-              {/* Glass stat card */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}

@@ -3,38 +3,39 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 
 const SLIDES = [
   {
-    video: "/videos/farm-1.mp4",
+    video: "/videos/hero-1.mp4",
     image: "/images/8.jpg",
     title: "Davamlı Akvakultura",
     subtitle: "Gələcək nəsillər üçün təbii su ehtiyatlarını qoruyaraq",
     accent: "Akvakultura",
   },
   {
-    video: "/videos/farm-2.mp4",
+    video: "/videos/hero-2.mp4",
     image: "/images/6.jpg",
     title: "Premium Keyfiyyət",
     subtitle: "Ən yüksək standartlarda yetişdirilən dəniz məhsulları",
     accent: "Keyfiyyət",
   },
   {
-    video: "/videos/farm-3.mp4",
+    video: "/videos/hero-3.mp4",
     image: "/images/4.jpg",
     title: "İnnovasiya və Texnologiya",
     subtitle: "Müasir texnologiyalarla balıqçılıq təsərrüfatı",
     accent: "Texnologiya",
   },
   {
-    video: "/videos/farm-4.mp4",
+    video: "/videos/hero-4.mp4",
     image: "/images/5.jpg",
     title: "Ekoloji Məsuliyyət",
     subtitle: "Təbiətlə harmoniyada istehsal",
     accent: "Məsuliyyət",
   },
   {
-    video: "/videos/farm-5.mp4",
+    video: "/videos/hero-5.mp4",
     image: "/images/1.jpg",
     title: "Etibarlı Tərəfdaş",
     subtitle: "Dəniz məhsulları sənayesində güvənilir adınız",
@@ -48,7 +49,7 @@ export function Hero() {
   const containerRef = useRef<HTMLDivElement>(null);
   const indicatorRef = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(0);
-  const directionRef = useRef(1);
+  const [direction, setDirection] = useState(1);
   const prevSlideRef = useRef(0);
   const rafRef = useRef(0);
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
@@ -80,7 +81,7 @@ export function Hero() {
       }
 
       if (slideIndex !== prevSlideRef.current) {
-        directionRef.current = slideIndex > prevSlideRef.current ? 1 : -1;
+        setDirection(slideIndex > prevSlideRef.current ? 1 : -1);
         prevSlideRef.current = slideIndex;
         setCurrent(slideIndex);
       }
@@ -136,7 +137,6 @@ export function Hero() {
       style={{ height: `${SLIDES.length * 100}vh` }}
     >
       <div className="sticky top-0 h-[100dvh] min-h-[600px] w-full overflow-hidden">
-        {/* Video Crossfade with parallax */}
         <AnimatePresence initial={false}>
           <motion.div
             key={current}
@@ -165,10 +165,8 @@ export function Hero() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Film grain texture */}
         <div className="absolute inset-0 film-grain pointer-events-none z-[2]" />
 
-        {/* Decorative floating corner image */}
         <AnimatePresence mode="wait">
           <motion.div
             key={`corner-${current}`}
@@ -195,24 +193,22 @@ export function Hero() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Content */}
         <div className="relative z-10 flex flex-col justify-center items-center h-full px-6 text-center">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={current}
               initial={{
                 opacity: 0,
-                y: directionRef.current > 0 ? 60 : -60,
+                y: direction > 0 ? 60 : -60,
               }}
               animate={{ opacity: 1, y: 0 }}
               exit={{
                 opacity: 0,
-                y: directionRef.current > 0 ? -40 : 40,
+                y: direction > 0 ? -40 : 40,
               }}
               transition={{ duration: 0.7, ease: EASE }}
               className="max-w-5xl"
             >
-              {/* Decorative line */}
               <motion.div
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
@@ -251,21 +247,20 @@ export function Hero() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.45, duration: 0.7, ease: EASE }}
               >
-                <a href="/about" className="btn btn-primary btn-lg btn-glow">
+                <Link href="/about" className="btn btn-primary btn-lg btn-glow">
                   <span>Kəşf Et</span>
                   <svg className="w-4 h-4 btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
-                </a>
-                <a href="/products" className="btn btn-ghost btn-lg">
+                </Link>
+                <Link href="/products" className="btn btn-ghost btn-lg">
                   Məhsullarımız
-                </a>
+                </Link>
               </motion.div>
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Thin Rectangular Indicators */}
         <div
           ref={indicatorRef}
           className="absolute right-5 sm:right-8 lg:right-10 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2.5 z-20"
@@ -300,7 +295,6 @@ export function Hero() {
           ))}
         </div>
 
-        {/* Slide Counter */}
         <div className="absolute bottom-6 sm:bottom-8 right-5 sm:right-8 lg:right-10 font-light text-xs tracking-widest z-20">
           <span className="text-white font-medium text-sm">
             {String(current + 1).padStart(2, "0")}
@@ -311,7 +305,6 @@ export function Hero() {
           </span>
         </div>
 
-        {/* Scroll Indicator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

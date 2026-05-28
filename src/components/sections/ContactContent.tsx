@@ -53,7 +53,6 @@ export function ContactContent() {
     <PageTransition>
       <section className="py-24 lg:py-32 bg-white" ref={ref}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
-          {/* Contact Cards */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -81,7 +80,6 @@ export function ContactContent() {
             ))}
           </motion.div>
 
-          {/* Form + Map */}
           <div className="grid lg:grid-cols-2 gap-12">
             <motion.form
               initial={{ opacity: 0, x: -30 }}
@@ -178,7 +176,6 @@ export function ContactContent() {
                 />
               </div>
 
-              {/* Social */}
               <div className="rounded-2xl overflow-hidden relative">
                 <div className="absolute inset-0">
                   <Image

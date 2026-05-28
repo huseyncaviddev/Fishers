@@ -3,46 +3,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
-import { useRef, useEffect } from "react";
-
-function LazyVideo({ src, poster, className }: { src: string; poster?: string; className: string }) {
-  const ref = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isVisible = useInView(containerRef, { margin: "100px" });
-
-  useEffect(() => {
-    const video = ref.current;
-    if (!video) return;
-    if (isVisible) {
-      video.src = src;
-      video.play().catch(() => {});
-    } else {
-      video.pause();
-      video.removeAttribute("src");
-      video.load();
-    }
-  }, [isVisible, src]);
-
-  return (
-    <div ref={containerRef} className={className}>
-      <video
-        ref={ref}
-        muted
-        loop
-        playsInline
-        preload="none"
-        poster={poster}
-        className="w-full h-full object-cover"
-      />
-    </div>
-  );
-}
+import { useRef } from "react";
+import { LazyVideo, videoPoster } from "@/components/ui/LazyVideo";
 
 const GALLERY_ITEMS = [
   { src: "/images/4.jpg", title: "RAS Sistemi", type: "image" as const },
-  { src: "/videos/farm-2.mp4", title: "Yem Prosesi", type: "video" as const },
+  { src: "/videos/gallery-harvest.mp4", title: "Balıq Yığımı", type: "video" as const },
   { src: "/images/3.jpg", title: "Tilapia Yetişdirmə", type: "image" as const },
-  { src: "/images/9.jpg", title: "Su Hovuzları", type: "image" as const },
+  { src: "/videos/gallery-ai.mp4", title: "AI Monitorinq", type: "video" as const },
   { src: "/images/14.jpg", title: "Keyfiyyət Nəzarəti", type: "image" as const },
   { src: "/images/16.jpg", title: "Komandamız", type: "image" as const },
 ];
@@ -95,7 +63,6 @@ export function GalleryPreview() {
           </Link>
         </motion.div>
 
-        {/* Asymmetric gallery grid */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
           {GALLERY_ITEMS.map((item, i) => (
             <motion.div
@@ -115,7 +82,7 @@ export function GalleryPreview() {
                 }`}
               >
                 {item.type === "video" ? (
-                  <LazyVideo src={item.src} poster={`/images/posters/${item.src.split("/").pop()?.replace(".mp4", "")}.jpg`} className="w-full h-full" />
+                  <LazyVideo src={item.src} poster={videoPoster(item.src)} className="w-full h-full" />
                 ) : (
                   <Image
                     src={item.src}
@@ -127,10 +94,8 @@ export function GalleryPreview() {
                 )}
               </div>
 
-              {/* Hover overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-navy/70 via-navy/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-              {/* Title card on hover */}
               <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-600 ease-out">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full glass flex items-center justify-center shrink-0">
@@ -150,7 +115,6 @@ export function GalleryPreview() {
                 </div>
               </div>
 
-              {/* Corner accent */}
               <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                 <div className="w-6 h-6">
                   <div className="absolute top-0 right-0 w-3 h-[1px] bg-white/50" />

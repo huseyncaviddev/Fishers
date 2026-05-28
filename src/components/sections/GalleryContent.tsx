@@ -1,46 +1,9 @@
 "use client";
 
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
-
-function LazyVideo({ src, poster, className }: { src: string; poster?: string; className: string }) {
-  const ref = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isVisible = useInView(containerRef, { margin: "100px" });
-
-  useEffect(() => {
-    const video = ref.current;
-    if (!video) return;
-    if (isVisible) {
-      video.src = src;
-      video.play().catch(() => {});
-    } else {
-      video.pause();
-      video.removeAttribute("src");
-      video.load();
-    }
-  }, [isVisible, src]);
-
-  return (
-    <div ref={containerRef} className={className}>
-      <video
-        ref={ref}
-        muted
-        loop
-        playsInline
-        preload="none"
-        poster={poster}
-        className="w-full h-full object-cover"
-      />
-    </div>
-  );
-}
-
-function videoPoster(src: string): string {
-  const name = src.split("/").pop()?.replace(".mp4", "");
-  return `/images/posters/${name}.jpg`;
-}
+import { LazyVideo, videoPoster } from "@/components/ui/LazyVideo";
 
 const CATEGORIES = ["Hamısı", "Təsərrüfat", "Emal", "Texnologiya"] as const;
 
@@ -54,19 +17,21 @@ interface MediaItem {
 
 const MEDIA: MediaItem[] = [
   { src: "/images/1.jpg", title: "VIP Ziyarət", category: "Təsərrüfat", desc: "Nərə yetişdirmə təsərrüfatına rəsmi ziyarət", type: "image" },
-  { src: "/videos/farm-1.mp4", title: "Su Təsərrüfatı", category: "Təsərrüfat", desc: "Açıq su hovuz sistemlərinin ümumi görünüşü", type: "video" },
+  { src: "/videos/gallery-harvest.mp4", title: "Balıq Yığımı", category: "Təsərrüfat", desc: "Torla balıq yığımı prosesi", type: "video" },
   { src: "/images/4.jpg", title: "RAS Sistemi", category: "Texnologiya", desc: "Müasir qapalı dövriyyə sistemi", type: "image" },
   { src: "/images/8.jpg", title: "Dəniz Ferması", category: "Təsərrüfat", desc: "Açıq dənizdə akvakultura əməliyyatları", type: "image" },
-  { src: "/videos/farm-2.mp4", title: "Yem Prosesi", category: "Texnologiya", desc: "Avtomatlaşdırılmış yem paylanması sistemi", type: "video" },
+  { src: "/videos/gallery-ai.mp4", title: "AI Monitorinq", category: "Texnologiya", desc: "Süni intellekt ilə balıq sağlamlıq nəzarəti", type: "video" },
   { src: "/images/3.jpg", title: "Tilapia Yetişdirmə", category: "Təsərrüfat", desc: "Yüksək sıxlıqlı tilapia hovuzları", type: "image" },
   { src: "/images/6.jpg", title: "Açıq Su Qəfəsləri", category: "Təsərrüfat", desc: "Dəniz suyunda balıq yetişdirmə qəfəsləri", type: "image" },
-  { src: "/videos/farm-3.mp4", title: "Hovuz Sistemi", category: "Təsərrüfat", desc: "Müasir qapalı dövriyyə hovuzları", type: "video" },
+  { src: "/videos/gallery-tank.mp4", title: "Su Tankları", category: "Təsərrüfat", desc: "Müasir su tankı sistemləri", type: "video" },
   { src: "/images/14.jpg", title: "Keyfiyyət Nəzarəti", category: "Emal", desc: "Peşəkar keyfiyyət yoxlama prosesi", type: "image" },
-  { src: "/images/12.jpg", title: "İnnovasiya Mərkəzi", category: "Texnologiya", desc: "Müasir RAS təsərrüfatı", type: "image" },
+  { src: "/videos/gallery-factory.mp4", title: "Emal Fabriki", category: "Emal", desc: "Beynəlxalq standartlarda emal müəssisəsi", type: "video" },
   { src: "/images/5.jpg", title: "Torpaq Hovuzları", category: "Təsərrüfat", desc: "Geniş miqyaslı torpaq əsaslı hovuzlar", type: "image" },
   { src: "/images/10.jpg", title: "Balıq Növləri", category: "Emal", desc: "Premium keyfiyyətli yetişdirilən balıqlar", type: "image" },
+  { src: "/videos/gallery-largescale.mp4", title: "3000 Ton Tutumu", category: "Texnologiya", desc: "Böyük həcmli akvakultura tankları", type: "video" },
+  { src: "/videos/gallery-chile.mp4", title: "Beynəlxalq Təsərrüfat", category: "Təsərrüfat", desc: "Çilidəki balıq təsərrüfatı əməliyyatları", type: "video" },
   { src: "/images/16.jpg", title: "Komandamız", category: "Təsərrüfat", desc: "Peşəkar komanda üzvlərimiz", type: "image" },
-  { src: "/videos/farm-4.mp4", title: "Emal Müəssisəsi", category: "Emal", desc: "Beynəlxalq standartlarda emal prosesi", type: "video" },
+  { src: "/images/12.jpg", title: "İnnovasiya Mərkəzi", category: "Texnologiya", desc: "Müasir RAS təsərrüfatı", type: "image" },
   { src: "/images/9.jpg", title: "Havalandırma Sistemləri", category: "Texnologiya", desc: "Su aerasiya prosesləri", type: "image" },
 ];
 
@@ -149,7 +114,6 @@ export function GalleryContent() {
                         )}
                       </div>
                     </div>
-                    {/* Type badge */}
                     <div className="absolute top-3 left-3">
                       <div className="glass rounded-full px-2.5 py-1 text-[10px] text-white/80 tracking-wider uppercase font-light">
                         {item.type === "video" ? "Video" : "Foto"}
@@ -174,7 +138,6 @@ export function GalleryContent() {
         </motion.div>
       </div>
 
-      {/* Lightbox */}
       <AnimatePresence>
         {selected !== null && (
           <motion.div

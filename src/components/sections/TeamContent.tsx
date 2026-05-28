@@ -58,7 +58,6 @@ export function TeamContent() {
 
   return (
     <PageTransition>
-      {/* Leadership */}
       <section className="py-20 lg:py-28 bg-white" ref={teamRef}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <motion.div
@@ -110,7 +109,6 @@ export function TeamContent() {
         </div>
       </section>
 
-      {/* Culture */}
       <section className="py-20 lg:py-28 bg-mist" ref={cultureRef}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -188,7 +186,6 @@ export function TeamContent() {
         </div>
       </section>
 
-      {/* Departments */}
       <section className="py-20 lg:py-28 bg-white" ref={deptRef}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <motion.div
@@ -218,7 +215,6 @@ export function TeamContent() {
             ))}
           </div>
 
-          {/* Join CTA */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={deptInView ? { opacity: 1, y: 0 } : {}}

@@ -77,7 +77,6 @@ export function AboutContent() {
 
   return (
     <PageTransition>
-      {/* Mission & Vision */}
       <section className="py-20 lg:py-28 bg-white" ref={missionRef}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
@@ -156,7 +155,6 @@ export function AboutContent() {
             </motion.div>
           </div>
 
-          {/* Vision */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={missionInView ? { opacity: 1, y: 0 } : {}}
@@ -194,7 +192,6 @@ export function AboutContent() {
         </div>
       </section>
 
-      {/* Activity Areas */}
       <section className="py-20 lg:py-28 bg-mist" ref={areasRef}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={areasInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }}
@@ -224,7 +221,6 @@ export function AboutContent() {
         </div>
       </section>
 
-      {/* Values */}
       <section className="py-20 lg:py-28 bg-white" ref={valuesRef}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={valuesInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }}
@@ -251,7 +247,6 @@ export function AboutContent() {
         </div>
       </section>
 
-      {/* Quality & Certifications */}
       <section className="py-20 lg:py-28 bg-mist" ref={qualityRef}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -333,7 +328,6 @@ export function AboutContent() {
         </div>
       </section>
 
-      {/* Timeline */}
       <section className="py-20 lg:py-28 bg-white" ref={timelineRef}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={timelineInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }}

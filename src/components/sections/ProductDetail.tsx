@@ -42,10 +42,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
   return (
     <PageTransition>
-      {/* Main Product Section */}
       <section className="py-16 lg:py-24 bg-white" ref={infoRef}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
-          {/* Breadcrumb */}
           <motion.nav
             initial={{ opacity: 0 }}
             animate={infoInView ? { opacity: 1 } : {}}
@@ -60,7 +58,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
           </motion.nav>
 
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
-            {/* Left — Image */}
             <motion.div
               ref={imgRef}
               initial={{ opacity: 0, x: -30 }}
@@ -94,7 +91,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
               </div>
             </motion.div>
 
-            {/* Right — Info */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={infoInView ? { opacity: 1, x: 0 } : {}}
@@ -169,7 +165,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
         </div>
       </section>
 
-      {/* Specs & Description */}
       <section className="py-16 lg:py-24 bg-mist" ref={specsRef}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
@@ -236,7 +231,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
         </div>
       </section>
 
-      {/* Related Products */}
       {allRelated.length > 0 && (
         <section className="py-16 lg:py-24 bg-white" ref={relatedRef}>
           <div className="mx-auto max-w-[1400px] px-6 lg:px-12">

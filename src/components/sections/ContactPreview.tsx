@@ -111,7 +111,6 @@ export function ContactPreview() {
             </motion.div>
           </motion.div>
 
-          {/* Map with image overlay */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
@@ -130,7 +129,6 @@ export function ContactPreview() {
               />
             </div>
 
-            {/* Floating contact card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}

@@ -68,7 +68,6 @@ export function Stats() {
 
   return (
     <section id="stats" className="relative py-28 lg:py-36 overflow-hidden" ref={containerRef}>
-      {/* Parallax background image */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 -top-[10%] -bottom-[10%]">
         <Image
           src="/images/6.jpg"
@@ -81,7 +80,6 @@ export function Stats() {
       <div className="absolute inset-0 bg-navy/85" />
       <div className="absolute inset-0 film-grain pointer-events-none" />
 
-      {/* Decorative lines */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 

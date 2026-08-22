@@ -4,47 +4,22 @@ import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { useI18n } from "@/i18n/I18nProvider";
 
-const TEAM = [
-  {
-    name: "Əli Həsənov",
-    initials: "ƏH",
-    role: "Baş Direktor",
-    desc: "20 illik akvakultura təcrübəsi ilə şirkətin strateji inkişafına rəhbərlik edir. Beynəlxalq akvakultura konfranslarının mütəmadi iştirakçısı.",
-    expertise: ["Strateji İdarəetmə", "Biznes İnkişaf", "Beynəlxalq Əlaqələr"],
-  },
-  {
-    name: "Leyla Məmmədova",
-    initials: "LM",
-    role: "Əməliyyat Direktoru",
-    desc: "İstehsal proseslərinin optimallaşdırılması və əməliyyat səmərəliliyinin artırılması üzrə geniş təcrübəyə malikdir.",
-    expertise: ["Əməliyyat İdarəetmə", "Proses Optimallaşdırma", "Keyfiyyət Nəzarəti"],
-  },
-  {
-    name: "Rəşad Quliyev",
-    initials: "RQ",
-    role: "Baş Texnoloq",
-    desc: "Müasir akvakultura texnologiyalarının tətbiqi və R&D layihələrinin idarə edilməsi sahəsində ekspert.",
-    expertise: ["IoT Sistemlər", "Aqrar Texnologiya", "R&D"],
-  },
-  {
-    name: "Nigar Əliyeva",
-    initials: "NƏ",
-    role: "Keyfiyyət Meneceri",
-    desc: "ISO və HACCP sertifikasiya proseslərinin idarəsi, laboratoriya analizləri və qida təhlükəsizliyi mütəxəssisi.",
-    expertise: ["Qida Təhlükəsizliyi", "ISO Sertifikasiya", "Laboratoriya"],
-  },
-];
+const DEPT_COUNTS = [28, 8, 6, 5, 3];
 
-const DEPARTMENTS = [
-  { name: "İstehsal", count: 28 },
-  { name: "Texnologiya", count: 8 },
-  { name: "Keyfiyyət", count: 6 },
-  { name: "Satış & Marketinq", count: 5 },
-  { name: "İnsan Resursları", count: 3 },
-];
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word.charAt(0))
+    .join("")
+    .toUpperCase();
+}
 
 export function TeamContent() {
+  const { t } = useI18n();
+  const tc = t.teamContent;
   const teamRef = useRef(null);
   const teamInView = useInView(teamRef, { once: true, margin: "-80px" });
   const cultureRef = useRef(null);
@@ -67,17 +42,17 @@ export function TeamContent() {
             className="text-center max-w-3xl mx-auto mb-16"
           >
             <div className="w-12 h-[2px] bg-sand mx-auto mb-6" />
-            <span className="text-ocean font-medium text-sm tracking-widest uppercase">Rəhbərlik</span>
+            <span className="text-ocean font-medium text-sm tracking-widest uppercase">{tc.leadershipEyebrow}</span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy">
-              Bizim <span className="text-gradient-ocean">Komandamız</span>
+              {tc.leadershipTitleLead} <span className="text-gradient-ocean">{tc.leadershipTitleAccent}</span>
             </h2>
             <p className="mt-6 text-slate/70 text-lg">
-              Hər biri öz sahəsində mütəxəssis olan peşəkar komandamız ilə tanış olun.
+              {tc.leadershipSubtitle}
             </p>
           </motion.div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-            {TEAM.map((member, i) => (
+            {tc.members.map((member, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
@@ -87,7 +62,7 @@ export function TeamContent() {
               >
                 <div className="bg-mist rounded-xl sm:rounded-2xl p-5 sm:p-8 text-center card-lift h-full flex flex-col border border-transparent hover:border-ocean/10">
                   <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-ocean to-ocean-dark mx-auto flex items-center justify-center shadow-lg shadow-ocean/20 group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-ocean/30 transition-all duration-500">
-                    <span className="text-white font-display text-lg sm:text-2xl font-bold">{member.initials}</span>
+                    <span className="text-white font-display text-lg sm:text-2xl font-bold">{getInitials(member.name)}</span>
                   </div>
                   <h3 className="mt-4 sm:mt-6 font-display text-base sm:text-xl font-semibold text-navy">{member.name}</h3>
                   <p className="mt-1 text-ocean text-xs sm:text-sm font-medium">{member.role}</p>
@@ -118,24 +93,18 @@ export function TeamContent() {
               transition={{ duration: 0.7 }}
             >
               <div className="w-12 h-[2px] bg-sand mb-6" />
-              <span className="text-ocean font-medium text-sm tracking-widest uppercase">Mədəniyyətimiz</span>
+              <span className="text-ocean font-medium text-sm tracking-widest uppercase">{tc.cultureEyebrow}</span>
               <h2 className="mt-4 font-display text-3xl sm:text-4xl font-bold text-navy leading-tight">
-                Birlikdə <span className="text-gradient-ocean">Daha Güclü</span>
+                {tc.cultureTitleLead} <span className="text-gradient-ocean">{tc.cultureTitleAccent}</span>
               </h2>
               <p className="mt-6 text-slate/80 text-lg leading-relaxed">
-                Fishers-də biz sadəcə bir komanda deyil, bir ailəyik. Hər bir əməkdaşımızın peşəkar
-                inkişafına dəstək verir, innovativ fikirləri alqışlayır və birgə uğurlara imza atırıq.
+                {tc.cultureBody1}
               </p>
               <p className="mt-4 text-slate/80 text-lg leading-relaxed">
-                Açıq ünsiyyət, qarşılıqlı hörmət və daimi öyrənmə prinsipləri əsasında qurulmuş
-                korporativ mədəniyyətimiz, sənayedə ən yaxşı istedadları cəlb etməyimizə imkan verir.
+                {tc.cultureBody2}
               </p>
               <div className="mt-8 sm:mt-10 grid grid-cols-3 gap-4 sm:gap-6">
-                {[
-                  { num: "50+", label: "Əməkdaş" },
-                  { num: "92%", label: "Məmnuniyyət" },
-                  { num: "4.5", label: "Orta Staj (il)" },
-                ].map((s, i) => (
+                {tc.cultureStats.map((s, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, y: 15 }}
@@ -160,7 +129,7 @@ export function TeamContent() {
                 <motion.div style={{ y: cultureImgY }} className="absolute inset-[-10%] w-[120%] h-[120%]">
                   <Image
                     src="/images/2.jpg"
-                    alt="Fishers komanda mədəniyyəti"
+                    alt="United Fishers komanda mədəniyyəti"
                     fill
                     className="object-cover"
                     sizes="(max-width: 1024px) 100vw, 50vw"
@@ -178,7 +147,7 @@ export function TeamContent() {
                   <svg className="w-5 h-5 text-ocean" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <span className="font-display font-bold text-navy text-sm">50+ Peşəkar</span>
+                  <span className="font-display font-bold text-navy text-sm">{tc.cultureBadge}</span>
                 </div>
               </motion.div>
             </motion.div>
@@ -194,14 +163,14 @@ export function TeamContent() {
             transition={{ duration: 0.7 }}
             className="text-center max-w-3xl mx-auto mb-16"
           >
-            <span className="text-ocean font-medium text-sm tracking-widest uppercase">Struktur</span>
+            <span className="text-ocean font-medium text-sm tracking-widest uppercase">{tc.structureEyebrow}</span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy">
-              Şöbələrimiz
+              {tc.structureTitle}
             </h2>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            {DEPARTMENTS.map((dept, i) => (
+            {tc.departments.map((dept, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
@@ -209,7 +178,7 @@ export function TeamContent() {
                 transition={{ duration: 0.5, delay: 0.08 * i }}
                 className="bg-mist rounded-2xl p-6 text-center card-lift border border-transparent hover:border-ocean/10"
               >
-                <div className="font-display text-3xl font-bold text-gradient-ocean">{dept.count}</div>
+                <div className="font-display text-3xl font-bold text-gradient-ocean">{DEPT_COUNTS[i]}</div>
                 <div className="mt-2 text-navy font-medium text-sm">{dept.name}</div>
               </motion.div>
             ))}
@@ -224,7 +193,7 @@ export function TeamContent() {
             <div className="absolute inset-0">
               <Image
                 src="/images/7.jpg"
-                alt="Fishers komanda"
+                alt="United Fishers komanda"
                 fill
                 className="object-cover"
                 sizes="100vw"
@@ -233,13 +202,13 @@ export function TeamContent() {
             </div>
             <div className="relative z-10 p-10 lg:p-14 text-center film-grain">
               <h3 className="font-display text-2xl lg:text-3xl font-bold text-white">
-                Komandamıza Qoşulun
+                {tc.joinTitle}
               </h3>
               <p className="mt-4 text-white/80 text-lg max-w-2xl mx-auto">
-                Davamlı akvakultura sahəsində karyeranızı qurmaq istəyirsiniz? Açıq vakansiyalarımızı nəzərdən keçirin.
+                {tc.joinBody}
               </p>
               <a href="/contact" className="btn btn-white mt-8">
-                <span>Əlaqə Saxlayın</span>
+                <span>{tc.joinButton}</span>
                 <svg className="w-4 h-4 btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>

@@ -3,19 +3,15 @@ import { PageHero } from "@/components/ui/PageHero";
 import { ContactContent } from "@/components/sections/ContactContent";
 
 export const metadata: Metadata = {
-  title: "Əlaqə | Fishers",
+  title: "Əlaqə | United Fishers",
   description:
-    "Fishers ilə əlaqə saxlayın — ünvan, telefon, e-poçt və əlaqə formu.",
+    "United Fishers ilə əlaqə saxlayın — ünvan, telefon, e-poçt və əlaqə formu.",
 };
 
 export default function ContactPage() {
   return (
     <>
-      <PageHero
-        title="Əlaqə"
-        subtitle="Suallarınız və təklifləriniz üçün bizimlə əlaqə saxlayın"
-        image="/images/6.jpg"
-      />
+      <PageHero pageKey="contact" image="/images/6.jpg" />
       <ContactContent />
     </>
   );

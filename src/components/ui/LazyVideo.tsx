@@ -1,44 +1,46 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { useInView } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { registerVideo } from "@/lib/videoLoader";
 
 interface LazyVideoProps {
   src: string;
   poster?: string;
   className?: string;
+  priority?: number;
+  autoplay?: boolean;
 }
 
-export function LazyVideo({ src, poster, className }: LazyVideoProps) {
+export function LazyVideo({
+  src,
+  poster,
+  className,
+  priority = 0,
+  autoplay = true,
+}: LazyVideoProps) {
   const ref = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isVisible = useInView(containerRef, { margin: "100px" });
 
   useEffect(() => {
     const video = ref.current;
     if (!video) return;
-    if (isVisible) {
-      video.src = src;
-      video.play().catch(() => {});
-    } else {
-      video.pause();
-      video.removeAttribute("src");
-      video.load();
-    }
-  }, [isVisible, src]);
+    return registerVideo(video, { src, priority, autoplay });
+  }, [src, priority, autoplay]);
 
   return (
-    <div ref={containerRef} className={className}>
-      <video
-        ref={ref}
-        muted
-        loop
-        playsInline
-        preload="none"
-        poster={poster}
-        className="w-full h-full object-cover"
-      />
-    </div>
+    <video
+      ref={ref}
+      muted
+      loop
+      playsInline
+      preload="none"
+      poster={poster}
+      aria-hidden="true"
+      className={
+        className
+          ? `${className} w-full h-full object-cover`
+          : "w-full h-full object-cover"
+      }
+    />
   );
 }
 

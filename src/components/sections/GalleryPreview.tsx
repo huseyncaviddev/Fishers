@@ -5,17 +5,19 @@ import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { LazyVideo, videoPoster } from "@/components/ui/LazyVideo";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const GALLERY_ITEMS = [
-  { src: "/images/4.jpg", title: "RAS Sistemi", type: "image" as const },
-  { src: "/videos/gallery-harvest.mp4", title: "Balıq Yığımı", type: "video" as const },
-  { src: "/images/3.jpg", title: "Tilapia Yetişdirmə", type: "image" as const },
-  { src: "/videos/gallery-ai.mp4", title: "AI Monitorinq", type: "video" as const },
-  { src: "/images/14.jpg", title: "Keyfiyyət Nəzarəti", type: "image" as const },
-  { src: "/images/16.jpg", title: "Komandamız", type: "image" as const },
+  { src: "/images/4.jpg", type: "image" as const },
+  { src: "/videos/gallery-harvest.mp4", type: "video" as const },
+  { src: "/images/3.jpg", type: "image" as const },
+  { src: "/videos/gallery-ai.mp4", type: "video" as const },
+  { src: "/images/14.jpg", type: "image" as const },
+  { src: "/images/16.jpg", type: "image" as const },
 ];
 
 export function GalleryPreview() {
+  const { t } = useI18n();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
 
@@ -36,11 +38,11 @@ export function GalleryPreview() {
               className="w-10 h-[2px] bg-ocean mb-6 origin-left"
             />
             <span className="text-ocean font-medium text-xs tracking-[0.2em] uppercase">
-              Qalereya
+              {t.galleryPreview.eyebrow}
             </span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-navy leading-tight">
-              Təsərrüfatımızdan{" "}
-              <span className="text-gradient-ocean">Görüntülər</span>
+              {t.galleryPreview.titleLead}{" "}
+              <span className="text-gradient-ocean">{t.galleryPreview.titleAccent}</span>
             </h2>
           </div>
           <Link
@@ -48,7 +50,7 @@ export function GalleryPreview() {
             className="group inline-flex items-center gap-2 text-ocean font-medium shrink-0"
           >
             <span className="relative">
-              Hamısına Bax
+              {t.galleryPreview.viewAll}
               <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-ocean group-hover:w-full transition-all duration-500" />
             </span>
             <svg
@@ -86,7 +88,7 @@ export function GalleryPreview() {
                 ) : (
                   <Image
                     src={item.src}
-                    alt={item.title}
+                    alt={t.galleryPreview.items[i]}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 50vw, 33vw"
@@ -110,7 +112,7 @@ export function GalleryPreview() {
                     )}
                   </div>
                   <span className="text-white font-medium text-sm">
-                    {item.title}
+                    {t.galleryPreview.items[i]}
                   </span>
                 </div>
               </div>

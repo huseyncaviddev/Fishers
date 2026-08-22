@@ -1,21 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, DM_Sans } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
-
-const playfair = Playfair_Display({
-  variable: "--font-display",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const dmSans = DM_Sans({
-  variable: "--font-body",
-  subsets: ["latin"],
-  display: "swap",
-});
+import { AppShell } from "@/components/ui/AppShell";
+import { I18nProvider } from "@/i18n/I18nProvider";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fishers.az";
 
@@ -23,14 +14,14 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0c2340",
+  themeColor: "#04222c",
 };
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Fishers | Premium Aquaculture & Fishing Farm",
-    template: "%s | Fishers",
+    default: "United Fishers | Premium Aquaculture & Fishing Farm",
+    template: "%s | United Fishers",
   },
   description:
     "Davamlı akvakultura həlləri — ən yüksək keyfiyyətli dəniz məhsulları. Müasir balıqçılıq təsərrüfatı, ekoloji məsuliyyət əsasında.",
@@ -44,24 +35,24 @@ export const metadata: Metadata = {
     "nərə",
     "alabalıq",
     "qara kürü",
-    "Fishers Azerbaijan",
+    "United Fishers Azerbaijan",
     "davamlı balıqçılıq",
     "RAS texnologiyası",
   ],
-  authors: [{ name: "Fishers" }],
-  creator: "Fishers",
-  publisher: "Fishers",
+  authors: [{ name: "United Fishers" }],
+  creator: "United Fishers",
+  publisher: "United Fishers",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   openGraph: {
-    title: "Fishers | Premium Aquaculture & Fishing Farm",
+    title: "United Fishers | Premium Aquaculture & Fishing Farm",
     description:
       "Davamlı akvakultura həlləri — ən yüksək keyfiyyətli dəniz məhsulları.",
     url: SITE_URL,
-    siteName: "Fishers",
+    siteName: "United Fishers",
     locale: "az_AZ",
     type: "website",
     images: [
@@ -69,13 +60,13 @@ export const metadata: Metadata = {
         url: "/images/1.jpg",
         width: 1200,
         height: 630,
-        alt: "Fishers Aquaculture",
+        alt: "United Fishers Aquaculture",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Fishers | Premium Aquaculture & Fishing Farm",
+    title: "United Fishers | Premium Aquaculture & Fishing Farm",
     description:
       "Davamlı akvakultura həlləri — ən yüksək keyfiyyətli dəniz məhsulları.",
     images: ["/images/1.jpg"],
@@ -99,7 +90,7 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Fishers",
+  name: "United Fishers",
   description:
     "Davamlı akvakultura həlləri — ən yüksək keyfiyyətli dəniz məhsulları.",
   url: SITE_URL,
@@ -126,18 +117,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="az" className={`${playfair.variable} ${dmSans.variable}`}>
+    <html lang="az" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="min-h-screen flex flex-col antialiased">
+      <body className="min-h-screen flex flex-col antialiased" suppressHydrationWarning>
         <LoadingScreen />
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <AppShell />
+        <I18nProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </I18nProvider>
       </body>
     </html>
   );

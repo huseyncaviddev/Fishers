@@ -3,17 +3,19 @@
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const SHOWCASE_IMAGES = [
-  { src: "/images/8.jpg", alt: "Aerial aquaculture operations", span: "col-span-2 row-span-2" },
-  { src: "/images/6.jpg", alt: "Open water fish pens", span: "" },
-  { src: "/images/10.jpg", alt: "Fish close-up", span: "" },
-  { src: "/images/12.jpg", alt: "Indoor RAS facility", span: "col-span-2" },
-  { src: "/images/14.jpg", alt: "Salmon handling", span: "" },
-  { src: "/images/5.jpg", alt: "Land-based circular tanks", span: "" },
+  { src: "/images/8.jpg", span: "col-span-2 row-span-2" },
+  { src: "/images/6.jpg", span: "" },
+  { src: "/images/10.jpg", span: "" },
+  { src: "/images/12.jpg", span: "col-span-2" },
+  { src: "/images/14.jpg", span: "" },
+  { src: "/images/5.jpg", span: "" },
 ];
 
 export function ImageShowcase() {
+  const { t } = useI18n();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const containerRef = useRef(null);
@@ -40,14 +42,14 @@ export function ImageShowcase() {
             className="w-12 h-[2px] bg-ocean mx-auto mb-6 origin-left"
           />
           <span className="text-ocean font-medium text-xs tracking-[0.2em] uppercase">
-            Təsərrüfatımız
+            {t.imageShowcase.eyebrow}
           </span>
           <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-6xl font-light text-navy leading-tight">
-            Mükəmməlliyin{" "}
-            <span className="text-ocean font-semibold italic">arxasında</span>
+            {t.imageShowcase.titleLead}{" "}
+            <span className="text-ocean font-semibold italic">{t.imageShowcase.titleAccent}</span>
           </h2>
           <p className="mt-5 text-slate/60 text-lg max-w-2xl mx-auto font-light">
-            Müasir texnologiya ilə təbiətin harmoniyasını yaradırıq
+            {t.imageShowcase.subtitle}
           </p>
         </motion.div>
 
@@ -63,7 +65,7 @@ export function ImageShowcase() {
             >
               <Image
                 src={img.src}
-                alt={img.alt}
+                alt={t.imageShowcase.images[i]}
                 fill
                 className="object-cover transition-transform duration-[1.2s] group-hover:scale-110"
                 sizes="(max-width: 768px) 50vw, 25vw"
@@ -72,7 +74,7 @@ export function ImageShowcase() {
               <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-out">
                 <div className="glass-dark rounded-lg px-3 py-2">
                   <span className="text-white/90 text-xs sm:text-sm font-light">
-                    {img.alt}
+                    {t.imageShowcase.images[i]}
                   </span>
                 </div>
               </div>

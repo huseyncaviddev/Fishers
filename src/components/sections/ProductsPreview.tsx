@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { PRODUCTS } from "@/data/products";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const PRODUCT_IMAGES = [
   "/images/10.jpg",
@@ -16,6 +17,7 @@ const PRODUCT_IMAGES = [
 const PREVIEW_ITEMS = PRODUCTS.slice(0, 4);
 
 export function ProductsPreview() {
+  const { t } = useI18n();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
 
@@ -35,14 +37,16 @@ export function ProductsPreview() {
             className="w-12 h-[2px] bg-ocean mx-auto mb-6 origin-center"
           />
           <h2 className="font-display text-2xl sm:text-3xl lg:text-5xl xl:text-6xl font-light text-navy">
-            Həllərimizə{" "}
-            <span className="text-ocean font-semibold italic">investisiya</span>{" "}
-            edin
+            {t.productsPreview.titleLead}{" "}
+            <span className="text-ocean font-semibold italic">{t.productsPreview.titleAccent}</span>
+            {t.productsPreview.titleTail ? ` ${t.productsPreview.titleTail}` : ""}
           </h2>
         </motion.div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
-          {PREVIEW_ITEMS.map((product, i) => (
+          {PREVIEW_ITEMS.map((product, i) => {
+            const item = t.products.items[product.slug];
+            return (
             <motion.div
               key={product.slug}
               initial={{ opacity: 0, y: 40 }}
@@ -55,7 +59,7 @@ export function ProductsPreview() {
               >
                 <Image
                   src={PRODUCT_IMAGES[i]}
-                  alt={product.name}
+                  alt={item.name}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-[1.2s] ease-out"
                   sizes="(max-width: 768px) 50vw, 25vw"
@@ -65,14 +69,14 @@ export function ProductsPreview() {
                 <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
                   <div className="mb-2 opacity-0 group-hover:opacity-100 -translate-y-2 group-hover:translate-y-0 transition-all duration-500">
                     <span className="text-sand text-[10px] tracking-[0.15em] uppercase font-light">
-                      {product.category}
+                      {t.products.categories[product.categoryKey]}
                     </span>
                   </div>
                   <h3 className="font-display text-base sm:text-xl font-semibold text-white leading-tight">
-                    {product.name}
+                    {item.name}
                   </h3>
                   <p className="text-white/60 text-xs sm:text-sm mt-2 line-clamp-2 opacity-0 group-hover:opacity-100 translate-y-3 group-hover:translate-y-0 transition-all duration-600 font-light">
-                    {product.shortDesc}
+                    {item.shortDesc}
                   </p>
                 </div>
 
@@ -89,7 +93,8 @@ export function ProductsPreview() {
                 </div>
               </Link>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
 
         <motion.div
@@ -100,20 +105,19 @@ export function ProductsPreview() {
         >
           <div className="w-8 h-[1px] bg-ocean/30 mx-auto mb-8" />
           <p className="text-lg sm:text-xl lg:text-3xl font-display text-navy/70 leading-relaxed font-light px-2">
-            <span className="font-semibold text-navy">Missiyamız</span>{" "}
-            akvakultura sənayesini{" "}
+            <span className="font-semibold text-navy">{t.productsPreview.missionLead}</span>{" "}
+            {t.productsPreview.missionBody1}{" "}
             <span className="text-ocean font-semibold italic">
-              sağlam, davamlı, əlçatan
+              {t.productsPreview.missionAccent}
             </span>{" "}
-            istehsala doğru irəlilətmək və qlobal ərzaq təhlükəsizliyinə töhfə
-            verməkdir.
+            {t.productsPreview.missionBody2}
           </p>
 
           <Link
             href="/products"
             className="mt-10 group relative inline-flex items-center gap-2 px-9 py-4 bg-ocean text-white font-medium rounded-full overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-ocean/30"
           >
-            <span className="relative z-10">Bütün Məhsullara Bax</span>
+            <span className="relative z-10">{t.productsPreview.cta}</span>
             <svg
               className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform duration-300"
               fill="none"

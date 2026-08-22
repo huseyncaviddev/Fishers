@@ -2,18 +2,32 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
+import { useI18n } from "@/i18n/I18nProvider";
+import type { ProductSlug } from "@/data/products";
+
+type PageKey = "about" | "team" | "gallery" | "products" | "contact";
 
 interface PageHeroProps {
-  title: string;
-  subtitle: string;
+  pageKey?: PageKey;
+  productSlug?: ProductSlug;
   image?: string;
 }
 
-export function PageHero({
-  title,
-  subtitle,
-  image,
-}: PageHeroProps) {
+export function PageHero({ pageKey, productSlug, image }: PageHeroProps) {
+  const { t } = useI18n();
+
+  let title = "";
+  let subtitle = "";
+  if (productSlug) {
+    const item = t.products.items[productSlug];
+    title = item.name;
+    subtitle = item.shortDesc;
+  } else if (pageKey) {
+    title = t.pages[pageKey].title;
+    subtitle = t.pages[pageKey].subtitle;
+  }
+
   return (
     <section className="relative h-[45vh] sm:h-[50vh] min-h-[300px] sm:min-h-[360px] flex items-center justify-center overflow-hidden">
       {image && (
@@ -58,9 +72,9 @@ export function PageHero({
           transition={{ delay: 0.5 }}
           className="mt-6 flex items-center justify-center gap-2 text-white/30 text-xs tracking-wider"
         >
-          <a href="/" className="hover:text-white transition-colors duration-300">
-            Ana Səhifə
-          </a>
+          <Link href="/" className="hover:text-white transition-colors duration-300">
+            {t.common.home}
+          </Link>
           <span className="text-white/15">/</span>
           <span className="text-white/60">{title}</span>
         </motion.div>

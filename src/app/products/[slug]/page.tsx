@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PRODUCTS, getProductBySlug } from "@/data/products";
+import { az } from "@/i18n/translations/az";
 import { PageHero } from "@/components/ui/PageHero";
 import { ProductDetail } from "@/components/sections/ProductDetail";
 
@@ -18,9 +19,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = getProductBySlug(slug);
   if (!product) return {};
+  const item = az.products.items[product.slug];
   return {
-    title: `${product.name} | Fishers`,
-    description: product.shortDesc,
+    title: `${item.name} | United Fishers`,
+    description: item.shortDesc,
   };
 }
 
@@ -31,11 +33,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <>
-      <PageHero
-        title={product.name}
-        subtitle={product.shortDesc}
-        image={product.image}
-      />
+      <PageHero productSlug={product.slug} image={product.image} />
       <ProductDetail product={product} />
     </>
   );

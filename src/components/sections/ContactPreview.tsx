@@ -4,26 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
+import { useI18n } from "@/i18n/I18nProvider";
 
-const CONTACT_INFO = [
-  {
-    icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z",
-    text: "Bakı şəhəri, Nərimanov rayonu",
-    label: "Ünvan",
-  },
-  {
-    icon: "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z",
-    text: "+994 12 345 67 89",
-    label: "Telefon",
-  },
-  {
-    icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
-    text: "info@fishers.az",
-    label: "E-poçt",
-  },
+const CONTACT_ICONS = [
+  "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z",
+  "M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z",
+  "M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
 ];
 
 export function ContactPreview() {
+  const { t } = useI18n();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
 
@@ -43,20 +33,19 @@ export function ContactPreview() {
               className="w-10 h-[2px] bg-ocean mb-6 origin-left"
             />
             <span className="text-ocean font-medium text-xs tracking-[0.2em] uppercase">
-              Əlaqə
+              {t.contactPreview.eyebrow}
             </span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-navy leading-[1.1]">
-              Bizimlə{" "}
-              <span className="text-gradient-ocean">Əlaqə</span>{" "}
-              Saxlayın
+              {t.contactPreview.titleLead}{" "}
+              <span className="text-gradient-ocean">{t.contactPreview.titleAccent}</span>
+              {t.contactPreview.titleTail ? ` ${t.contactPreview.titleTail}` : ""}
             </h2>
             <p className="mt-6 text-slate/60 text-lg leading-relaxed font-light">
-              Suallarınız, təklifləriniz və ya əməkdaşlıq imkanları üçün bizimlə
-              əlaqə saxlayın. Peşəkar komandamız sizə kömək etməyə hazırdır.
+              {t.contactPreview.body}
             </p>
 
             <div className="mt-10 space-y-5">
-              {CONTACT_INFO.map((item, i) => (
+              {t.contactPreview.info.map((item, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, x: -20 }}
@@ -72,7 +61,7 @@ export function ContactPreview() {
                       strokeWidth={1.5}
                       className="w-5 h-5"
                     >
-                      <path d={item.icon} />
+                      <path d={CONTACT_ICONS[i]} />
                     </svg>
                   </div>
                   <div>
@@ -96,7 +85,7 @@ export function ContactPreview() {
                 href="/contact"
                 className="mt-10 group relative inline-flex items-center gap-2 px-8 py-4 bg-ocean text-white font-medium rounded-full overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-ocean/30"
               >
-                <span className="relative z-10">Əlaqə Səhifəsinə Keç</span>
+                <span className="relative z-10">{t.contactPreview.cta}</span>
                 <svg
                   className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform duration-300"
                   fill="none"
@@ -125,7 +114,7 @@ export function ContactPreview() {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Fishers lokasiya"
+                title="United Fishers lokasiya"
               />
             </div>
 
@@ -139,15 +128,15 @@ export function ContactPreview() {
                 <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 ring-2 ring-ocean/30">
                   <Image
                     src="/images/16.jpg"
-                    alt="Fishers"
+                    alt="United Fishers"
                     width={40}
                     height={40}
                     className="object-cover w-full h-full"
                   />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-navy">Fishers HQ</div>
-                  <div className="text-[11px] text-ocean">Bakı, Azərbaycan</div>
+                  <div className="text-sm font-semibold text-navy">{t.contactPreview.hqName}</div>
+                  <div className="text-[11px] text-ocean">{t.contactPreview.hqLocation}</div>
                 </div>
               </div>
             </motion.div>

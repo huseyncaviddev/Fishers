@@ -1,13 +1,14 @@
 "use client";
 
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
+import { LazyVideo } from "@/components/ui/LazyVideo";
+import { useI18n } from "@/i18n/I18nProvider";
 
 export function VideoShowcase() {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
-  const [videoLoaded, setVideoLoaded] = useState(false);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
@@ -15,30 +16,16 @@ export function VideoShowcase() {
   const y = useTransform(scrollYProgress, [0, 1], [80, -80]);
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.95, 1, 0.95]);
 
-  useEffect(() => {
-    if (inView && videoRef.current) {
-      videoRef.current.play().catch(() => {});
-    }
-  }, [inView]);
-
   return (
     <section ref={ref} className="relative py-0 overflow-hidden">
       <motion.div style={{ scale }} className="relative h-[60vh] sm:h-[70vh] lg:h-[80vh]">
         <motion.div style={{ y }} className="absolute inset-0">
-          {!videoLoaded && (
-            <div className="absolute inset-0 bg-navy animate-pulse" />
-          )}
-          <video
-            ref={videoRef}
-            src={inView ? "/videos/ras-system-new.mp4" : undefined}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="none"
+          <div className="absolute inset-0 bg-navy" />
+          <LazyVideo
+            src="/videos/ras-system-new.mp4"
             poster="/images/posters/ras-system.jpg"
-            onLoadedData={() => setVideoLoaded(true)}
-            className="w-full h-[120%] object-cover"
+            className="absolute inset-0 w-full h-[120%]"
+            priority={2}
           />
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-b from-navy/60 via-navy/30 to-navy/70" />
@@ -58,15 +45,14 @@ export function VideoShowcase() {
               className="w-16 h-[1px] bg-sand mx-auto mb-8 origin-center"
             />
             <span className="text-sand/80 text-xs tracking-[0.3em] uppercase font-light">
-              RAS Texnologiyası
+              {t.videoShowcase.eyebrow}
             </span>
             <h2 className="mt-4 font-display text-2xl sm:text-4xl lg:text-6xl font-bold text-white leading-tight">
-              Gələcəyin{" "}
-              <span className="text-gradient-gold">Akvakulturası</span>
+              {t.videoShowcase.titleLead}{" "}
+              <span className="text-gradient-gold">{t.videoShowcase.titleAccent}</span>
             </h2>
             <p className="mt-5 text-white/60 text-base sm:text-lg max-w-2xl mx-auto font-light leading-relaxed">
-              Qapalı dövriyyə sistemləri (RAS) ilə suyun 99%-ni təkrar istifadə
-              edərək ətraf mühitə minimum təsir göstəririk.
+              {t.videoShowcase.body}
             </p>
             <motion.div
               initial={{ opacity: 0, y: 15 }}
@@ -74,11 +60,7 @@ export function VideoShowcase() {
               transition={{ delay: 0.5, duration: 0.6 }}
               className="mt-8 flex justify-center gap-8 sm:gap-16"
             >
-              {[
-                { num: "99%", label: "Su Təkrar İstifadəsi" },
-                { num: "0", label: "Ətraf Mühit Zərəri" },
-                { num: "24/7", label: "Monitorinq" },
-              ].map((stat) => (
+              {t.videoShowcase.stats.map((stat) => (
                 <div key={stat.label} className="text-center">
                   <div className="font-display text-xl sm:text-3xl font-bold text-sand">
                     {stat.num}

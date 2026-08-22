@@ -1,13 +1,29 @@
+import dynamic from "next/dynamic";
 import { Hero } from "@/components/sections/Hero";
 import { ProductsPreview } from "@/components/sections/ProductsPreview";
 import { AboutPreview } from "@/components/sections/AboutPreview";
-import { VideoShowcase } from "@/components/sections/VideoShowcase";
-import { Services } from "@/components/sections/Services";
-import { ImageShowcase } from "@/components/sections/ImageShowcase";
-import { Stats } from "@/components/sections/Stats";
-import { GalleryPreview } from "@/components/sections/GalleryPreview";
-import { CTA } from "@/components/sections/CTA";
-import { ContactPreview } from "@/components/sections/ContactPreview";
+
+const VideoShowcase = dynamic(() =>
+  import("@/components/sections/VideoShowcase").then((m) => m.VideoShowcase)
+);
+const Services = dynamic(() =>
+  import("@/components/sections/Services").then((m) => m.Services)
+);
+const ImageShowcase = dynamic(() =>
+  import("@/components/sections/ImageShowcase").then((m) => m.ImageShowcase)
+);
+const Stats = dynamic(() =>
+  import("@/components/sections/Stats").then((m) => m.Stats)
+);
+const GalleryPreview = dynamic(() =>
+  import("@/components/sections/GalleryPreview").then((m) => m.GalleryPreview)
+);
+const CTA = dynamic(() =>
+  import("@/components/sections/CTA").then((m) => m.CTA)
+);
+const ContactPreview = dynamic(() =>
+  import("@/components/sections/ContactPreview").then((m) => m.ContactPreview)
+);
 
 export default function Home() {
   return (

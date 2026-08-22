@@ -4,58 +4,22 @@ import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { useI18n } from "@/i18n/I18nProvider";
 
-const TIMELINE = [
-  { year: "2009", title: "Təsis Edildi", desc: "Kiçik bir balıqçılıq təsərrüfatı olaraq fəaliyyətə başladıq." },
-  { year: "2013", title: "İlk Genişlənmə", desc: "Hovuz sayını artıraraq istehsal həcmini 3 dəfə böyütdük." },
-  { year: "2017", title: "Texnoloji İnteqrasiya", desc: "IoT sensorlar və avtomatik yem sistemləri tətbiq etdik." },
-  { year: "2020", title: "Emal Müəssisəsi", desc: "Beynəlxalq standartlara uyğun emal zavodu istifadəyə verdik." },
-  { year: "2024", title: "İxracat Bazarları", desc: "Avropa və Yaxın Şərq bazarlarına ixracata başladıq." },
+const VALUE_ICONS = [
+  <svg key="0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" /><circle cx="12" cy="12" r="4" /></svg>,
+  <svg key="1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
+  <svg key="2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
+  <svg key="3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /><circle cx="12" cy="12" r="10" /></svg>,
+  <svg key="4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+  <svg key="5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>,
 ];
 
-const VALUES = [
-  {
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" /><circle cx="12" cy="12" r="4" /></svg>,
-    title: "Davamlılıq",
-    desc: "Ekoloji tarazlığı qoruyaraq gələcək nəsillər üçün məsuliyyətli istehsal edirik. Hər bir prosesdə ətraf mühitə təsiri minimuma endiririk.",
-  },
-  {
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
-    title: "Keyfiyyət",
-    desc: "ISO 22000 və HACCP sertifikatlarına uyğun istehsal. Beynəlxalq standartlarda qida təhlükəsizliyi təmin edirik.",
-  },
-  {
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
-    title: "İnnovasiya",
-    desc: "Ən müasir IoT, süni intellekt və avtomatlaşdırma texnologiyaları ilə sənayedə yeni standartlar müəyyən edirik.",
-  },
-  {
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /><circle cx="12" cy="12" r="10" /></svg>,
-    title: "Şəffaflıq",
-    desc: "Bütün proseslərimizdə tam şəffaflıq təmin edirik. Tərəfdaşlarımız və müştərilərimiz istənilən vaxt istehsal prosesimizi izləyə bilər.",
-  },
-  {
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
-    title: "İcma Dəstəyi",
-    desc: "Yerli icmaları dəstəkləyirik, iş yerləri yaradırıq və biliyimizi paylaşaraq regional inkişafa töhfə veririk.",
-  },
-  {
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>,
-    title: "Elmi Yanaşma",
-    desc: "Elmi araşdırmalara əsaslanan yanaşma. Universitetlər və tədqiqat institutları ilə əməkdaşlıq edərək daim inkişaf edirik.",
-  },
-];
-
-const ACTIVITY_AREAS = [
-  { title: "Nərə Yetişdirmə", desc: "Premium nərə balığı və qara kürü istehsalı. Xəzər nərəsinin bərpası proqramına dəstək.", icon: "🐟" },
-  { title: "Alabalıq Ferması", desc: "Təmiz dağ sularında yetişdirilən gökkuşağı alabalığı. İllik 200 ton istehsal gücü.", icon: "🏔️" },
-  { title: "Yem Texnologiyası", desc: "Yüksək qidalılıq dəyərli, təbii komponentli balıq yemi istehsalı və R&D.", icon: "🌿" },
-  { title: "Emal və İxracat", desc: "HACCP sertifikatlı emal müəssisəsi. Avropa və Yaxın Şərq bazarlarına ixracat.", icon: "📦" },
-  { title: "Konsaltinq", desc: "Akvakultura layihələrinin planlaşdırılması, texniki-iqtisadi əsaslandırma xidmətləri.", icon: "📋" },
-  { title: "Texnoloji Həllər", desc: "IoT monitorinq, avtomatik yemləmə və su keyfiyyəti idarəetmə sistemləri.", icon: "⚙️" },
-];
+const AREA_ICONS = ["🐟", "🏔️", "🌿", "📦", "📋", "⚙️"];
 
 export function AboutContent() {
+  const { t } = useI18n();
+  const a = t.aboutContent;
   const missionRef = useRef(null);
   const missionInView = useInView(missionRef, { once: true, margin: "-80px" });
   const areasRef = useRef(null);
@@ -86,26 +50,18 @@ export function AboutContent() {
               transition={{ duration: 0.8 }}
             >
               <div className="w-12 h-[2px] bg-sand mb-6" />
-              <span className="text-ocean font-medium text-sm tracking-widest uppercase">Missiyamız</span>
+              <span className="text-ocean font-medium text-sm tracking-widest uppercase">{a.missionEyebrow}</span>
               <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">
-                Davamlı Akvakulturanın <span className="text-gradient-ocean">Gələcəyini</span> Qururuq
+                {a.missionTitleLead} <span className="text-gradient-ocean">{a.missionTitleAccent}</span> {a.missionTitleTail}
               </h2>
               <p className="mt-6 text-slate/80 text-lg leading-relaxed">
-                Fishers olaraq biz innovativ yanaşmalar və davamlı təcrübələrlə akvakultura sənayesini
-                dəyişdiririk. 2009-cu ildən bəri müasir texnologiyalardan istifadə edərək ekoloji tarazlığı
-                qorumaqla yanaşı, ən yüksək keyfiyyətli dəniz məhsulları istehsal edirik.
+                {a.missionBody1}
               </p>
               <p className="mt-4 text-slate/80 text-lg leading-relaxed">
-                Missiyamız sağlam, davamlı və əlçatan akvakultura sistemləri yaratmaq, yerli icmaları
-                dəstəkləmək, iş yerləri açmaq və qlobal ərzaq təhlükəsizliyinə real töhfə verməkdir. Biz
-                sadəcə balıq yetişdirmirik — sənayenin gələcəyini formalaşdırırıq.
+                {a.missionBody2}
               </p>
               <div className="mt-8 sm:mt-10 grid grid-cols-3 gap-4 sm:gap-6">
-                {[
-                  { num: "15+", label: "İllik Təcrübə" },
-                  { num: "50+", label: "Mütəxəssis" },
-                  { num: "200+", label: "Tərəfdaş" },
-                ].map((s, i) => (
+                {a.stats.map((s, i) => (
                   <div key={i}>
                     <div className="font-display text-2xl sm:text-3xl font-bold text-ocean">{s.num}</div>
                     <div className="text-xs sm:text-sm text-slate/60 mt-1">{s.label}</div>
@@ -125,7 +81,7 @@ export function AboutContent() {
                 <motion.div style={{ y: imgY }} className="absolute inset-[-10%] w-[120%] h-[120%]">
                   <Image
                     src="/images/1.jpg"
-                    alt="Fishers akvakultura təsərrüfatı"
+                    alt="United Fishers akvakultura təsərrüfatı"
                     fill
                     className="object-cover"
                     sizes="(max-width: 1024px) 100vw, 50vw"
@@ -148,8 +104,8 @@ export function AboutContent() {
                 />
                 <div className="absolute inset-0 bg-ocean/30" />
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-                  <div className="font-display text-xl sm:text-2xl font-bold">100%</div>
-                  <div className="text-[10px] sm:text-xs text-white/90 mt-0.5">Davamlı İstehsal</div>
+                  <div className="font-display text-xl sm:text-2xl font-bold">{a.badgeValue}</div>
+                  <div className="text-[10px] sm:text-xs text-white/90 mt-0.5">{a.badgeLabel}</div>
                 </div>
               </motion.div>
             </motion.div>
@@ -174,16 +130,14 @@ export function AboutContent() {
             <div className="relative z-10 p-10 lg:p-14">
               <div className="grid lg:grid-cols-2 gap-10 items-center">
                 <div>
-                  <span className="text-sand font-medium text-sm tracking-widest uppercase">Vizyonumuz</span>
+                  <span className="text-sand font-medium text-sm tracking-widest uppercase">{a.visionEyebrow}</span>
                   <h3 className="mt-4 font-display text-2xl lg:text-3xl font-bold text-white">
-                    Regionun Aparıcı Akvakultura Şirkəti
+                    {a.visionTitle}
                   </h3>
                 </div>
                 <div>
                   <p className="text-white/80 text-lg leading-relaxed">
-                    2030-cu ilə qədər Qafqaz və Xəzər regionunda ən böyük və ən davamlı akvakultura
-                    şirkəti olmaq. Texnologiya, elm və təbiətin harmoniyası ilə sənayedə yeni standartlar
-                    müəyyən etmək və 1000+ iş yeri yaratmaq hədəfimizdir.
+                    {a.visionBody}
                   </p>
                 </div>
               </div>
@@ -196,23 +150,23 @@ export function AboutContent() {
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={areasInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }}
             className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-ocean font-medium text-sm tracking-widest uppercase">Fəaliyyət İstiqamətləri</span>
+            <span className="text-ocean font-medium text-sm tracking-widest uppercase">{a.areasEyebrow}</span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy">
-              Nə <span className="text-gradient-ocean">Edirik</span>
+              {a.areasTitleLead} <span className="text-gradient-ocean">{a.areasTitleAccent}</span>
             </h2>
             <p className="mt-6 text-slate/70 text-lg">
-              Akvakultura dəyər zəncirinin bütün sahələrini əhatə edən kompleks xidmətlər.
+              {a.areasSubtitle}
             </p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ACTIVITY_AREAS.map((area, i) => (
+            {a.areas.map((area, i) => (
               <motion.div key={i}
                 initial={{ opacity: 0, y: 25 }}
                 animate={areasInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.08 * i }}
                 className="bg-white rounded-2xl p-8 card-lift hover:shadow-xl transition-shadow duration-300">
-                <span className="text-3xl">{area.icon}</span>
+                <span className="text-3xl">{AREA_ICONS[i]}</span>
                 <h3 className="mt-4 font-display text-xl font-semibold text-navy">{area.title}</h3>
                 <p className="mt-3 text-slate/70 leading-relaxed">{area.desc}</p>
               </motion.div>
@@ -225,20 +179,20 @@ export function AboutContent() {
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={valuesInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }}
             className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-ocean font-medium text-sm tracking-widest uppercase">Dəyərlərimiz</span>
+            <span className="text-ocean font-medium text-sm tracking-widest uppercase">{a.valuesEyebrow}</span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy">
-              Prinsiplərimiz və <span className="text-gradient-ocean">Dəyərlərimiz</span>
+              {a.valuesTitleLead} <span className="text-gradient-ocean">{a.valuesTitleAccent}</span>
             </h2>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {VALUES.map((v, i) => (
+            {a.values.map((v, i) => (
               <motion.div key={i}
                 initial={{ opacity: 0, y: 25 }}
                 animate={valuesInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.08 * i }}
                 className="group p-8 rounded-2xl border border-ocean-muted/20 hover:bg-ocean transition-all duration-500 cursor-default hover:shadow-xl">
-                <div className="text-ocean group-hover:text-white transition-colors duration-500">{v.icon}</div>
+                <div className="text-ocean group-hover:text-white transition-colors duration-500">{VALUE_ICONS[i]}</div>
                 <h3 className="mt-5 font-display text-xl font-semibold text-navy group-hover:text-white transition-colors duration-500">{v.title}</h3>
                 <p className="mt-3 text-slate/70 group-hover:text-white/80 leading-relaxed transition-colors duration-500">{v.desc}</p>
               </motion.div>
@@ -252,22 +206,15 @@ export function AboutContent() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -30 }} animate={qualityInView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.7 }}>
               <div className="w-12 h-[2px] bg-sand mb-6" />
-              <span className="text-ocean font-medium text-sm tracking-widest uppercase">Xidmət Keyfiyyəti</span>
+              <span className="text-ocean font-medium text-sm tracking-widest uppercase">{a.qualityEyebrow}</span>
               <h2 className="mt-4 font-display text-3xl sm:text-4xl font-bold text-navy leading-tight">
-                Beynəlxalq Standartlarda <span className="text-gradient-ocean">Keyfiyyət</span>
+                {a.qualityTitleLead} <span className="text-gradient-ocean">{a.qualityTitleAccent}</span>
               </h2>
               <p className="mt-6 text-slate/80 text-lg leading-relaxed">
-                Bütün istehsal proseslərimiz beynəlxalq keyfiyyət və qida təhlükəsizliyi standartlarına
-                tam uyğundur. Laboratoriya yoxlamaları, müntəzəm auditlər və sertifikasiya prosesləri
-                vasitəsilə məhsullarımızın keyfiyyətinə zəmanət veririk.
+                {a.qualityBody}
               </p>
               <div className="mt-8 space-y-4">
-                {[
-                  "ISO 22000 Qida Təhlükəsizliyi İdarəetmə Sistemi",
-                  "HACCP Kritik Nəzarət Nöqtələri Sistemi",
-                  "GlobalGAP Akvakultura Sertifikatı",
-                  "ASC Davamlı Akvakultura Sertifikatı",
-                ].map((cert, i) => (
+                {a.certifications.map((cert, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, x: -20 }}
@@ -318,8 +265,8 @@ export function AboutContent() {
                     </svg>
                   </div>
                   <div>
-                    <div className="font-display text-lg font-bold text-navy">4 Sertifikat</div>
-                    <div className="text-xs text-slate/60">Beynəlxalq Standart</div>
+                    <div className="font-display text-lg font-bold text-navy">{a.qualityBadgeValue}</div>
+                    <div className="text-xs text-slate/60">{a.qualityBadgeLabel}</div>
                   </div>
                 </div>
               </motion.div>
@@ -332,16 +279,16 @@ export function AboutContent() {
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={timelineInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }}
             className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-ocean font-medium text-sm tracking-widest uppercase">Tariximiz</span>
+            <span className="text-ocean font-medium text-sm tracking-widest uppercase">{a.timelineEyebrow}</span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy">
-              İnkişaf <span className="text-gradient-ocean">Yolumuz</span>
+              {a.timelineTitleLead} <span className="text-gradient-ocean">{a.timelineTitleAccent}</span>
             </h2>
           </motion.div>
 
           <div className="relative">
             <div className="absolute left-1/2 -translate-x-px top-0 bottom-0 w-0.5 bg-ocean-muted/30 hidden lg:block" />
             <div className="space-y-12 lg:space-y-0">
-              {TIMELINE.map((item, i) => (
+              {a.timeline.map((item, i) => (
                 <motion.div key={i}
                   initial={{ opacity: 0, y: 30 }}
                   animate={timelineInView ? { opacity: 1, y: 0 } : {}}

@@ -5,8 +5,10 @@ import Image from "next/image";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { TextReveal } from "@/components/ui/TextReveal";
+import { useI18n } from "@/i18n/I18nProvider";
 
 export function CTA() {
+  const { t } = useI18n();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
   const containerRef = useRef(null);
@@ -38,22 +40,20 @@ export function CTA() {
                 className="font-display text-2xl sm:text-3xl lg:text-5xl xl:text-6xl font-bold text-navy leading-[1.1]"
                 delay={0.1}
               >
-                Bizimlə Əməkdaşlıq Edin
+                {t.cta.title}
               </TextReveal>
               <p className="mt-6 text-slate/60 text-lg leading-relaxed font-light">
-                200-dən çox tərəfdaşdan ibarət qlobal bir şəbəkə yaradırıq.
-                Davamlı, kommersiya dəyərli akvakultura sənayesinin inkişafını
-                dəstəkləyən sahibkarlara yol göstəririk.
+                {t.cta.body}
               </p>
               <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Link href="/contact" className="btn btn-primary btn-glow">
-                  <span>Tərəfdaş Olun</span>
+                  <span>{t.cta.partner}</span>
                   <svg className="w-4 h-4 btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </Link>
                 <Link href="/contact" className="btn btn-secondary">
-                  Biznes Planınızı Göndərin
+                  {t.cta.businessPlan}
                 </Link>
               </div>
             </motion.div>
@@ -67,7 +67,7 @@ export function CTA() {
               <motion.div style={{ scale: imgScale, y: imgY }} className="aspect-[3/4] rounded-xl overflow-hidden border-glow">
                 <Image
                   src="/images/16.jpg"
-                  alt="Fishers team member"
+                  alt="United Fishers team member"
                   fill
                   className="object-cover !relative"
                   sizes="200px"
@@ -133,19 +133,19 @@ export function CTA() {
           >
             <div className="glass rounded-2xl p-8 lg:p-10">
               <h3 className="font-display text-2xl lg:text-3xl font-bold text-white">
-                İlham, xəbərlər və məsləhətlər alın
+                {t.cta.newsletterTitle}
               </h3>
               <p className="mt-3 text-white/60 text-sm font-light">
-                Ən son yeniliklərdən xəbərdar olmaq üçün bülletenimizə abunə olun
+                {t.cta.newsletterBody}
               </p>
               <div className="mt-6 flex gap-3">
                 <input
                   type="email"
-                  placeholder="email@example.com"
+                  placeholder={t.cta.newsletterPlaceholder}
                   className="flex-1 bg-white/10 text-white text-sm rounded-full px-5 py-3 placeholder:text-white/30 border border-white/10 focus:border-white/30 focus:outline-none transition-colors"
                 />
                 <button className="btn btn-sand btn-sm shrink-0">
-                  Abunə Ol
+                  {t.cta.newsletterButton}
                 </button>
               </div>
             </div>

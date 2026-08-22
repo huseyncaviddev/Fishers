@@ -7,12 +7,15 @@ import { useRef } from "react";
 import type { Product } from "@/data/products";
 import { PRODUCTS } from "@/data/products";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { useI18n } from "@/i18n/I18nProvider";
 
 interface ProductDetailProps {
   product: Product;
 }
 
 export function ProductDetail({ product }: ProductDetailProps) {
+  const { t } = useI18n();
+  const item = t.products.items[product.slug];
   const infoRef = useRef(null);
   const infoInView = useInView(infoRef, { once: true, margin: "-50px" });
   const specsRef = useRef(null);
@@ -25,7 +28,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
   const imgY = useTransform(scrollYProgress, [0, 1], [15, -15]);
 
   const related = PRODUCTS.filter(
-    (p) => p.slug !== product.slug && p.category === product.category
+    (p) => p.slug !== product.slug && p.categoryKey === product.categoryKey
   ).slice(0, 3);
 
   const allRelated =
@@ -50,11 +53,11 @@ export function ProductDetail({ product }: ProductDetailProps) {
             transition={{ duration: 0.5 }}
             className="flex items-center gap-2 text-sm text-slate/50 mb-10"
           >
-            <Link href="/" className="hover:text-ocean transition-colors">Ana Səhifə</Link>
+            <Link href="/" className="hover:text-ocean transition-colors">{t.common.home}</Link>
             <span>/</span>
-            <Link href="/products" className="hover:text-ocean transition-colors">Məhsullar</Link>
+            <Link href="/products" className="hover:text-ocean transition-colors">{t.products.breadcrumbProducts}</Link>
             <span>/</span>
-            <span className="text-navy/70">{product.name}</span>
+            <span className="text-navy/70">{item.name}</span>
           </motion.nav>
 
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
@@ -68,7 +71,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 <motion.div style={{ y: imgY }} className="absolute inset-[-8%] w-[116%] h-[116%]">
                   <Image
                     src={product.image}
-                    alt={product.name}
+                    alt={item.name}
                     fill
                     className="object-cover"
                     sizes="(max-width: 1024px) 100vw, 50vw"
@@ -85,8 +88,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-xs text-slate/50 uppercase tracking-wider">Təchizatçı</div>
-                  <div className="text-navy font-medium text-sm">{product.supplier}</div>
+                  <div className="text-xs text-slate/50 uppercase tracking-wider">{t.products.supplierLabel}</div>
+                  <div className="text-navy font-medium text-sm">{item.supplier}</div>
                 </div>
               </div>
             </motion.div>
@@ -98,26 +101,26 @@ export function ProductDetail({ product }: ProductDetailProps) {
             >
               <div className="flex items-center gap-3 mb-4">
                 <span className="px-3 py-1 bg-ocean/10 text-ocean text-xs font-medium rounded-full">
-                  {product.category}
+                  {t.products.categories[product.categoryKey]}
                 </span>
                 <span className="text-slate/40 text-xs">&bull;</span>
-                <span className="text-slate/50 text-xs">{product.type}</span>
+                <span className="text-slate/50 text-xs">{item.type}</span>
               </div>
 
               <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">
-                {product.name}
+                {item.name}
               </h1>
 
               <p className="mt-5 text-slate/70 text-lg leading-relaxed">
-                {product.shortDesc}
+                {item.shortDesc}
               </p>
 
               <div className="mt-8">
                 <h3 className="text-navy font-semibold text-sm uppercase tracking-wider mb-4">
-                  Əsas Xüsusiyyətlər
+                  {t.products.featuresTitle}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {product.features.map((feat, i) => (
+                  {item.features.map((feat, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, x: -10 }}
@@ -138,10 +141,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
               <div className="mt-8">
                 <h3 className="text-navy font-semibold text-sm uppercase tracking-wider mb-4">
-                  İstifadə Sahələri
+                  {t.products.usesTitle}
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {product.uses.map((use, i) => (
+                  {item.uses.map((use, i) => (
                     <span key={i} className="px-3.5 py-1.5 bg-mist text-slate/70 text-xs rounded-full font-medium border border-slate/8">
                       {use}
                     </span>
@@ -151,13 +154,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
               <div className="mt-10 flex flex-col sm:flex-row gap-3">
                 <Link href="/contact" className="btn btn-primary btn-glow">
-                  <span>Sifariş Verin</span>
+                  <span>{t.products.order}</span>
                   <svg className="w-4 h-4 btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </Link>
                 <Link href="/contact" className="btn btn-secondary">
-                  Əlaqə Saxlayın
+                  {t.products.contact}
                 </Link>
               </div>
             </motion.div>
@@ -175,17 +178,17 @@ export function ProductDetail({ product }: ProductDetailProps) {
             >
               <div className="w-10 h-[2px] bg-sand mb-6" />
               <h2 className="font-display text-2xl sm:text-3xl font-bold text-navy mb-8">
-                Texniki <span className="text-gradient-ocean">Spesifikasiya</span>
+                {t.products.specsTitleLead} <span className="text-gradient-ocean">{t.products.specsTitleAccent}</span>
               </h2>
               <div className="bg-white rounded-2xl overflow-hidden depth-md">
-                {product.specs.map((spec, i) => (
+                {item.specs.map((spec, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, x: -15 }}
                     animate={specsInView ? { opacity: 1, x: 0 } : {}}
                     transition={{ duration: 0.3, delay: 0.05 * i }}
                     className={`flex items-center justify-between px-6 py-4 ${
-                      i < product.specs.length - 1 ? "border-b border-slate/8" : ""
+                      i < item.specs.length - 1 ? "border-b border-slate/8" : ""
                     }`}
                   >
                     <span className="text-slate/60 text-sm font-medium">{spec.label}</span>
@@ -202,10 +205,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
             >
               <div className="w-10 h-[2px] bg-ocean mb-6" />
               <h2 className="font-display text-2xl sm:text-3xl font-bold text-navy mb-8">
-                Ətraflı <span className="text-gradient-ocean">Məlumat</span>
+                {t.products.detailTitleLead} <span className="text-gradient-ocean">{t.products.detailTitleAccent}</span>
               </h2>
               <div className="prose prose-slate max-w-none">
-                {product.fullDesc.split("\n\n").map((paragraph, i) => (
+                {item.fullDesc.split("\n\n").map((paragraph, i) => (
                   <p key={i} className="text-slate/70 text-base leading-relaxed mb-5 last:mb-0">
                     {paragraph}
                   </p>
@@ -213,10 +216,13 @@ export function ProductDetail({ product }: ProductDetailProps) {
               </div>
 
               <div className="mt-8 p-6 bg-white rounded-2xl depth-sm">
-                <div className="text-xs text-slate/50 uppercase tracking-wider mb-3 font-medium">Sertifikasiya</div>
+                <div className="text-xs text-slate/50 uppercase tracking-wider mb-3 font-medium">{t.products.certificationTitle}</div>
                 <div className="flex flex-wrap gap-2">
-                  {product.specs
-                    .filter((s) => s.label.toLowerCase().includes("sertifika") || s.label.toLowerCase().includes("certification"))
+                  {item.specs
+                    .filter((s) => {
+                      const l = s.label.toLowerCase();
+                      return l.includes("sertifik") || l.includes("certif") || l.includes("сертифик");
+                    })
                     .map((s, i) =>
                       s.value.split(",").map((cert, j) => (
                         <span key={`${i}-${j}`} className="px-3 py-1.5 bg-ocean/8 text-ocean text-xs font-semibold rounded-lg">
@@ -241,26 +247,28 @@ export function ProductDetail({ product }: ProductDetailProps) {
               className="text-center mb-12"
             >
               <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-navy">
-                Digər <span className="text-gradient-ocean">Məhsullar</span>
+                {t.products.relatedTitleLead} <span className="text-gradient-ocean">{t.products.relatedTitleAccent}</span>
               </h2>
             </motion.div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {allRelated.map((item, i) => (
+              {allRelated.map((rel, i) => {
+                const relItem = t.products.items[rel.slug];
+                return (
                 <motion.div
-                  key={item.slug}
+                  key={rel.slug}
                   initial={{ opacity: 0, y: 25 }}
                   animate={relatedInView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: 0.1 * i }}
                 >
                   <Link
-                    href={`/products/${item.slug}`}
+                    href={`/products/${rel.slug}`}
                     className="group block rounded-2xl overflow-hidden bg-mist hover:shadow-xl transition-all duration-500 border-glow"
                   >
                     <div className="relative aspect-video overflow-hidden">
                       <Image
-                        src={item.image}
-                        alt={item.name}
+                        src={rel.image}
+                        alt={relItem.name}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-700"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -268,21 +276,22 @@ export function ProductDetail({ product }: ProductDetailProps) {
                       <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent" />
                       <div className="absolute top-3 left-3">
                         <span className="px-2.5 py-0.5 bg-white/15 backdrop-blur-md text-white text-[10px] font-medium rounded-full border border-white/20">
-                          {item.category}
+                          {t.products.categories[rel.categoryKey]}
                         </span>
                       </div>
                     </div>
                     <div className="p-5">
                       <h3 className="font-display text-lg font-semibold text-navy group-hover:text-ocean transition-colors duration-300">
-                        {item.name}
+                        {relItem.name}
                       </h3>
                       <p className="mt-1.5 text-slate/60 text-sm line-clamp-2">
-                        {item.shortDesc}
+                        {relItem.shortDesc}
                       </p>
                     </div>
                   </Link>
                 </motion.div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

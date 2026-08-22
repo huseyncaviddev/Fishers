@@ -4,8 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
+import { useI18n } from "@/i18n/I18nProvider";
 
 export function AboutPreview() {
+  const { t } = useI18n();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
   const containerRef = useRef(null);
@@ -31,25 +33,18 @@ export function AboutPreview() {
               className="w-10 h-[2px] bg-ocean mb-6 origin-left"
             />
             <span className="text-ocean font-medium text-xs tracking-[0.2em] uppercase">
-              Haqqımızda
+              {t.aboutPreview.eyebrow}
             </span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-navy leading-[1.1]">
-              Davamlı Akvakulturanın{" "}
-              <span className="text-gradient-ocean">Gələcəyini</span> Qururuq
+              {t.aboutPreview.titleLead}{" "}
+              <span className="text-gradient-ocean">{t.aboutPreview.titleAccent}</span> {t.aboutPreview.titleTail}
             </h2>
             <p className="mt-6 text-slate/70 text-lg leading-relaxed font-light">
-              Biz innovativ yanaşmalar və davamlı təcrübələrlə akvakultura
-              sənayesini dəyişdiririk. Müasir texnologiyalardan istifadə edərək
-              ekoloji tarazlığı qorumaqla yanaşı, ən yüksək keyfiyyətli dəniz
-              məhsulları istehsal edirik.
+              {t.aboutPreview.body}
             </p>
 
             <div className="mt-10 flex gap-8 sm:gap-10">
-              {[
-                { num: "15+", label: "İllik Təcrübə" },
-                { num: "50+", label: "Mütəxəssis" },
-                { num: "200+", label: "Tərəfdaş" },
-              ].map((stat, i) => (
+              {t.aboutPreview.stats.map((stat, i) => (
                 <motion.div
                   key={stat.label}
                   initial={{ opacity: 0, y: 20 }}
@@ -77,7 +72,7 @@ export function AboutPreview() {
                 className="mt-10 inline-flex items-center gap-3 text-ocean font-medium group"
               >
                 <span className="relative">
-                  Ətraflı Oxuyun
+                  {t.aboutPreview.cta}
                   <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-ocean group-hover:w-full transition-all duration-500" />
                 </span>
                 <svg
@@ -106,7 +101,7 @@ export function AboutPreview() {
               <div className="aspect-[4/3] rounded-2xl overflow-hidden relative img-hover-zoom">
                 <Image
                   src="/images/1.jpg"
-                  alt="Fishers aquaculture facility VIP tour"
+                  alt="United Fishers aquaculture facility VIP tour"
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -137,10 +132,10 @@ export function AboutPreview() {
                 className="absolute -top-4 -right-2 sm:-top-6 sm:-right-6 glass-ocean rounded-xl p-4 sm:p-5 shadow-xl"
               >
                 <div className="font-display text-xl sm:text-2xl font-bold text-ocean">
-                  100%
+                  {t.aboutPreview.badgeValue}
                 </div>
                 <div className="text-xs sm:text-sm text-ocean-dark/70 mt-1 font-light">
-                  Ekoloji Davamlı İstehsal
+                  {t.aboutPreview.badgeLabel}
                 </div>
               </motion.div>
             </motion.div>

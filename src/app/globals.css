@@ -1,19 +1,73 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-ocean: #0e8c9b;
-  --color-ocean-dark: #0a6e7a;
-  --color-ocean-deeper: #064f5a;
-  --color-ocean-light: #e8f6f8;
-  --color-ocean-muted: #b8dfe4;
-  --color-sand: #c8a86e;
-  --color-sand-light: #f5eed8;
-  --color-navy: #0c2340;
-  --color-slate: #3a4f5c;
-  --color-mist: #f7fafb;
+  /* Ocean palette — luminous, airy aqua-teal */
+  --color-ocean: #0e97a8;
+  --color-ocean-dark: #0a7684;
+  --color-ocean-deeper: #075661;
+  --color-ocean-light: #e6f7f9;
+  --color-ocean-muted: #bfe8ec;
+  /* "sand" name preserved for existing components — now a bright aqua accent */
+  --color-sand: #4fc9d8;
+  --color-sand-light: #eafafb;
+  --color-navy: #0b2b3a;
+  --color-slate: #3a555f;
+  --color-mist: #f4fbfc;
   --color-white: #ffffff;
-  --font-display: "Playfair Display", serif;
-  --font-body: "DM Sans", sans-serif;
+
+  /* United Fishers — accent system (names kept "gold-*", now ocean-aqua) */
+  --color-gold-50:  #ecfbfd;
+  --color-gold-100: #cff2f6;
+  --color-gold-300: #7fe0ec;
+  --color-gold-500: #16a5b8;   /* primary aqua accent */
+  --color-gold-600: #0e8293;
+  --color-gold-700: #0a6373;
+  --color-gold-900: #063f49;
+
+  /* Deep ocean surface layers — teal-shifted */
+  --color-deep-900: #04222c;
+  --color-deep-800: #063341;
+  --color-deep-700: #0b3a4a;
+  --color-deep-600: #0f4a5c;
+  --color-deep-400: #1f6a7e;
+
+  /* Sophisticated neutrals */
+  --color-ink-950:  #06090c;
+  --color-ink-900:  #0e1216;
+  --color-ink-700:  #1f2933;
+  --color-ink-500:  #4a5866;
+  --color-ink-300:  #94a1ad;
+  --color-ink-100:  #e7ebef;
+  --color-ink-50:   #f5f7f9;
+
+  --font-display: var(--font-geist-sans), "Segoe UI", system-ui, sans-serif;
+  --font-body: var(--font-geist-sans), "Segoe UI", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* Metallic gold gradient — for text, hairlines, accents only. Use sparingly. */
+:root {
+  /* Luminous ocean-chrome sheen — replaces the old gold gradient */
+  --gold-metallic: linear-gradient(
+    135deg,
+    #0a7684 0%,
+    #22b8cf 28%,
+    #9af0fa 50%,
+    #16a5b8 72%,
+    #075661 100%
+  );
+  --gold-hairline: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(90, 224, 236, 0) 5%,
+    rgba(90, 224, 236, 0.7) 50%,
+    rgba(90, 224, 236, 0) 95%,
+    transparent 100%
+  );
+  --shadow-elev-1: 0 1px 2px rgba(6, 42, 51, 0.06), 0 2px 8px rgba(6, 42, 51, 0.04);
+  --shadow-elev-2: 0 4px 12px rgba(6, 42, 51, 0.08), 0 12px 32px rgba(6, 42, 51, 0.06);
+  --shadow-elev-3: 0 8px 24px rgba(6, 42, 51, 0.10), 0 24px 56px rgba(6, 42, 51, 0.08);
+  --shadow-gold-glow: 0 0 0 1px rgba(22, 165, 184, 0.28), 0 8px 28px rgba(14, 151, 168, 0.30);
 }
 
 html {
@@ -24,14 +78,30 @@ html {
 body {
   font-family: var(--font-body);
   color: var(--color-navy);
-  background: var(--color-white);
+  background:
+    radial-gradient(1200px 800px at 12% -8%, rgba(79, 201, 216, 0.10), transparent 60%),
+    radial-gradient(1000px 700px at 100% 0%, rgba(14, 151, 168, 0.07), transparent 55%),
+    var(--color-mist);
+  background-attachment: fixed;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
 }
 
 ::selection {
-  background: var(--color-ocean);
-  color: var(--color-white);
+  background: var(--color-gold-500);
+  color: var(--color-deep-900);
+}
+
+/* Global focus-visible baseline — gold ring for keyboard users */
+:focus-visible {
+  outline: 2px solid var(--color-gold-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Custom .gold-focus overrides the outline with an inset ring — remove default */
+.gold-focus:focus-visible {
+  outline: none;
 }
 
 @media (hover: none) {
@@ -182,7 +252,7 @@ body {
 }
 
 .glass-dark {
-  background: rgba(12, 35, 64, 0.6);
+  background: rgba(6, 51, 65, 0.6);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -221,10 +291,54 @@ body {
 }
 
 .text-gradient-gold {
-  background: linear-gradient(135deg, var(--color-sand), #dfc08a);
+  background: var(--gold-metallic);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  color: transparent;
+}
+
+/* Refined hairline separator in metallic gold — for premium accents */
+.gold-hairline {
+  position: relative;
+  height: 1px;
+  background: var(--gold-hairline);
+}
+
+.gold-hairline--solid {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-gold-500) 20%, var(--color-gold-300) 50%, var(--color-gold-500) 80%, transparent);
+}
+
+/* Premium gold focus ring — WCAG-friendly */
+.gold-focus:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-deep-900), 0 0 0 4px var(--color-gold-500);
+}
+
+/* Card hover: hairline gold border reveal — replaces the multi-color border-glow */
+.gold-border {
+  position: relative;
+  isolation: isolate;
+}
+.gold-border::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(90, 224, 236, 0.0), rgba(90, 224, 236, 0.55) 45%, rgba(22, 165, 184, 0.8) 55%, rgba(90, 224, 236, 0.0));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 400ms ease;
+  pointer-events: none;
+}
+.gold-border:hover::after,
+.gold-border:focus-within::after {
+  opacity: 1;
 }
 
 /* Hover card lift */
@@ -336,15 +450,23 @@ body {
   inset: -1px;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, var(--color-ocean), var(--color-sand), var(--color-ocean));
+  background: linear-gradient(
+    135deg,
+    rgba(90, 224, 236, 0.0) 0%,
+    rgba(90, 224, 236, 0.55) 40%,
+    rgba(22, 165, 184, 0.85) 55%,
+    rgba(90, 224, 236, 0.0) 100%
+  );
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
   -webkit-mask-composite: xor;
   opacity: 0;
   transition: opacity 0.5s ease;
+  pointer-events: none;
 }
 
-.border-glow:hover::before {
+.border-glow:hover::before,
+.border-glow:focus-within::before {
   opacity: 1;
 }
 
@@ -387,13 +509,17 @@ body {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: 0 0 30px var(--color-ocean), 0 0 60px rgba(14, 140, 155, 0.3);
+  box-shadow:
+    0 0 0 1px rgba(90, 224, 236, 0.35),
+    0 12px 32px rgba(14, 151, 168, 0.28),
+    0 0 40px rgba(90, 224, 236, 0.18);
   opacity: 0;
   transition: opacity 0.5s ease;
+  pointer-events: none;
 }
 
 .btn-glow:hover::after {
-  opacity: 0.4;
+  opacity: 1;
 }
 
 /* Ambient glow for floating elements */
@@ -542,19 +668,43 @@ body {
   transform: translateY(0);
 }
 
-.btn-sand {
-  background: var(--color-sand);
-  color: var(--color-navy);
+.btn-sand,
+.btn-gold {
+  position: relative;
+  background: var(--gold-metallic);
+  color: var(--color-deep-900);
   font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-elev-1);
+  isolation: isolate;
 }
 
-.btn-sand:hover {
-  background: var(--color-sand-light);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(200, 168, 110, 0.3);
+.btn-sand::before,
+.btn-gold::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 45%);
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 0;
 }
 
-.btn-sand:active {
+.btn-sand > *,
+.btn-gold > * {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-sand:hover,
+.btn-gold:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-gold-glow);
+}
+
+.btn-sand:active,
+.btn-gold:active {
   transform: translateY(0);
 }
 
@@ -590,4 +740,62 @@ body {
 
 .btn:hover .btn-icon {
   transform: translateX(3px);
+}
+
+/* Reduced motion: honor user OS setting to disable ambient animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .film-grain::after,
+  .animate-grain,
+  .animate-wave,
+  .animate-float,
+  .animate-shimmer,
+  .animate-pulse-glow,
+  .scroll-pulse {
+    animation: none !important;
+  }
+}
+
+/* Save-Data / low-bandwidth: server can't set this, but we apply it via [data-lowbw] on body */
+[data-lowbw="1"] .film-grain::after,
+[data-lowbw="1"] .animate-grain,
+[data-lowbw="1"] .animate-wave,
+[data-lowbw="1"] .animate-shimmer,
+[data-lowbw="1"] .animate-pulse-glow {
+  animation: none !important;
+}
+
+[data-lowbw="1"] .glass,
+[data-lowbw="1"] .glass-dark,
+[data-lowbw="1"] .glass-ocean {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Offline banner */
+.offline-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  z-index: 90;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(12, 35, 64, 0.92);
+  color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: none;
 }

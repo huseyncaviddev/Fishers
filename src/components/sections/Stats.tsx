@@ -3,6 +3,7 @@
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
+import { useI18n } from "@/i18n/I18nProvider";
 
 interface StatItemProps {
   value: number;
@@ -50,13 +51,14 @@ function AnimatedNumber({ value, suffix, label, inView, delay }: StatItemProps) 
 }
 
 const STATS = [
-  { value: 15, suffix: "+", label: "İllik Təcrübə" },
-  { value: 500, suffix: "T", label: "İllik İstehsal (ton)" },
-  { value: 50, suffix: "+", label: "Mütəxəssis" },
-  { value: 98, suffix: "%", label: "Müştəri Məmnuniyyəti" },
+  { value: 15, suffix: "+" },
+  { value: 500, suffix: "T" },
+  { value: 50, suffix: "+" },
+  { value: 98, suffix: "%" },
 ];
 
 export function Stats() {
+  const { t } = useI18n();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
   const containerRef = useRef(null);
@@ -97,10 +99,10 @@ export function Stats() {
             className="w-16 h-[1px] bg-sand mx-auto mb-6 origin-center"
           />
           <span className="text-sand/70 font-medium text-xs tracking-[0.3em] uppercase">
-            Nailiyyətlərimiz
+            {t.stats.eyebrow}
           </span>
           <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-6xl font-bold text-white">
-            Rəqəmlərlə <span className="text-gradient-gold">Biz</span>
+            {t.stats.titleLead} <span className="text-gradient-gold">{t.stats.titleAccent}</span>
           </h2>
         </motion.div>
 
@@ -115,7 +117,7 @@ export function Stats() {
               <AnimatedNumber
                 value={s.value}
                 suffix={s.suffix}
-                label={s.label}
+                label={t.stats.items[i].label}
                 inView={inView}
                 delay={250 * i}
               />

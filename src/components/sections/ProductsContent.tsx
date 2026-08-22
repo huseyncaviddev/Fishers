@@ -4,18 +4,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState } from "react";
-import { PRODUCTS, PRODUCT_CATEGORIES } from "@/data/products";
+import { PRODUCTS, CATEGORY_FILTERS, type CategoryFilterKey } from "@/data/products";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { useI18n } from "@/i18n/I18nProvider";
 
 export function ProductsContent() {
+  const { t } = useI18n();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-50px" });
-  const [activeCategory, setActiveCategory] = useState<string>("Hamısı");
+  const [activeCategory, setActiveCategory] = useState<CategoryFilterKey>("all");
 
   const filtered =
-    activeCategory === "Hamısı"
+    activeCategory === "all"
       ? PRODUCTS
-      : PRODUCTS.filter((p) => p.category === activeCategory);
+      : PRODUCTS.filter((p) => p.categoryKey === activeCategory);
 
   return (
     <PageTransition>
@@ -27,7 +29,7 @@ export function ProductsContent() {
             transition={{ duration: 0.6 }}
             className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-14"
           >
-            {PRODUCT_CATEGORIES.map((cat) => (
+            {CATEGORY_FILTERS.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
@@ -37,7 +39,7 @@ export function ProductsContent() {
                     : "bg-mist text-slate hover:bg-ocean-light hover:text-ocean"
                 }`}
               >
-                {cat}
+                {t.products.categories[cat]}
               </button>
             ))}
           </motion.div>
@@ -47,7 +49,9 @@ export function ProductsContent() {
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
           >
             <AnimatePresence mode="popLayout">
-              {filtered.map((product, i) => (
+              {filtered.map((product, i) => {
+                const item = t.products.items[product.slug];
+                return (
                 <motion.div
                   key={product.slug}
                   layout
@@ -63,7 +67,7 @@ export function ProductsContent() {
                     <div className="relative aspect-[4/3] overflow-hidden">
                       <Image
                         src={product.image}
-                        alt={product.name}
+                        alt={item.name}
                         fill
                         className="object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-110"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -73,7 +77,7 @@ export function ProductsContent() {
 
                       <div className="absolute top-4 left-4">
                         <span className="px-3 py-1 bg-white/15 backdrop-blur-md text-white text-[11px] font-medium rounded-full border border-white/20">
-                          {product.category}
+                          {t.products.categories[product.categoryKey]}
                         </span>
                       </div>
 
@@ -91,21 +95,21 @@ export function ProductsContent() {
 
                       <div className="absolute bottom-0 left-0 right-0 p-5">
                         <p className="text-white/70 text-xs font-medium tracking-widest uppercase">
-                          {product.type}
+                          {item.type}
                         </p>
                       </div>
                     </div>
 
                     <div className="p-5 sm:p-6">
                       <h3 className="font-display text-lg sm:text-xl font-semibold text-navy group-hover:text-ocean transition-colors duration-300">
-                        {product.name}
+                        {item.name}
                       </h3>
                       <p className="mt-2 text-slate/60 text-sm leading-relaxed line-clamp-2">
-                        {product.shortDesc}
+                        {item.shortDesc}
                       </p>
 
                       <div className="mt-4 flex flex-wrap gap-1.5">
-                        {product.features.slice(0, 3).map((feat, j) => (
+                        {item.features.slice(0, 3).map((feat, j) => (
                           <span
                             key={j}
                             className="px-2.5 py-0.5 bg-ocean/6 text-ocean/80 text-[11px] rounded-full font-medium"
@@ -118,7 +122,7 @@ export function ProductsContent() {
                       </div>
 
                       <div className="mt-5 flex items-center gap-2 text-ocean font-medium text-sm group-hover:gap-3 transition-all duration-300">
-                        <span>Ətraflı</span>
+                        <span>{t.products.details}</span>
                         <svg
                           className="w-4 h-4"
                           fill="none"
@@ -132,7 +136,8 @@ export function ProductsContent() {
                     </div>
                   </Link>
                 </motion.div>
-              ))}
+                );
+              })}
             </AnimatePresence>
           </motion.div>
         </div>

@@ -317,8 +317,8 @@ export function Navbar() {
                     <div />
                     <div className="text-white/50 text-sm space-y-2">
                       <p className="font-medium text-white/80 text-base">{t.nav.contactHeading}</p>
-                      <p>+994 12 345 67 89</p>
-                      <p>info@fishers.az</p>
+                      <p><a href="tel:+994519115511" className="hover:text-white transition-colors">+994 51 911 55 11</a></p>
+                      <p><a href="mailto:azerbaijanaquaculture@gmail.com" className="hover:text-white transition-colors">azerbaijanaquaculture@gmail.com</a></p>
                       <p className="pt-2">{t.contactPreview.info[0].text}</p>
                       <p>{t.footer.addressLines[2]}</p>
                       <div className="flex gap-3 pt-4">

@@ -74,10 +74,14 @@ export function GalleryContent() {
   const [activeCategory, setActiveCategory] = useState<GalleryCategoryKey>("all");
   const [selected, setSelected] = useState<number | null>(null);
 
+  // Guard the index lookup: if a locale's `media` list is ever shorter than the
+  // curated titleIdx range, fall back to the moments caption instead of crashing
+  // the whole gallery route with `Cannot read properties of undefined`.
   const titleOf = (item: MediaItem) =>
-    item.titleIdx != null ? gc.media[item.titleIdx].title : gc.momentsCaption;
+    (item.titleIdx != null ? gc.media[item.titleIdx]?.title : undefined) ??
+    gc.momentsCaption;
   const descOf = (item: MediaItem) =>
-    item.titleIdx != null ? gc.media[item.titleIdx].desc : "";
+    (item.titleIdx != null ? gc.media[item.titleIdx]?.desc : undefined) ?? "";
 
   const filtered =
     activeCategory === "all"

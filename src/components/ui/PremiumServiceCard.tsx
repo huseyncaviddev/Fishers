@@ -9,6 +9,7 @@ import {
   useTransform,
   useMotionTemplate,
 } from "framer-motion";
+import { useI18n } from "@/i18n/I18nProvider";
 
 interface PremiumServiceCardProps {
   icon: ReactNode;
@@ -18,6 +19,7 @@ interface PremiumServiceCardProps {
 }
 
 export function PremiumServiceCard({ icon, title, desc, href = "/contact" }: PremiumServiceCardProps) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
 
@@ -94,7 +96,7 @@ export function PremiumServiceCard({ icon, title, desc, href = "/contact" }: Pre
             href={href}
             className="mt-5 inline-flex items-center gap-2 text-ocean font-medium text-sm hover:text-ocean-dark transition-colors cursor-pointer"
           >
-            <span>Ətraflı</span>
+            <span>{t.common.details}</span>
             <motion.svg
               animate={{ x: hovered ? 6 : 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}

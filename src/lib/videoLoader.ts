@@ -2,7 +2,6 @@
 
 import {
   getNetworkSnapshot,
-  isLowBandwidth,
   shouldPreloadMedia,
   subscribeNetwork,
   type NetworkSnapshot,
@@ -96,7 +95,6 @@ function pickSorted(elements: Iterable<HTMLVideoElement>): VideoHandle[] {
 
 function schedule() {
   const net = currentNet();
-  const low = isLowBandwidth(net);
   const canPreload = shouldPreloadMedia(net);
 
   // Downgrade non-visible active videos
@@ -107,13 +105,12 @@ function schedule() {
     }
   });
 
-  // On low bandwidth, drop everything to poster and stop
-  if (low) {
+  // Offline is the only hard stop: nothing can stream, so show posters.
+  // On any online connection (incl. 2g/slow) the visible video still plays —
+  // it simply buffers before starting, rather than being refused.
+  if (!net.online) {
     registered.forEach((h) => {
-      if (h.state !== "POSTER" && h.state !== "IDLE") {
-        if (!visibleSet.has(h.video)) releaseSrc(h);
-        else if (net.klass === "OFFLINE") releaseSrc(h);
-      }
+      if (!visibleSet.has(h.video)) releaseSrc(h);
       if (h.state === "IDLE") h.state = "POSTER";
     });
     return;

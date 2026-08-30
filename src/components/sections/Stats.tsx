@@ -22,19 +22,22 @@ function AnimatedNumber({ value, suffix, label, inView, delay }: StatItemProps) 
     const steps = 60;
     const increment = value / steps;
     let current = 0;
+    let interval: ReturnType<typeof setInterval> | null = null;
     const timer = setTimeout(() => {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         current += increment;
         if (current >= value) {
           setDisplay(value);
-          clearInterval(interval);
+          if (interval) clearInterval(interval);
         } else {
           setDisplay(Math.floor(current));
         }
       }, duration / steps);
-      return () => clearInterval(interval);
     }, delay);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (interval) clearInterval(interval);
+    };
   }, [inView, value, delay]);
 
   return (

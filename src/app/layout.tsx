@@ -119,6 +119,14 @@ export default function RootLayout({
   return (
     <html lang="az" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <head>
+        {/* Warm only the first hero poster (the initial hero visual) — never a
+            video, so the hero paints instantly without competing for bandwidth. */}
+        <link
+          rel="preload"
+          as="image"
+          href="/images/posters/hero-1.jpg"
+          fetchPriority="high"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

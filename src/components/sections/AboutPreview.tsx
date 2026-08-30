@@ -92,13 +92,10 @@ export function AboutPreview() {
             initial={{ opacity: 0, x: 50 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.9, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-            className="relative about-showcase"
+            className="relative"
           >
-            <span className="about-showcase-bloom" aria-hidden />
-            <span className="about-showcase-grid" aria-hidden />
-
-            <motion.div style={{ y: imgY }} className="about-showcase-frame">
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden relative img-hover-zoom">
+            <motion.div style={{ y: imgY }} className="relative">
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden relative img-hover-zoom border-glow depth-lg">
                 <SmartVideo
                   src="/videos/about-preview.mp4"
                   poster="/videos/posters/about-preview.jpg"
@@ -106,11 +103,6 @@ export function AboutPreview() {
                 <div className="absolute inset-0 z-[3] bg-gradient-to-tr from-ocean/15 via-transparent to-transparent" />
                 <div className="absolute inset-0 z-[3] pointer-events-none about-showcase-sheen" />
               </div>
-
-              <span className="about-showcase-corner about-showcase-corner--tl" aria-hidden />
-              <span className="about-showcase-corner about-showcase-corner--tr" aria-hidden />
-              <span className="about-showcase-corner about-showcase-corner--bl" aria-hidden />
-              <span className="about-showcase-corner about-showcase-corner--br" aria-hidden />
 
               <motion.div
                 initial={{ opacity: 0, y: 16, scale: 0.9 }}

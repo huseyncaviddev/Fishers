@@ -189,6 +189,7 @@ export const en: Dictionary = {
       "Subscribe to our newsletter to stay up to date with the latest updates",
     newsletterPlaceholder: "email@example.com",
     newsletterButton: "Subscribe",
+    partnerTiles: ["International", "Exhibition", "Media", "Projects", "Network"],
   },
   contactPreview: {
     eyebrow: "Contact",
@@ -197,13 +198,13 @@ export const en: Dictionary = {
     titleTail: "With Us",
     body: "Reach out to us for your questions, suggestions, or partnership opportunities. Our professional team is ready to help you.",
     info: [
-      { label: "Address", text: "Baku, Narimanov district" },
-      { label: "Phone", text: "+994 12 345 67 89" },
-      { label: "Email", text: "info@fishers.az" },
+      { label: "Address", text: "Neftchala, Kura River side" },
+      { label: "Phone", text: "+994 51 911 55 11" },
+      { label: "Email", text: "azerbaijanaquaculture@gmail.com" },
     ],
     cta: "Go to Contact Page",
     hqName: "United Fishers HQ",
-    hqLocation: "Baku, Azerbaijan",
+    hqLocation: "Neftchala, Azerbaijan",
   },
   footer: {
     ctaTitleLead: "Have a",
@@ -214,7 +215,7 @@ export const en: Dictionary = {
     colInfo: "Information",
     infoItems: ["Certificates", "Sustainability", "Partnership", "News"],
     colAddress: "Our Address",
-    addressLines: ["Narimanov district", "Baku city", "Azerbaijan"],
+    addressLines: ["Kura River side", "Neftchala", "Azerbaijan"],
     colContact: "Contact",
     partnersLabel: "For partners:",
     rights: "All rights reserved.",
@@ -411,6 +412,7 @@ export const en: Dictionary = {
       { num: "4.5", label: "Avg. Tenure (yrs)" },
     ],
     cultureBadge: "50+ Professionals",
+    cultureTiles: ["Team", "Conference", "Laboratory", "Fieldwork"],
     structureEyebrow: "Structure",
     structureTitle: "Our Departments",
     departments: [
@@ -429,15 +431,15 @@ export const en: Dictionary = {
     info: [
       {
         title: "Address",
-        lines: ["Baku, Azerbaijan", "Narimanov district"],
+        lines: ["Neftchala, Azerbaijan", "Kura River side"],
       },
       {
         title: "Phone",
-        lines: ["+994 12 345 67 89", "+994 50 123 45 67"],
+        lines: ["+994 51 911 55 11"],
       },
       {
         title: "Email",
-        lines: ["info@fishers.az", "sales@fishers.az"],
+        lines: ["azerbaijanaquaculture@gmail.com"],
       },
       {
         title: "Working Hours",

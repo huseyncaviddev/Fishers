@@ -152,7 +152,7 @@ export function ContactContent() {
             >
               <div className="flex-1 rounded-xl sm:rounded-2xl overflow-hidden min-h-[300px] sm:min-h-[400px] bg-ocean-light relative shadow-xl shadow-ocean/10">
                 <iframe
-                  src="https://maps.google.com/maps?q=Neftchala%20Rayonu%2C%20Azerbaijan&t=&z=11&ie=UTF8&iwloc=&output=embed"
+                  src="https://maps.google.com/maps?q=Neftchala%2C%20Azerbaijan&t=&z=11&ie=UTF8&iwloc=&output=embed"
                   className="w-full h-full absolute inset-0"
                   style={{ border: 0 }}
                   allowFullScreen

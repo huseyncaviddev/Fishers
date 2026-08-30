@@ -187,6 +187,7 @@ export const az = {
       "Ən son yeniliklərdən xəbərdar olmaq üçün bülletenimizə abunə olun",
     newsletterPlaceholder: "email@example.com",
     newsletterButton: "Abunə Ol",
+    partnerTiles: ["Beynəlxalq", "Sərgi", "Media", "Layihələr", "Şəbəkə"],
   },
   contactPreview: {
     eyebrow: "Əlaqə",
@@ -195,13 +196,13 @@ export const az = {
     titleTail: "Saxlayın",
     body: "Suallarınız, təklifləriniz və ya əməkdaşlıq imkanları üçün bizimlə əlaqə saxlayın. Peşəkar komandamız sizə kömək etməyə hazırdır.",
     info: [
-      { label: "Ünvan", text: "Bakı şəhəri, Nərimanov rayonu" },
-      { label: "Telefon", text: "+994 12 345 67 89" },
-      { label: "E-poçt", text: "info@fishers.az" },
+      { label: "Ünvan", text: "Neftçala, Kür çayı sahili" },
+      { label: "Telefon", text: "+994 51 911 55 11" },
+      { label: "E-poçt", text: "azerbaijanaquaculture@gmail.com" },
     ],
     cta: "Əlaqə Səhifəsinə Keç",
     hqName: "United Fishers HQ",
-    hqLocation: "Bakı, Azərbaycan",
+    hqLocation: "Neftçala, Azərbaycan",
   },
   footer: {
     ctaTitleLead: "Layihəniz",
@@ -212,7 +213,7 @@ export const az = {
     colInfo: "Məlumat",
     infoItems: ["Sertifikatlar", "Davamlılıq", "Tərəfdaşlıq", "Xəbərlər"],
     colAddress: "Ünvanımız",
-    addressLines: ["Nərimanov rayonu", "Bakı şəhəri", "Azərbaycan"],
+    addressLines: ["Kür çayı sahili", "Neftçala", "Azərbaycan"],
     colContact: "Əlaqə",
     partnersLabel: "Tərəfdaşlar üçün:",
     rights: "Bütün hüquqlar qorunur.",
@@ -409,6 +410,7 @@ export const az = {
       { num: "4.5", label: "Orta Staj (il)" },
     ],
     cultureBadge: "50+ Peşəkar",
+    cultureTiles: ["Komanda", "Konfrans", "Laboratoriya", "Sahə İşi"],
     structureEyebrow: "Struktur",
     structureTitle: "Şöbələrimiz",
     departments: [
@@ -427,15 +429,15 @@ export const az = {
     info: [
       {
         title: "Ünvan",
-        lines: ["Bakı şəhəri, Azərbaycan", "Nərimanov rayonu"],
+        lines: ["Neftçala, Azərbaycan", "Kür çayı sahili"],
       },
       {
         title: "Telefon",
-        lines: ["+994 12 345 67 89", "+994 50 123 45 67"],
+        lines: ["+994 51 911 55 11"],
       },
       {
         title: "E-poçt",
-        lines: ["info@fishers.az", "sales@fishers.az"],
+        lines: ["azerbaijanaquaculture@gmail.com"],
       },
       {
         title: "İş Saatları",

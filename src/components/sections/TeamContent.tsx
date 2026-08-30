@@ -6,29 +6,26 @@ import Image from "next/image";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { useI18n } from "@/i18n/I18nProvider";
 
+// Captions come from i18n (t.teamContent.cultureTiles) so they translate.
 const CULTURE_TILES = [
   {
     src: "/images/culture/team-gathering.jpg",
     alt: "United Fishers komandası birlikdə",
-    label: "Komanda",
     area: "tile-a",
   },
   {
     src: "/images/culture/conference.jpg",
     alt: "Peşəkar konfrans və müzakirələr",
-    label: "Konfrans",
     area: "tile-b",
   },
   {
     src: "/images/culture/laboratory.jpg",
     alt: "Laboratoriya və keyfiyyət nəzarəti",
-    label: "Laboratoriya",
     area: "tile-c",
   },
   {
     src: "/images/culture/fieldwork.jpg",
     alt: "Sahədə iş və istehsal",
-    label: "Sahə İşi",
     area: "tile-d",
   },
 ] as const;
@@ -171,7 +168,7 @@ export function TeamContent() {
                     <span className="culture-tile-veil" aria-hidden />
                     <figcaption className="culture-tile-caption">
                       <span className="culture-tile-dot" aria-hidden />
-                      {tile.label}
+                      {tc.cultureTiles[i]}
                     </figcaption>
                   </motion.figure>
                 ))}

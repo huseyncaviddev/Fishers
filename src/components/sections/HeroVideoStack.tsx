@@ -50,6 +50,16 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
   const [readyKey, setReadyKey] = useState<string | null>(null);
   const activeReady = readyKey === activeKey;
 
+  // Which slides have a genuinely usable video frame right now. The poster layer
+  // always sits underneath; a slide's <video> only fades to opacity 1 once it is
+  // in this set, and drops back to the poster the moment the clip is unloaded or
+  // fails — so a slide is always a complete composed unit, never a raw image.
+  const [revealed, setRevealed] = useState<boolean[]>(() => slides.map(() => false));
+  const reveal = (i: number) =>
+    setRevealed((r) => (r[i] ? r : r.map((v, j) => (j === i ? true : v))));
+  const hide = (i: number) =>
+    setRevealed((r) => (r[i] ? r.map((v, j) => (j === i ? false : v)) : r));
+
   const clearTimer = (i: number) => {
     const t = timersRef.current.get(i);
     if (t) {
@@ -116,12 +126,14 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
       if (role === "idle") {
         if (i !== current) resetRecovery(i);
         unload(video);
+        hide(i); // src gone → show poster again, never a stale/black frame
         return;
       }
 
       const src = resolveSrc(i);
       if (!src) {
         unload(video);
+        hide(i);
         return;
       }
 
@@ -162,6 +174,7 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
     const markReady = () => {
       clearTimer(i);
       setReadyKey(activeKey);
+      reveal(i); // fade the video in over its poster
     };
 
     const armStallWatchdog = () => {
@@ -191,6 +204,7 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
       }
       // Already lightweight and still failing: fall back to the poster.
       unload(video);
+      hide(i);
     };
 
     const retry = () => {
@@ -249,21 +263,27 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
   return (
     <>
       {slides.map((slide, i) => (
-        <video
+        <div
           key={slide.video}
-          ref={(el) => {
-            videoRefs.current[i] = el;
-          }}
-          muted
-          loop
-          playsInline
-          preload="none"
-          poster={slide.poster}
           aria-hidden="true"
-          className={`hero-slide absolute inset-0 w-full h-full object-cover ${
-            i === current ? "is-active" : ""
-          }`}
-        />
+          className={`hero-slide ${i === current ? "is-active" : ""}`}
+        >
+          {/* No poster photo — a clean deep-ocean surface (see .hero-slide in
+              globals.css) sits underneath, so before/without a video the slide is
+              a calm marine gradient, never a still image and never a black frame.
+              The video fades in on top once it is genuinely ready. */}
+          <video
+            ref={(el) => {
+              videoRefs.current[i] = el;
+            }}
+            muted
+            loop
+            playsInline
+            preload="none"
+            aria-hidden="true"
+            className={`hero-slide__video ${revealed[i] ? "is-ready" : ""}`}
+          />
+        </div>
       ))}
     </>
   );

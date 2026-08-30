@@ -108,10 +108,10 @@ export function Footer() {
                 {t.footer.colContact}
               </h4>
               <div className="mt-5 text-sm text-white/40 space-y-1 font-light">
-                <p>+994 12 345 67 89</p>
-                <p>info@fishers.az</p>
+                <p><a href="tel:+994519115511" className="hover:text-white transition-colors duration-300">+994 51 911 55 11</a></p>
+                <p><a href="mailto:azerbaijanaquaculture@gmail.com" className="hover:text-white transition-colors duration-300">azerbaijanaquaculture@gmail.com</a></p>
                 <p className="pt-2 text-white/20">{t.footer.partnersLabel}</p>
-                <p>partners@fishers.az</p>
+                <p><a href="mailto:azerbaijanaquaculture@gmail.com" className="hover:text-white transition-colors duration-300">azerbaijanaquaculture@gmail.com</a></p>
               </div>
             </div>
 

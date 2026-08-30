@@ -7,12 +7,14 @@ import { useRef } from "react";
 import { TextReveal } from "@/components/ui/TextReveal";
 import { useI18n } from "@/i18n/I18nProvider";
 
+// Captions come from i18n (t.cta.partnerTiles) so they translate; alt text stays
+// descriptive per image.
 const PARTNER_TILES = [
-  { src: "/images/partnership/handshake.jpg", alt: "WIPO əməkdaşlıq təlimi", label: "Beynəlxalq", area: "ptile-a" },
-  { src: "/images/partnership/exhibition.jpg", alt: "Akvakultura sərgisi", label: "Sərgi", area: "ptile-b" },
-  { src: "/images/partnership/media.jpg", alt: "Media və mətbuat", label: "Media", area: "ptile-c" },
-  { src: "/images/partnership/launch.jpg", alt: "Balıq buraxılışı mərasimi", label: "Layihələr", area: "ptile-d" },
-  { src: "/images/partnership/network.jpg", alt: "Qlobal tərəfdaşlıq şəbəkəsi", label: "Şəbəkə", area: "ptile-e" },
+  { src: "/images/partnership/handshake.jpg", alt: "WIPO əməkdaşlıq təlimi", area: "ptile-a" },
+  { src: "/images/partnership/exhibition.jpg", alt: "Akvakultura sərgisi", area: "ptile-b" },
+  { src: "/images/partnership/media.jpg", alt: "Media və mətbuat", area: "ptile-c" },
+  { src: "/images/partnership/launch.jpg", alt: "Balıq buraxılışı mərasimi", area: "ptile-d" },
+  { src: "/images/partnership/network.jpg", alt: "Qlobal tərəfdaşlıq şəbəkəsi", area: "ptile-e" },
 ] as const;
 
 export function CTA() {
@@ -93,7 +95,7 @@ export function CTA() {
                     <span className="partner-tile-veil" aria-hidden />
                     <figcaption className="partner-tile-caption">
                       <span className="partner-tile-dot" aria-hidden />
-                      {tile.label}
+                      {t.cta.partnerTiles[i]}
                     </figcaption>
                   </motion.figure>
                 ))}

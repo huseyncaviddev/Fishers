@@ -97,13 +97,14 @@ const jsonLd = {
   logo: `${SITE_URL}/images/7.jpg`,
   address: {
     "@type": "PostalAddress",
-    addressLocality: "Bakı",
-    addressRegion: "Nərimanov",
+    addressLocality: "Neftçala",
+    addressRegion: "Neftçala",
     addressCountry: "AZ",
   },
   contactPoint: {
     "@type": "ContactPoint",
-    telephone: "+994-12-345-67-89",
+    telephone: "+994-51-911-55-11",
+    email: "azerbaijanaquaculture@gmail.com",
     contactType: "customer service",
     areaServed: "AZ",
     availableLanguage: ["az", "en"],
@@ -119,14 +120,6 @@ export default function RootLayout({
   return (
     <html lang="az" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <head>
-        {/* Warm only the first hero poster (the initial hero visual) — never a
-            video, so the hero paints instantly without competing for bandwidth. */}
-        <link
-          rel="preload"
-          as="image"
-          href="/images/posters/hero-1.jpg"
-          fetchPriority="high"
-        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

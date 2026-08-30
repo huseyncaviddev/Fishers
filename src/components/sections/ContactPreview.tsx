@@ -108,7 +108,7 @@ export function ContactPreview() {
           >
             <div className="rounded-2xl overflow-hidden h-[350px] sm:h-[450px] shadow-2xl shadow-ocean/10">
               <iframe
-                src="https://maps.google.com/maps?q=Neftchala%20Rayonu%2C%20Azerbaijan&t=&z=11&ie=UTF8&iwloc=&output=embed"
+                src="https://maps.google.com/maps?q=Neftchala%2C%20Azerbaijan&t=&z=11&ie=UTF8&iwloc=&output=embed"
                 className="w-full h-full"
                 style={{ border: 0 }}
                 allowFullScreen

@@ -189,6 +189,7 @@ export const ru: Dictionary = {
       "Подпишитесь на нашу рассылку, чтобы быть в курсе последних новостей",
     newsletterPlaceholder: "email@example.com",
     newsletterButton: "Подписаться",
+    partnerTiles: ["Международный", "Выставка", "Медиа", "Проекты", "Сеть"],
   },
   contactPreview: {
     eyebrow: "Контакты",
@@ -197,13 +198,13 @@ export const ru: Dictionary = {
     titleTail: "",
     body: "Свяжитесь с нами по вопросам, предложениям или возможностям сотрудничества. Наша профессиональная команда готова вам помочь.",
     info: [
-      { label: "Адрес", text: "г. Баку, Наримановский район" },
-      { label: "Телефон", text: "+994 12 345 67 89" },
-      { label: "Эл. почта", text: "info@fishers.az" },
+      { label: "Адрес", text: "Нефтчала, берег реки Кура" },
+      { label: "Телефон", text: "+994 51 911 55 11" },
+      { label: "Эл. почта", text: "azerbaijanaquaculture@gmail.com" },
     ],
     cta: "Перейти на страницу контактов",
     hqName: "United Fishers HQ",
-    hqLocation: "Баку, Азербайджан",
+    hqLocation: "Нефтчала, Азербайджан",
   },
   footer: {
     ctaTitleLead: "Есть",
@@ -214,7 +215,7 @@ export const ru: Dictionary = {
     colInfo: "Информация",
     infoItems: ["Сертификаты", "Устойчивость", "Партнёрство", "Новости"],
     colAddress: "Наш адрес",
-    addressLines: ["Наримановский район", "город Баку", "Азербайджан"],
+    addressLines: ["Берег реки Кура", "Нефтчала", "Азербайджан"],
     colContact: "Контакты",
     partnersLabel: "Для партнёров:",
     rights: "Все права защищены.",
@@ -411,6 +412,7 @@ export const ru: Dictionary = {
       { num: "4.5", label: "Средний стаж (лет)" },
     ],
     cultureBadge: "50+ профессионалов",
+    cultureTiles: ["Команда", "Конференция", "Лаборатория", "Полевая работа"],
     structureEyebrow: "Структура",
     structureTitle: "Наши отделы",
     departments: [
@@ -429,15 +431,15 @@ export const ru: Dictionary = {
     info: [
       {
         title: "Адрес",
-        lines: ["г. Баку, Азербайджан", "Наримановский район"],
+        lines: ["Нефтчала, Азербайджан", "Берег реки Кура"],
       },
       {
         title: "Телефон",
-        lines: ["+994 12 345 67 89", "+994 50 123 45 67"],
+        lines: ["+994 51 911 55 11"],
       },
       {
         title: "Эл. почта",
-        lines: ["info@fishers.az", "sales@fishers.az"],
+        lines: ["azerbaijanaquaculture@gmail.com"],
       },
       {
         title: "Часы работы",

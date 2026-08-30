@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { SmartVideo } from "@/components/ui/SmartVideo";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -92,50 +92,40 @@ export function AboutPreview() {
             initial={{ opacity: 0, x: 50 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.9, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-            className="relative"
+            className="relative about-showcase"
           >
-            <motion.div
-              style={{ y: imgY }}
-              className="relative"
-            >
+            <span className="about-showcase-bloom" aria-hidden />
+            <span className="about-showcase-grid" aria-hidden />
+
+            <motion.div style={{ y: imgY }} className="about-showcase-frame">
               <div className="aspect-[4/3] rounded-2xl overflow-hidden relative img-hover-zoom">
-                <Image
-                  src="/images/1.jpg"
-                  alt="United Fishers aquaculture facility VIP tour"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
+                <SmartVideo
+                  src="/videos/about-preview.mp4"
+                  poster="/videos/posters/about-preview.jpg"
                 />
-                <div className="absolute inset-0 bg-gradient-to-tr from-ocean/10 to-transparent" />
+                <div className="absolute inset-0 z-[3] bg-gradient-to-tr from-ocean/15 via-transparent to-transparent" />
+                <div className="absolute inset-0 z-[3] pointer-events-none about-showcase-sheen" />
               </div>
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={inView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ delay: 0.6, duration: 0.7 }}
-                className="absolute -bottom-8 -left-4 sm:-bottom-10 sm:-left-8 w-[140px] h-[100px] sm:w-[200px] sm:h-[140px] rounded-xl overflow-hidden shadow-2xl ring-4 ring-white"
-              >
-                <Image
-                  src="/images/4.jpg"
-                  alt="Indoor RAS facility"
-                  fill
-                  className="object-cover"
-                  sizes="200px"
-                />
-              </motion.div>
+              <span className="about-showcase-corner about-showcase-corner--tl" aria-hidden />
+              <span className="about-showcase-corner about-showcase-corner--tr" aria-hidden />
+              <span className="about-showcase-corner about-showcase-corner--bl" aria-hidden />
+              <span className="about-showcase-corner about-showcase-corner--br" aria-hidden />
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 0.7, duration: 0.6 }}
-                className="absolute -top-4 -right-2 sm:-top-6 sm:-right-6 glass-ocean rounded-xl p-4 sm:p-5 shadow-xl"
+                initial={{ opacity: 0, y: 16, scale: 0.9 }}
+                animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                transition={{ delay: 0.75, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="about-showcase-badge about-showcase-badge--metric"
               >
-                <div className="font-display text-xl sm:text-2xl font-bold text-ocean">
-                  {t.aboutPreview.badgeValue}
+                <div className="about-showcase-metric-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </div>
-                <div className="text-xs sm:text-sm text-ocean-dark/70 mt-1 font-light">
-                  {t.aboutPreview.badgeLabel}
+                <div className="about-showcase-metric-body">
+                  <span className="about-showcase-metric-value">{t.aboutPreview.badgeValue}</span>
+                  <span className="about-showcase-metric-label">{t.aboutPreview.badgeLabel}</span>
                 </div>
               </motion.div>
             </motion.div>

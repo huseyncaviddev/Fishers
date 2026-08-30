@@ -7,6 +7,14 @@ import { useRef } from "react";
 import { TextReveal } from "@/components/ui/TextReveal";
 import { useI18n } from "@/i18n/I18nProvider";
 
+const PARTNER_TILES = [
+  { src: "/images/partnership/handshake.jpg", alt: "WIPO əməkdaşlıq təlimi", label: "Beynəlxalq", area: "ptile-a" },
+  { src: "/images/partnership/exhibition.jpg", alt: "Akvakultura sərgisi", label: "Sərgi", area: "ptile-b" },
+  { src: "/images/partnership/media.jpg", alt: "Media və mətbuat", label: "Media", area: "ptile-c" },
+  { src: "/images/partnership/launch.jpg", alt: "Balıq buraxılışı mərasimi", label: "Layihələr", area: "ptile-d" },
+  { src: "/images/partnership/network.jpg", alt: "Qlobal tərəfdaşlıq şəbəkəsi", label: "Şəbəkə", area: "ptile-e" },
+] as const;
+
 export function CTA() {
   const { t } = useI18n();
   const ref = useRef(null);
@@ -62,37 +70,34 @@ export function CTA() {
               initial={{ opacity: 0, x: 40 }}
               animate={inView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              className="grid grid-cols-2 gap-3 sm:gap-4"
+              className="relative"
             >
-              <motion.div style={{ scale: imgScale, y: imgY }} className="aspect-[3/4] rounded-xl overflow-hidden border-glow">
-                <Image
-                  src="/images/16.jpg"
-                  alt="United Fishers team member"
-                  fill
-                  className="object-cover !relative"
-                  sizes="200px"
-                />
+              <motion.div style={{ scale: imgScale, y: imgY }} className="partner-mosaic">
+                {PARTNER_TILES.map((tile, i) => (
+                  <motion.figure
+                    key={tile.src}
+                    initial={{ opacity: 0, y: 20, scale: 0.96 }}
+                    animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                    transition={{ duration: 0.7, delay: 0.3 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ y: -5 }}
+                    className={`partner-tile ${tile.area}`}
+                  >
+                    <Image
+                      src={tile.src}
+                      alt={tile.alt}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 50vw, 22vw"
+                    />
+                    <span className="partner-tile-sheen" aria-hidden />
+                    <span className="partner-tile-veil" aria-hidden />
+                    <figcaption className="partner-tile-caption">
+                      <span className="partner-tile-dot" aria-hidden />
+                      {tile.label}
+                    </figcaption>
+                  </motion.figure>
+                ))}
               </motion.div>
-              <div className="space-y-3 sm:space-y-4 pt-8">
-                <div className="aspect-square rounded-xl overflow-hidden img-hover-zoom border-glow">
-                  <Image
-                    src="/images/12.jpg"
-                    alt="RAS facility"
-                    fill
-                    className="object-cover !relative"
-                    sizes="200px"
-                  />
-                </div>
-                <div className="aspect-[4/3] rounded-xl overflow-hidden img-hover-zoom border-glow">
-                  <Image
-                    src="/images/5.jpg"
-                    alt="Outdoor tanks"
-                    fill
-                    className="object-cover !relative"
-                    sizes="200px"
-                  />
-                </div>
-              </div>
             </motion.div>
           </div>
         </div>

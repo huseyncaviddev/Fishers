@@ -6,7 +6,32 @@ import Image from "next/image";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { useI18n } from "@/i18n/I18nProvider";
 
-const DEPT_COUNTS = [28, 8, 6, 5, 3];
+const CULTURE_TILES = [
+  {
+    src: "/images/culture/team-gathering.jpg",
+    alt: "United Fishers komandası birlikdə",
+    label: "Komanda",
+    area: "tile-a",
+  },
+  {
+    src: "/images/culture/conference.jpg",
+    alt: "Peşəkar konfrans və müzakirələr",
+    label: "Konfrans",
+    area: "tile-b",
+  },
+  {
+    src: "/images/culture/laboratory.jpg",
+    alt: "Laboratoriya və keyfiyyət nəzarəti",
+    label: "Laboratoriya",
+    area: "tile-c",
+  },
+  {
+    src: "/images/culture/fieldwork.jpg",
+    alt: "Sahədə iş və istehsal",
+    label: "Sahə İşi",
+    area: "tile-d",
+  },
+] as const;
 
 function getInitials(name: string): string {
   return name
@@ -125,30 +150,31 @@ export function TeamContent() {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="relative"
             >
-              <div className="aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden relative border-glow">
-                <motion.div style={{ y: cultureImgY }} className="absolute inset-[-10%] w-[120%] h-[120%]">
-                  <Image
-                    src="/images/2.jpg"
-                    alt="United Fishers komanda mədəniyyəti"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                </motion.div>
-                <div className="absolute inset-0 bg-gradient-to-t from-navy/20 to-transparent" />
-              </div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={cultureInView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.5, delay: 0.6 }}
-                className="absolute -bottom-4 -right-2 sm:-bottom-5 sm:-right-4 glass-ocean rounded-xl p-4 shadow-xl"
-              >
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-ocean" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span className="font-display font-bold text-navy text-sm">{tc.cultureBadge}</span>
-                </div>
+              <motion.div style={{ y: cultureImgY }} className="culture-mosaic">
+                {CULTURE_TILES.map((tile, i) => (
+                  <motion.figure
+                    key={tile.src}
+                    initial={{ opacity: 0, y: 24, scale: 0.96 }}
+                    animate={cultureInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+                    transition={{ duration: 0.7, delay: 0.25 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ y: -6 }}
+                    className={`culture-tile ${tile.area}`}
+                  >
+                    <Image
+                      src={tile.src}
+                      alt={tile.alt}
+                      fill
+                      className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105"
+                      sizes="(max-width: 1024px) 50vw, 25vw"
+                    />
+                    <span className="culture-tile-sheen" aria-hidden />
+                    <span className="culture-tile-veil" aria-hidden />
+                    <figcaption className="culture-tile-caption">
+                      <span className="culture-tile-dot" aria-hidden />
+                      {tile.label}
+                    </figcaption>
+                  </motion.figure>
+                ))}
               </motion.div>
             </motion.div>
           </div>
@@ -161,34 +187,7 @@ export function TeamContent() {
             initial={{ opacity: 0, y: 30 }}
             animate={deptInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7 }}
-            className="text-center max-w-3xl mx-auto mb-16"
-          >
-            <span className="text-ocean font-medium text-sm tracking-widest uppercase">{tc.structureEyebrow}</span>
-            <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy">
-              {tc.structureTitle}
-            </h2>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            {tc.departments.map((dept, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={deptInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.08 * i }}
-                className="bg-mist rounded-2xl p-6 text-center card-lift border border-transparent hover:border-ocean/10"
-              >
-                <div className="font-display text-3xl font-bold text-gradient-ocean">{DEPT_COUNTS[i]}</div>
-                <div className="mt-2 text-navy font-medium text-sm">{dept.name}</div>
-              </motion.div>
-            ))}
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={deptInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.4 }}
-            className="mt-16 rounded-2xl overflow-hidden relative"
+            className="rounded-2xl overflow-hidden relative"
           >
             <div className="absolute inset-0">
               <Image

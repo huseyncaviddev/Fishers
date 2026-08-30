@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { SmartVideo, videoPosterJpg } from "@/components/ui/SmartVideo";
 import { ResilientVideo } from "@/components/ui/ResilientVideo";
@@ -66,6 +66,32 @@ const MOMENTS: MediaItem[] = MOMENT_DIMS.map(([w, h], i) => ({
 
 const MEDIA: MediaItem[] = [...CURATED, ...MOMENTS];
 
+/** Natural aspect ratio (w/h) — videos are a fixed 16:9, images use their
+ *  intrinsic dimensions so the balanced masonry never crops the subject. */
+function aspectOf(item: MediaItem): number {
+  if (item.type === "video") return 16 / 9;
+  return (item.w ?? 1200) / (item.h ?? 900);
+}
+
+/** Content-driven column count via matchMedia (no per-frame resize work):
+ *  2 columns on phones, 3 on tablets, 4 on laptops+. */
+function useColumnCount(): number {
+  const [count, setCount] = useState(2);
+  useEffect(() => {
+    const mq3 = window.matchMedia("(min-width: 640px)");
+    const mq4 = window.matchMedia("(min-width: 1024px)");
+    const update = () => setCount(mq4.matches ? 4 : mq3.matches ? 3 : 2);
+    update();
+    mq3.addEventListener("change", update);
+    mq4.addEventListener("change", update);
+    return () => {
+      mq3.removeEventListener("change", update);
+      mq4.removeEventListener("change", update);
+    };
+  }, []);
+  return count;
+}
+
 export function GalleryContent() {
   const { t } = useI18n();
   const gc = t.galleryContent;
@@ -73,6 +99,7 @@ export function GalleryContent() {
   const inView = useInView(ref, { once: true, margin: "-50px" });
   const [activeCategory, setActiveCategory] = useState<GalleryCategoryKey>("all");
   const [selected, setSelected] = useState<number | null>(null);
+  const columnCount = useColumnCount();
 
   // Guard the index lookup: if a locale's `media` list is ever shorter than the
   // curated titleIdx range, fall back to the moments caption instead of crashing
@@ -87,6 +114,86 @@ export function GalleryContent() {
     activeCategory === "all"
       ? MEDIA
       : MEDIA.filter((m) => m.categoryKey === activeCategory);
+
+  // Greedy shortest-column packing keeps the columns visually balanced (no one
+  // column running much taller) while preserving each photo's natural ratio.
+  const columns = useMemo(() => {
+    const cols: MediaItem[][] = Array.from({ length: columnCount }, () => []);
+    const heights = new Array(columnCount).fill(0);
+    for (const item of filtered) {
+      let k = 0;
+      for (let j = 1; j < columnCount; j++) if (heights[j] < heights[k]) k = j;
+      cols[k].push(item);
+      heights[k] += 1 / aspectOf(item);
+    }
+    return cols;
+  }, [filtered, columnCount]);
+
+  // Stable stagger order (index within the filtered set) for the reveal.
+  const orderOf = useMemo(() => {
+    const m = new Map<string, number>();
+    filtered.forEach((it, i) => m.set(it.src, i));
+    return m;
+  }, [filtered]);
+
+  const renderTile = (item: MediaItem) => {
+    const globalIndex = MEDIA.indexOf(item);
+    const order = orderOf.get(item.src) ?? 0;
+    return (
+      <motion.div
+        key={item.src}
+        initial={{ opacity: 0, y: 16 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.5, delay: Math.min(0.03 * order, 0.4) }}
+        className="group cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl bg-mist border-glow"
+        onClick={() => setSelected(globalIndex)}
+      >
+        <div className="relative overflow-hidden img-hover-zoom">
+          {item.type === "video" ? (
+            <div className="relative aspect-video">
+              <SmartVideo src={item.src} poster={videoPosterJpg(item.src)} />
+            </div>
+          ) : (
+            <Image
+              src={item.src}
+              alt={titleOf(item)}
+              width={item.w ?? 1200}
+              height={item.h ?? 900}
+              className="w-full h-auto block"
+              sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, (max-width: 1400px) 25vw, 350px"
+            />
+          )}
+
+          <div className="absolute inset-0 bg-gradient-to-t from-navy/70 via-navy/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+            <div className="w-11 h-11 rounded-full glass flex items-center justify-center">
+              {item.type === "video" ? (
+                <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+              )}
+            </div>
+          </div>
+
+          {item.categoryKey !== "moments" && (
+            <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+              <span className="text-white/60 text-[10px] font-medium tracking-[0.15em] uppercase">
+                {gc.categories[item.categoryKey]}
+              </span>
+              <h3 className="mt-0.5 font-display text-sm sm:text-base font-semibold text-white leading-snug">
+                {titleOf(item)}
+              </h3>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    );
+  };
 
   return (
     <section className="py-16 lg:py-24 bg-white" ref={ref}>
@@ -112,64 +219,15 @@ export function GalleryContent() {
           ))}
         </motion.div>
 
-        <div className="columns-2 lg:columns-3 xl:columns-4 gap-3 sm:gap-4 lg:gap-5">
-          {filtered.map((item, i) => {
-            const globalIndex = MEDIA.indexOf(item);
-            return (
-              <motion.div
-                key={item.src}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: Math.min(0.03 * i, 0.4) }}
-                className="group mb-3 sm:mb-4 lg:mb-5 break-inside-avoid cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl bg-mist border-glow"
-                onClick={() => setSelected(globalIndex)}
-              >
-                <div className="relative overflow-hidden img-hover-zoom">
-                  {item.type === "video" ? (
-                    <div className="relative aspect-video">
-                      <SmartVideo src={item.src} poster={videoPosterJpg(item.src)} />
-                    </div>
-                  ) : (
-                    <Image
-                      src={item.src}
-                      alt={titleOf(item)}
-                      width={item.w ?? 1200}
-                      height={item.h ?? 900}
-                      className="w-full h-auto block"
-                      sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                    />
-                  )}
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy/70 via-navy/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                    <div className="w-11 h-11 rounded-full glass flex items-center justify-center">
-                      {item.type === "video" ? (
-                        <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      ) : (
-                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-
-                  {item.categoryKey !== "moments" && (
-                    <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                      <span className="text-white/60 text-[10px] font-medium tracking-[0.15em] uppercase">
-                        {gc.categories[item.categoryKey]}
-                      </span>
-                      <h3 className="mt-0.5 font-display text-sm sm:text-base font-semibold text-white leading-snug">
-                        {titleOf(item)}
-                      </h3>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
+        <div className="flex items-start gap-3 sm:gap-4 lg:gap-5">
+          {columns.map((col, ci) => (
+            <div
+              key={ci}
+              className="flex min-w-0 flex-1 flex-col gap-3 sm:gap-4 lg:gap-5"
+            >
+              {col.map(renderTile)}
+            </div>
+          ))}
         </div>
       </div>
 

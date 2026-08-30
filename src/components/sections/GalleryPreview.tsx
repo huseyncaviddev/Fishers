@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { LazyVideo, videoPoster } from "@/components/ui/LazyVideo";
+import { SmartVideo, videoPosterJpg } from "@/components/ui/SmartVideo";
 import { useI18n } from "@/i18n/I18nProvider";
 
 const GALLERY_ITEMS = [
@@ -14,6 +14,13 @@ const GALLERY_ITEMS = [
   { src: "/videos/gallery-ai.mp4", type: "video" as const },
   { src: "/images/14.jpg", type: "image" as const },
   { src: "/images/16.jpg", type: "image" as const },
+  { src: "/videos/gallery-01.mp4", type: "video" as const },
+  { src: "/videos/gallery-02.mp4", type: "video" as const },
+  { src: "/videos/gallery-03.mp4", type: "video" as const },
+  { src: "/videos/gallery-04.mp4", type: "video" as const },
+  { src: "/videos/gallery-05.mp4", type: "video" as const },
+  { src: "/videos/gallery-06.mp4", type: "video" as const },
+  { src: "/videos/gallery-07.mp4", type: "video" as const },
 ];
 
 export function GalleryPreview() {
@@ -84,7 +91,7 @@ export function GalleryPreview() {
                 }`}
               >
                 {item.type === "video" ? (
-                  <LazyVideo src={item.src} poster={videoPoster(item.src)} className="w-full h-full" />
+                  <SmartVideo src={item.src} poster={videoPosterJpg(item.src)} />
                 ) : (
                   <Image
                     src={item.src}

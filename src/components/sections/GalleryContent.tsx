@@ -3,37 +3,68 @@
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState } from "react";
 import Image from "next/image";
-import { LazyVideo, videoPoster } from "@/components/ui/LazyVideo";
+import { SmartVideo, videoPosterJpg } from "@/components/ui/SmartVideo";
+import { ResilientVideo } from "@/components/ui/ResilientVideo";
 import { useI18n } from "@/i18n/I18nProvider";
 
-type GalleryCategoryKey = "all" | "farm" | "processing" | "tech";
-const CATEGORIES: GalleryCategoryKey[] = ["all", "farm", "processing", "tech"];
+type GalleryCategoryKey = "all" | "farm" | "processing" | "tech" | "moments";
+const CATEGORIES: GalleryCategoryKey[] = [
+  "all",
+  "farm",
+  "processing",
+  "tech",
+  "moments",
+];
 
 interface MediaItem {
   src: string;
   categoryKey: Exclude<GalleryCategoryKey, "all">;
   type: "video" | "image";
+  /** Natural dimensions, used to reserve masonry space (no layout shift). */
+  w?: number;
+  h?: number;
+  /** Index into the translated `media` list for curated items. */
+  titleIdx?: number;
 }
 
-const MEDIA: MediaItem[] = [
-  { src: "/images/1.jpg", categoryKey: "farm", type: "image" },
-  { src: "/videos/gallery-harvest.mp4", categoryKey: "farm", type: "video" },
-  { src: "/images/4.jpg", categoryKey: "tech", type: "image" },
-  { src: "/images/8.jpg", categoryKey: "farm", type: "image" },
-  { src: "/videos/gallery-ai.mp4", categoryKey: "tech", type: "video" },
-  { src: "/images/3.jpg", categoryKey: "farm", type: "image" },
-  { src: "/images/6.jpg", categoryKey: "farm", type: "image" },
-  { src: "/videos/gallery-tank.mp4", categoryKey: "farm", type: "video" },
-  { src: "/images/14.jpg", categoryKey: "processing", type: "image" },
-  { src: "/videos/gallery-factory.mp4", categoryKey: "processing", type: "video" },
-  { src: "/images/5.jpg", categoryKey: "farm", type: "image" },
-  { src: "/images/10.jpg", categoryKey: "processing", type: "image" },
-  { src: "/videos/gallery-largescale.mp4", categoryKey: "tech", type: "video" },
-  { src: "/videos/gallery-chile.mp4", categoryKey: "farm", type: "video" },
-  { src: "/images/16.jpg", categoryKey: "farm", type: "image" },
-  { src: "/images/12.jpg", categoryKey: "tech", type: "image" },
-  { src: "/images/9.jpg", categoryKey: "tech", type: "image" },
+const CURATED: MediaItem[] = [
+  { src: "/images/1.jpg", categoryKey: "farm", type: "image", titleIdx: 0 },
+  { src: "/videos/gallery-harvest.mp4", categoryKey: "farm", type: "video", titleIdx: 1 },
+  { src: "/images/4.jpg", categoryKey: "tech", type: "image", titleIdx: 2 },
+  { src: "/images/8.jpg", categoryKey: "farm", type: "image", titleIdx: 3 },
+  { src: "/videos/gallery-ai.mp4", categoryKey: "tech", type: "video", titleIdx: 4 },
+  { src: "/images/3.jpg", categoryKey: "farm", type: "image", titleIdx: 5 },
+  { src: "/images/6.jpg", categoryKey: "farm", type: "image", titleIdx: 6 },
+  { src: "/videos/gallery-tank.mp4", categoryKey: "farm", type: "video", titleIdx: 7 },
+  { src: "/images/14.jpg", categoryKey: "processing", type: "image", titleIdx: 8 },
+  { src: "/videos/gallery-factory.mp4", categoryKey: "processing", type: "video", titleIdx: 9 },
+  { src: "/images/5.jpg", categoryKey: "farm", type: "image", titleIdx: 10 },
+  { src: "/images/10.jpg", categoryKey: "processing", type: "image", titleIdx: 11 },
+  { src: "/images/16.jpg", categoryKey: "farm", type: "image", titleIdx: 12 },
+  { src: "/images/12.jpg", categoryKey: "tech", type: "image", titleIdx: 13 },
+  { src: "/images/9.jpg", categoryKey: "tech", type: "image", titleIdx: 14 },
 ];
+
+// Authentic operational photography — preserved at natural aspect ratio.
+const MOMENT_DIMS: ReadonlyArray<[number, number]> = [
+  [1050, 1400], [1400, 630], [646, 1400], [1050, 1400], [1050, 1400],
+  [788, 1400], [1050, 1400], [1050, 1400], [1400, 630], [1050, 1400],
+  [1050, 1400], [646, 1400], [1050, 1400], [786, 1400], [1050, 1400],
+  [1050, 1400], [1050, 1400], [1050, 1400], [1400, 1050], [1050, 1400],
+  [1050, 1400], [1050, 1400], [1400, 1050], [1050, 1400], [1050, 1400],
+  [788, 1400], [1050, 1400], [646, 1400], [788, 1400], [1400, 932],
+  [1050, 1400], [1400, 1050],
+];
+
+const MOMENTS: MediaItem[] = MOMENT_DIMS.map(([w, h], i) => ({
+  src: `/images/gallery/moment-${String(i + 1).padStart(2, "0")}.jpg`,
+  categoryKey: "moments" as const,
+  type: "image" as const,
+  w,
+  h,
+}));
+
+const MEDIA: MediaItem[] = [...CURATED, ...MOMENTS];
 
 export function GalleryContent() {
   const { t } = useI18n();
@@ -42,6 +73,11 @@ export function GalleryContent() {
   const inView = useInView(ref, { once: true, margin: "-50px" });
   const [activeCategory, setActiveCategory] = useState<GalleryCategoryKey>("all");
   const [selected, setSelected] = useState<number | null>(null);
+
+  const titleOf = (item: MediaItem) =>
+    item.titleIdx != null ? gc.media[item.titleIdx].title : gc.momentsCaption;
+  const descOf = (item: MediaItem) =>
+    item.titleIdx != null ? gc.media[item.titleIdx].desc : "";
 
   const filtered =
     activeCategory === "all"
@@ -72,68 +108,64 @@ export function GalleryContent() {
           ))}
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-          <AnimatePresence initial={false}>
-            {filtered.map((item, i) => {
-              const globalIndex = MEDIA.indexOf(item);
-              const media = gc.media[globalIndex];
-              return (
-                <motion.div
-                  key={item.src}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3, delay: Math.min(0.03 * i, 0.24) }}
-                  className="group cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl bg-mist border-glow"
-                  onClick={() => setSelected(globalIndex)}
-                >
-                  <div className="aspect-video overflow-hidden relative img-hover-zoom">
-                    {item.type === "video" ? (
-                      <LazyVideo src={item.src} poster={videoPoster(item.src)} className="w-full h-full" />
-                    ) : (
-                      <Image
-                        src={item.src}
-                        alt={media.title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <div className="w-12 h-12 rounded-full glass flex items-center justify-center">
-                        {item.type === "video" ? (
-                          <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
-                        ) : (
-                          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                          </svg>
-                        )}
-                      </div>
+        <div className="columns-2 lg:columns-3 xl:columns-4 gap-3 sm:gap-4 lg:gap-5">
+          {filtered.map((item, i) => {
+            const globalIndex = MEDIA.indexOf(item);
+            return (
+              <motion.div
+                key={item.src}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: Math.min(0.03 * i, 0.4) }}
+                className="group mb-3 sm:mb-4 lg:mb-5 break-inside-avoid cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl bg-mist border-glow"
+                onClick={() => setSelected(globalIndex)}
+              >
+                <div className="relative overflow-hidden img-hover-zoom">
+                  {item.type === "video" ? (
+                    <div className="relative aspect-video">
+                      <SmartVideo src={item.src} poster={videoPosterJpg(item.src)} />
                     </div>
-                    <div className="absolute top-3 left-3">
-                      <div className="glass rounded-full px-2.5 py-1 text-[10px] text-white/80 tracking-wider uppercase font-light">
-                        {item.type === "video" ? gc.video : gc.photo}
-                      </div>
+                  ) : (
+                    <Image
+                      src={item.src}
+                      alt={titleOf(item)}
+                      width={item.w ?? 1200}
+                      height={item.h ?? 900}
+                      className="w-full h-auto block"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                    />
+                  )}
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-navy/70 via-navy/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div className="w-11 h-11 rounded-full glass flex items-center justify-center">
+                      {item.type === "video" ? (
+                        <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        </svg>
+                      )}
                     </div>
                   </div>
-                  <div className="p-4 sm:p-5">
-                    <span className="text-ocean text-[10px] font-medium tracking-[0.15em] uppercase">
-                      {gc.categories[item.categoryKey]}
-                    </span>
-                    <h3 className="mt-1 font-display text-base sm:text-lg font-semibold text-navy">
-                      {media.title}
-                    </h3>
-                    <p className="mt-1 text-slate/50 text-sm font-light">
-                      {media.desc}
-                    </p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+
+                  {item.categoryKey !== "moments" && (
+                    <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                      <span className="text-white/60 text-[10px] font-medium tracking-[0.15em] uppercase">
+                        {gc.categories[item.categoryKey]}
+                      </span>
+                      <h3 className="mt-0.5 font-display text-sm sm:text-base font-semibold text-white leading-snug">
+                        {titleOf(item)}
+                      </h3>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 
@@ -154,37 +186,34 @@ export function GalleryContent() {
               className="relative w-full max-w-5xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl bg-navy">
+              <div className="rounded-2xl overflow-hidden shadow-2xl bg-navy max-h-[80vh] flex items-center justify-center">
                 {MEDIA[selected].type === "video" ? (
-                  <video
-                    key={MEDIA[selected].src}
+                  <ResilientVideo
                     src={MEDIA[selected].src}
-                    poster={videoPoster(MEDIA[selected].src)}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    controls
-                    preload="metadata"
-                    className="w-full h-full object-cover"
+                    poster={videoPosterJpg(MEDIA[selected].src)}
+                    className="w-full aspect-video object-cover"
                   />
                 ) : (
                   <Image
+                    key={MEDIA[selected].src}
                     src={MEDIA[selected].src}
-                    alt={gc.media[selected].title}
-                    fill
-                    className="object-cover !relative"
+                    alt={titleOf(MEDIA[selected])}
+                    width={MEDIA[selected].w ?? 1200}
+                    height={MEDIA[selected].h ?? 900}
+                    className="w-auto h-auto max-w-full max-h-[80vh] object-contain"
                     sizes="100vw"
                   />
                 )}
               </div>
               <div className="mt-4 text-center">
                 <h3 className="font-display text-xl font-semibold text-white">
-                  {gc.media[selected].title}
+                  {titleOf(MEDIA[selected])}
                 </h3>
-                <p className="text-white/50 mt-1 font-light">
-                  {gc.media[selected].desc}
-                </p>
+                {descOf(MEDIA[selected]) && (
+                  <p className="text-white/50 mt-1 font-light">
+                    {descOf(MEDIA[selected])}
+                  </p>
+                )}
               </div>
             </motion.div>
 
@@ -201,9 +230,7 @@ export function GalleryContent() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setSelected(
-                  (selected - 1 + MEDIA.length) % MEDIA.length
-                );
+                setSelected((selected - 1 + MEDIA.length) % MEDIA.length);
               }}
               className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full glass flex items-center justify-center text-white hover:bg-white/20 transition-colors"
               aria-label={gc.prev}

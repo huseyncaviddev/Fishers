@@ -1,6 +1,5 @@
 import dynamic from "next/dynamic";
 import { Hero } from "@/components/sections/Hero";
-import { ProductsPreview } from "@/components/sections/ProductsPreview";
 import { AboutPreview } from "@/components/sections/AboutPreview";
 
 const VideoShowcase = dynamic(() =>
@@ -8,9 +7,6 @@ const VideoShowcase = dynamic(() =>
 );
 const Services = dynamic(() =>
   import("@/components/sections/Services").then((m) => m.Services)
-);
-const ImageShowcase = dynamic(() =>
-  import("@/components/sections/ImageShowcase").then((m) => m.ImageShowcase)
 );
 const Stats = dynamic(() =>
   import("@/components/sections/Stats").then((m) => m.Stats)
@@ -29,11 +25,9 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <ProductsPreview />
       <AboutPreview />
       <VideoShowcase />
       <Services />
-      <ImageShowcase />
       <Stats />
       <GalleryPreview />
       <CTA />

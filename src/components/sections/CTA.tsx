@@ -31,7 +31,7 @@ export function CTA() {
 
   return (
     <section ref={containerRef}>
-      <div className="bg-white section-fade" ref={ref}>
+      <div className="bg-white section-fade overflow-hidden" ref={ref}>
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12 py-20 lg:py-28">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <motion.div

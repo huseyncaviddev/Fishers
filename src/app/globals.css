@@ -81,6 +81,10 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* Backstop for intentional decorative bleed (hero scale, parallax scale,
+     negative-margin badges). `clip` clips without creating a scroll container
+     and, unlike `hidden`, does not disable position: sticky on descendants. */
+  overflow-x: clip;
 }
 
 body {

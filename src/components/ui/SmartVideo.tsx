@@ -15,12 +15,17 @@ interface SmartVideoProps {
 const MAX_RETRIES = 4;
 
 /**
- * Premium, self-contained lazy video:
- * - attaches its source only when the tile nears the viewport (fast first paint)
- * - plays while visible, pauses when scrolled away (saves CPU/bandwidth)
- * - shows a brand shimmer placeholder, then fades the video in on first frame
- * - keeps trying on weak connections: it buffers and starts as soon as it can,
- *   and auto-recovers from stalls/errors — it never refuses to play.
+ * Premium, self-contained lazy video.
+ *
+ * Two-stage IntersectionObserver:
+ *   - LOAD observer (near-viewport, wide margin): attaches the source so a
+ *     tile that scrolls in has already buffered its first frames.
+ *   - PLAY observer (actually visible, no margin): starts playback while the
+ *     tile is on screen and pauses it the moment it scrolls away. Prevents
+ *     the gallery from playing four offscreen videos at once on mobile.
+ *
+ * Also pauses the video when the tab is hidden and resumes on return, so a
+ * backgrounded tab never keeps decoding.
  *
  * Render inside a `relative` container.
  */
@@ -31,30 +36,61 @@ export function SmartVideo({
   rootMargin = "600px 0px",
 }: SmartVideoProps) {
   const ref = useRef<HTMLVideoElement>(null);
+  const inViewRef = useRef(false);
   const [active, setActive] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const retriesRef = useRef(0);
   // Offline is the only hard stop; slow connections still buffer and play.
   const online = useNetwork().online;
 
-  // Attach the source only once the tile nears the viewport.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setActive(true);
-          void el.play?.().catch(() => {});
-        } else {
+    const applyPlayState = () => {
+      const shouldPlay =
+        inViewRef.current &&
+        (typeof document === "undefined" || !document.hidden);
+      if (shouldPlay) {
+        void el.play?.().catch(() => {});
+      } else {
+        try {
           el.pause?.();
+        } catch {
+          // ignore
         }
+      }
+    };
+
+    // LOAD observer — near-viewport. Only flips `active` on so the <video>
+    // begins buffering; play state is decided by the PLAY observer below.
+    const ioLoad = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setActive(true);
       },
       { rootMargin, threshold: 0.01 }
     );
-    io.observe(el);
-    return () => io.disconnect();
+    ioLoad.observe(el);
+
+    // PLAY observer — actually visible. Governs playback so an offscreen
+    // buffered tile is not still decoding frames.
+    const ioPlay = new IntersectionObserver(
+      ([entry]) => {
+        inViewRef.current = entry.isIntersecting;
+        applyPlayState();
+      },
+      { threshold: 0.15 }
+    );
+    ioPlay.observe(el);
+
+    const onVisibility = () => applyPlayState();
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      ioLoad.disconnect();
+      ioPlay.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [rootMargin]);
 
   // Resilient recovery: on stall/error, reload the source and retry playback.
@@ -62,7 +98,11 @@ export function SmartVideo({
     const el = ref.current;
     if (!el || !active || !online) return;
 
-    const tryPlay = () => void el.play?.().catch(() => {});
+    const tryPlay = () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      if (!inViewRef.current) return;
+      void el.play?.().catch(() => {});
+    };
     const recover = () => {
       if (retriesRef.current >= MAX_RETRIES) return;
       retriesRef.current += 1;
@@ -102,7 +142,6 @@ export function SmartVideo({
         muted
         loop
         playsInline
-        autoPlay
         preload="none"
         aria-hidden="true"
         onLoadedData={() => setLoaded(true)}

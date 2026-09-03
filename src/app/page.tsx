@@ -22,6 +22,12 @@ const ContactPreview = dynamic(() =>
 );
 
 export default function Home() {
+  // The first hero poster is preloaded automatically: HeroVideoStack renders it
+  // with next/image `priority`, which emits a `<link rel="preload" as="image">`
+  // (with the exact optimized AVIF/WebP URL the browser will actually request)
+  // into the streamed <head> during SSR. A hand-written preload here would have
+  // to guess that URL — width and quality included — and any mismatch just
+  // downloads bytes the browser never uses, so we rely on the Image instead.
   return (
     <>
       <Hero />

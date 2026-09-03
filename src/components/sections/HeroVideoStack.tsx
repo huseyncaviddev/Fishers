@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { HeroQuality } from "@/lib/videoQuality";
-import { heroVideoSrc } from "@/lib/videoQuality";
+import { heroVideoSrc, planSlideRole } from "@/lib/videoQuality";
 
 export interface HeroSlideMedia {
   video: string;
@@ -12,11 +13,9 @@ export interface HeroSlideMedia {
 interface HeroVideoStackProps {
   slides: ReadonlyArray<HeroSlideMedia>;
   current: number;
-  /** Delivery tier chosen from the connection + reduced-motion preference. */
+  /** Delivery tier chosen from network + reduced-motion + viewport width. */
   quality: HeroQuality;
 }
-
-type Role = "active" | "warm" | "idle";
 
 // Bounded stall/error recovery — never an infinite retry storm.
 const MAX_RETRIES = 3;
@@ -28,37 +27,51 @@ const STALL_TIMEOUT_MS = 6000;
 /**
  * Priority-based hero video manager.
  *
- * - ACTIVE slide: source assigned immediately at the chosen quality, played,
- *   and kept alive with bounded retry → quality-downgrade → poster fallback.
- * - NEXT slide: warmed only once the active clip can play AND only on a healthy
- *   connection, so neighbours never compete with the visible video for bytes.
- * - EVERY OTHER slide: fully unloaded (poster only), releasing network + memory.
+ * At any moment there is AT MOST one playing video and AT MOST one warm
+ * (preloaded) neighbour — the *immediate* next slide. Every other slide is
+ * fully released (poster only), so five videos never race for bytes/CPU/GPU.
  *
- * The poster attribute stays as the visual until the video genuinely renders a
- * frame, so the hero is never a black rectangle. Visual markup is unchanged.
+ * Playback is also gated on:
+ *   - the container being in the viewport
+ *   - document.visibilityState === "visible"
+ * so a scrolled-away hero or a backgrounded tab never keeps decoding.
+ *
+ * The poster image renders underneath every slide via `next/image` (AVIF/WebP
+ * where supported) with the first slide's poster marked `priority` so it wins
+ * the browser's initial fetch race. The video only fades in once it has a real
+ * frame — so the hero is never a black rectangle and the handoff is
+ * imperceptible.
  */
 export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps) {
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const retriesRef = useRef<number[]>(slides.map(() => 0));
   const downgradedRef = useRef<boolean[]>(slides.map(() => false));
   const timersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
+  const firstSlideRef = useRef<HTMLDivElement>(null);
 
-  // Gates warming of the next slide on the *current* active clip being ready.
-  // Keyed by slide+quality so a slide/quality change auto-invalidates the gate
-  // without a separate reset effect (which would setState inside an effect).
+  // Playback gate — false while the hero is off-screen or the tab is hidden.
+  // Starts true so the very first slide isn't held back by SSR's blind guess.
+  const [playbackAllowed, setPlaybackAllowed] = useState(true);
+
+  // Warming is keyed by (active slide, quality) so any change auto-invalidates
+  // it without a separate reset effect.
   const activeKey = `${current}:${quality}`;
   const [readyKey, setReadyKey] = useState<string | null>(null);
   const activeReady = readyKey === activeKey;
 
-  // Which slides have a genuinely usable video frame right now. The poster layer
-  // always sits underneath; a slide's <video> only fades to opacity 1 once it is
-  // in this set, and drops back to the poster the moment the clip is unloaded or
-  // fails — so a slide is always a complete composed unit, never a raw image.
+  // Which slides currently show video (vs poster). Poster remains visible
+  // underneath until the video renders a real frame, so we never expose a
+  // black rectangle mid-transition.
   const [revealed, setRevealed] = useState<boolean[]>(() => slides.map(() => false));
   const reveal = (i: number) =>
     setRevealed((r) => (r[i] ? r : r.map((v, j) => (j === i ? true : v))));
   const hide = (i: number) =>
-    setRevealed((r) => (r[i] ? r.map((v, j) => (j === i ? false : v)) : r));
+    setRevealed((r) => (!r[i] ? r : r.map((v, j) => (j === i ? false : v))));
+
+  const nextIndex = useMemo(
+    () => (current + 1) % slides.length,
+    [current, slides.length]
+  );
 
   const clearTimer = (i: number) => {
     const t = timersRef.current.get(i);
@@ -80,6 +93,8 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
     try {
       video.pause();
       video.removeAttribute("src");
+      // Force the element to release the buffered bytes rather than sit on them
+      // with a stale src attribute.
       video.load();
     } catch {
       // ignore
@@ -101,32 +116,65 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
     if (p && typeof p.catch === "function") p.catch(() => {});
   };
 
-  // A slide is reset for reuse when it leaves the active window.
   const resetRecovery = (i: number) => {
     retriesRef.current[i] = 0;
     downgradedRef.current[i] = false;
     clearTimer(i);
   };
 
-  // --- Placement: decide each slide's role and apply it. ---------------------
+  // --- Playback gate: intersection + tab visibility ---------------------------
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const el = firstSlideRef.current;
+    if (!el) return;
+
+    let inView = true;
+
+    const commit = () => {
+      const allowed =
+        inView &&
+        (typeof document === "undefined" || !document.hidden);
+      setPlaybackAllowed((prev) => (prev === allowed ? prev : allowed));
+    };
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        // 0.1 threshold: even a sliver of hero visible still counts as "in
+        // view" so a normal scroll doesn't stutter the video during a nav.
+        inView = entry.isIntersecting;
+        commit();
+      },
+      { threshold: 0.1 }
+    );
+    io.observe(el);
+
+    const onVisibility = () => commit();
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      io.disconnect();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
+
+  // --- Placement: assign role + source for every slide. ----------------------
   useEffect(() => {
     videoRefs.current.forEach((video, i) => {
       if (!video) return;
 
-      // On a capable connection, once the visible clip is actually playing we
-      // warm EVERY other slide (load + decode its first frame while hidden), so
-      // switching to any slide reveals video immediately instead of the poster.
-      // The active clip always loads first (activeReady gate), so warming the
-      // neighbours never steals bandwidth from the slide the user is watching.
-      // Weak / Save-Data / reduced-motion tiers keep the poster-first fallback.
-      let role: Role = "idle";
-      if (quality !== "none" && i === current) role = "active";
-      else if (quality === "high" && activeReady && i !== current) role = "warm";
+      const role = planSlideRole({
+        index: i,
+        current,
+        slideCount: slides.length,
+        quality,
+        activeReady,
+        playbackAllowed,
+      });
 
       if (role === "idle") {
         if (i !== current) resetRecovery(i);
         unload(video);
-        hide(i); // src gone → show poster again, never a stale/black frame
+        hide(i); // src gone → poster reveals underneath, never a stale/black frame
         return;
       }
 
@@ -138,20 +186,22 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
       }
 
       assign(video, src);
+      video.preload = "auto";
 
       if (role === "active") {
-        video.preload = "auto";
-        if (video.currentTime > 0) {
+        if (playbackAllowed) {
+          safePlay(video);
+        } else {
+          // Pause but keep the src attached so resuming is instant when the
+          // hero returns to view / the tab regains focus.
           try {
-            video.currentTime = 0;
+            video.pause();
           } catch {
             // ignore
           }
         }
-        safePlay(video);
       } else {
         // warm: buffer quietly, never play.
-        video.preload = "auto";
         try {
           video.pause();
         } catch {
@@ -159,12 +209,12 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
         }
       }
     });
-    // resolveSrc/unload/... are stable closures over refs; only these inputs
-    // change what work is performed.
+    // resolveSrc/unload closures are stable via refs; only these inputs decide
+    // what work runs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current, quality, activeReady, slides]);
+  }, [current, quality, activeReady, playbackAllowed, nextIndex, slides]);
 
-  // --- Recovery: bounded retry → downgrade → poster, for the ACTIVE clip. -----
+  // --- Recovery: bounded retry → downgrade → poster, for the ACTIVE clip. ----
   useEffect(() => {
     if (quality === "none") return;
     const i = current;
@@ -198,7 +248,7 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
         const low = resolveSrc(i);
         if (low) {
           assign(video, low);
-          safePlay(video);
+          if (playbackAllowed) safePlay(video);
         }
         return;
       }
@@ -223,7 +273,7 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
           } catch {
             // ignore
           }
-          safePlay(video);
+          if (playbackAllowed) safePlay(video);
         }, BACKOFF_MS[Math.min(n, BACKOFF_MS.length - 1)])
       );
     };
@@ -249,7 +299,7 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
       clearTimer(i);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current, quality]);
+  }, [current, quality, playbackAllowed]);
 
   // --- Unmount: flush any pending timers. ------------------------------------
   useEffect(() => {
@@ -262,29 +312,48 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
 
   return (
     <>
-      {slides.map((slide, i) => (
-        <div
-          key={slide.video}
-          aria-hidden="true"
-          className={`hero-slide ${i === current ? "is-active" : ""}`}
-        >
-          {/* No poster photo — a clean deep-ocean surface (see .hero-slide in
-              globals.css) sits underneath, so before/without a video the slide is
-              a calm marine gradient, never a still image and never a black frame.
-              The video fades in on top once it is genuinely ready. */}
-          <video
-            ref={(el) => {
-              videoRefs.current[i] = el;
-            }}
-            muted
-            loop
-            playsInline
-            preload="none"
+      {slides.map((slide, i) => {
+        const isFirst = i === 0;
+        return (
+          <div
+            key={slide.video}
+            ref={isFirst ? firstSlideRef : undefined}
             aria-hidden="true"
-            className={`hero-slide__video ${revealed[i] ? "is-ready" : ""}`}
-          />
-        </div>
-      ))}
+            className={`hero-slide ${i === current ? "is-active" : ""}`}
+          >
+            {/* Optimized poster underneath the video. It renders on first paint
+                (via next/image AVIF/WebP negotiation) so the hero is always a
+                composed frame — never a black rectangle. */}
+            <Image
+              src={slide.poster}
+              alt=""
+              fill
+              sizes="100vw"
+              priority={isFirst}
+              fetchPriority={isFirst ? "high" : "low"}
+              // 75 is one of next.config's allowed `qualities` — behind the
+              // hero's dark overlay + film grain it is visually identical to a
+              // higher setting, and the AVIF stays small for slow-network first
+              // paint. (An out-of-list value is silently clamped, so we name it.)
+              quality={75}
+              className="hero-slide__poster"
+              aria-hidden="true"
+            />
+            <video
+              ref={(el) => {
+                videoRefs.current[i] = el;
+              }}
+              muted
+              loop
+              playsInline
+              autoPlay
+              preload="none"
+              aria-hidden="true"
+              className={`hero-slide__video ${revealed[i] ? "is-ready" : ""}`}
+            />
+          </div>
+        );
+      })}
     </>
   );
 }

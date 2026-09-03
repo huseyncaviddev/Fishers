@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useNetwork } from "@/lib/networkManager";
@@ -33,6 +33,30 @@ const PINNED_EPSILON = 4;
 // against huge dt after the tab was backgrounded).
 const MAX_FRAME_MS = 100;
 
+// Bucketed viewport width, updated only when we cross the phone/desktop
+// boundary that flips the hero rendition. Cheaper than a resize listener and
+// avoids re-renders during a window drag. `undefined` during SSR — the picker
+// then defers the mobile-downgrade decision until we know for sure.
+const PHONE_BOUNDARY = "(max-width: 768px)";
+function subscribeViewport(cb: () => void): () => void {
+  if (typeof window === "undefined" || !window.matchMedia) return () => {};
+  const mq = window.matchMedia(PHONE_BOUNDARY);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+}
+function getViewportWidth(): number | undefined {
+  if (typeof window === "undefined") return undefined;
+  // We only care about the boundary, so return one of two representative
+  // widths — the picker treats <=768 as "phone" and >768 as "desktop".
+  return window.matchMedia(PHONE_BOUNDARY).matches ? 640 : 1440;
+}
+function getSSRViewportWidth(): number | undefined {
+  return undefined;
+}
+function useViewportWidth(): number | undefined {
+  return useSyncExternalStore(subscribeViewport, getViewportWidth, getSSRViewportWidth);
+}
+
 export function Hero() {
   const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -55,7 +79,8 @@ export function Hero() {
 
   const net = useNetwork();
   const reducedMotion = useReducedMotion() ?? false;
-  const quality = pickHeroQuality({ net, reducedMotion });
+  const viewportWidth = useViewportWidth();
+  const quality = pickHeroQuality({ net, reducedMotion, viewportWidth });
 
   // Single source of truth for changing the active slide. Both autoplay and
   // every manual gesture funnel through here, so the crossfade, the counter and

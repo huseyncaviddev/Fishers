@@ -32,6 +32,11 @@ const visibleSet = new Set<HTMLVideoElement>();
 
 let sharedObserver: IntersectionObserver | null = null;
 let nearObserver: IntersectionObserver | null = null;
+let visibilityBound = false;
+
+function docHidden(): boolean {
+  return typeof document !== "undefined" && document.hidden;
+}
 
 function currentNet(): NetworkSnapshot {
   return getNetworkSnapshot();
@@ -96,6 +101,7 @@ function pickSorted(elements: Iterable<HTMLVideoElement>): VideoHandle[] {
 function schedule() {
   const net = currentNet();
   const canPreload = shouldPreloadMedia(net);
+  const hidden = docHidden();
 
   // Downgrade non-visible active videos
   registered.forEach((h) => {
@@ -116,11 +122,35 @@ function schedule() {
     return;
   }
 
+  // Tab hidden: pause every currently-playing clip and don't warm anything
+  // new. State is retained so the moment the tab comes back we can resume
+  // instantly from the same point without a network fetch.
+  if (hidden) {
+    registered.forEach((h) => {
+      if (h.state === "PLAYING") {
+        try {
+          h.video.pause();
+        } catch {
+          // ignore
+        }
+      }
+    });
+    return;
+  }
+
   // Promote visible videos to PLAYING within concurrency cap
   const visibles = pickSorted(visibleSet);
   let playing = playingCount();
   for (const h of visibles) {
-    if (h.state === "PLAYING") continue;
+    if (h.state === "PLAYING") {
+      // Already the active clip. If it was paused when the tab went hidden,
+      // resume it now that we're visible again — its src is still attached so
+      // playback continues from the buffered position with no new fetch.
+      if (h.autoplay && h.video.paused) {
+        h.video.play().catch(() => {});
+      }
+      continue;
+    }
     if (playing >= MAX_PLAYING) break;
     applySrc(h);
     h.state = "PLAYING";
@@ -182,6 +212,12 @@ function ensureNetSubscription() {
   netUnsub = subscribeNetwork(() => schedule());
 }
 
+function ensureVisibilityBound() {
+  if (visibilityBound || typeof document === "undefined") return;
+  visibilityBound = true;
+  document.addEventListener("visibilitychange", () => schedule());
+}
+
 export interface RegisterOptions {
   src: string;
   priority?: number;
@@ -194,6 +230,7 @@ export function registerVideo(
 ): () => void {
   ensureObservers();
   ensureNetSubscription();
+  ensureVisibilityBound();
 
   const handle: VideoHandle = {
     video,

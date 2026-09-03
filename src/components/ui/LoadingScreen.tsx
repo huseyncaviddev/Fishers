@@ -3,22 +3,73 @@
 import { useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const MAX_WAIT_MS = 1200;
+// Absolute cap on how long the loading veil stays up. If `window.load` (which
+// waits for every image, video and stylesheet) hasn't fired by then, we
+// dismiss anyway so a slow media asset never holds back the interactive shell.
+const MAX_WAIT_MS = 700;
+// Minimum visible hold so the veil never *flashes* on fast networks — it
+// either shows for at least this long, or (below) not at all.
+const MIN_HOLD_MS = 250;
+// If the DOM is already parsed *at hydration time* (fast desktop), skip the
+// screen almost immediately — nothing left to wait for.
+const SKIP_IF_PARSED_MS = 80;
+
+// Module-level ready flag: once flipped it stays flipped, so remounts (e.g.
+// route transitions) never re-show the veil, and `getSnapshot` returns a
+// stable value that React can trust across subscribe cycles.
+let dismissed = false;
+const notifiers = new Set<() => void>();
+
+function markDismissed() {
+  if (dismissed) return;
+  dismissed = true;
+  notifiers.forEach((n) => n());
+}
 
 function subscribeReady(cb: () => void): () => void {
-  if (typeof window === "undefined") return () => {};
-  const onLoad = () => cb();
-  window.addEventListener("load", onLoad, { once: true });
-  const t = window.setTimeout(cb, MAX_WAIT_MS);
+  notifiers.add(cb);
+  if (typeof window === "undefined") return () => notifiers.delete(cb);
+  if (dismissed) {
+    // Already ready — schedule the notification so React can commit the change.
+    queueMicrotask(cb);
+    return () => notifiers.delete(cb);
+  }
+
+  const start = performance.now();
+  const dismiss = () => {
+    const elapsed = performance.now() - start;
+    if (elapsed >= MIN_HOLD_MS) markDismissed();
+    else window.setTimeout(markDismissed, MIN_HOLD_MS - elapsed);
+  };
+
+  // DOM already parsed at hydration → a full veil would just be a flash.
+  // "interactive" is enough; "complete" only fires after every image/video.
+  const parsed = document.readyState === "interactive" || document.readyState === "complete";
+
+  const onLoad = () => dismiss();
+  let dcl: (() => void) | null = null;
+
+  if (parsed) {
+    window.setTimeout(dismiss, SKIP_IF_PARSED_MS);
+  } else {
+    dcl = () => window.setTimeout(dismiss, SKIP_IF_PARSED_MS);
+    document.addEventListener("DOMContentLoaded", dcl, { once: true });
+    window.addEventListener("load", onLoad, { once: true });
+  }
+
+  // Absolute cap so a slow image/video never keeps the veil up.
+  const cap = window.setTimeout(markDismissed, MAX_WAIT_MS);
+
   return () => {
+    notifiers.delete(cb);
+    if (dcl) document.removeEventListener("DOMContentLoaded", dcl);
     window.removeEventListener("load", onLoad);
-    window.clearTimeout(t);
+    window.clearTimeout(cap);
   };
 }
 
 function getReady(): boolean {
-  if (typeof document === "undefined") return false;
-  return document.readyState === "complete";
+  return dismissed;
 }
 
 function getSSRReady(): boolean {

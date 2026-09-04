@@ -74,13 +74,15 @@ export function resolvePolicy(net: NetworkSnapshot): MediaPolicy {
   }
 
   if (coarse) {
-    // Phones/tablets: exactly one video, never speculative, never automatic.
-    // Motion is opt-in via a tap, which keeps scrolling fluid and the decoder
-    // idle while the user is just reading.
+    // Phones/tablets: video follows the scroll, but exactly ONE clip at a time
+    // and never speculatively. The tile the reader is actually looking at gets
+    // the single slot; everything else stays on its poster with no decoder and
+    // no bytes in flight. That keeps the gallery alive without the four
+    // simultaneous decoders that made scrolling stutter.
     return {
       maxPlaying: 1,
       maxWarm: 0,
-      viewportAutoplay: false,
+      viewportAutoplay: true,
       hoverIntent: false,
       heroWarmNext: false,
       posterFirst: false,
@@ -90,11 +92,12 @@ export function resolvePolicy(net: NetworkSnapshot): MediaPolicy {
     };
   }
 
-  // Desktop.
+  // Desktop: scroll drives playback too, and a deliberate hover can claim the
+  // slot ahead of whatever the scroll position picked.
   return {
     maxPlaying: 1,
     maxWarm: slow ? 0 : 1,
-    viewportAutoplay: false, // hover-intent drives gallery playback, not scroll
+    viewportAutoplay: true,
     hoverIntent: true,
     heroWarmNext: !slow,
     posterFirst: false,

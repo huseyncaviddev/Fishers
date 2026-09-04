@@ -13,7 +13,7 @@
  *
  * BUMP THIS whenever a file under /public/videos is re-encoded or replaced.
  */
-export const MEDIA_VERSION = "2";
+export const MEDIA_VERSION = "3";
 
 /** Append the media version to a local /public asset URL. */
 export function versionedMedia(src: string): string {

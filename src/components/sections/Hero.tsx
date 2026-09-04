@@ -74,6 +74,7 @@ export function Hero() {
   const lockRef = useRef(0);
   const heroVisibleRef = useRef(true);
   const touchStartYRef = useRef(0);
+  const swipeHandledRef = useRef(false);
   const mouseRafRef = useRef(0);
   const handoffRef = useRef(false);
 
@@ -234,29 +235,28 @@ export function Hero() {
 
     const onTouchStart = (e: TouchEvent) => {
       touchStartYRef.current = e.touches[0]?.clientY ?? 0;
+      swipeHandledRef.current = false;
     };
 
+    // Touch is NOT trapped. On a phone, scrolling *is* the primary gesture, and
+    // preventDefault-ing it made the page feel frozen: every swipe was consumed
+    // by the carousel, so escaping the hero took five separate swipes gated by
+    // an 850 ms cooldown (~4 s of a page that refuses to move).
+    //
+    // Instead the page scrolls natively — this listener is passive, so it never
+    // blocks the compositor — and a horizontal-ish flick still changes slide as
+    // a bonus. Vertical intent always belongs to the page.
     const onTouchMove = (e: TouchEvent) => {
-      if (handoffRef.current) {
-        e.preventDefault();
-        return;
-      }
-      if (!isPinned()) return;
-      const y = e.touches[0]?.clientY ?? 0;
-      const delta = touchStartYRef.current - y; // +ve = swipe up = next
-      const dir = delta > 0 ? 1 : -1;
-      const atLast = currentRef.current >= lastIndex;
-      const canTrap =
-        (dir > 0 && !atLast) || (dir < 0 && currentRef.current > 0);
-      const canRelease = dir > 0 && atLast; // swipe up on last slide -> content
-      if (!canTrap && !canRelease) return;
-
-      e.preventDefault();
-      if (Math.abs(delta) >= SWIPE_THRESHOLD) {
-        touchStartYRef.current = y;
-        if (canRelease) releaseToContent();
-        else navigate(dir);
-      }
+      if (swipeHandledRef.current) return;
+      const t = e.touches[0];
+      if (!t) return;
+      const dy = touchStartYRef.current - t.clientY;
+      // Only a deliberate, mostly-vertical flick *while the hero is pinned*
+      // advances a slide, and we never cancel the scroll that comes with it.
+      if (!isPinned() || Math.abs(dy) < SWIPE_THRESHOLD) return;
+      swipeHandledRef.current = true; // one flick = at most one slide
+      if (dy > 0 && currentRef.current < lastIndex) navigate(1);
+      else if (dy < 0 && currentRef.current > 0) navigate(-1);
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -277,7 +277,10 @@ export function Hero() {
 
     window.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    // Passive: a non-passive touchmove on window forces the browser to consult
+    // JS before every scroll frame, adding input latency across the whole site
+    // on mobile — not just inside the hero.
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
     window.addEventListener("keydown", onKeyDown);
     return () => {
       window.removeEventListener("wheel", onWheel);
@@ -340,7 +343,9 @@ export function Hero() {
 
       <div className="absolute inset-0 film-grain pointer-events-none z-[2]" />
 
-      <div className="relative z-10 flex flex-col justify-center items-center h-full px-6 text-center">
+      {/* px-10 on the smallest screens keeps the centred copy clear of the slide
+          indicator rail pinned at right-5; from `sm` up there is ample room. */}
+      <div className="relative z-10 flex flex-col justify-center items-center h-full px-10 sm:px-6 text-center">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={current}

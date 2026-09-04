@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { SmartVideo, videoPosterJpg } from "@/components/ui/SmartVideo";
+import { SmartVideo, tileVideoSrc, videoPosterJpg } from "@/components/ui/SmartVideo";
 import { useI18n } from "@/i18n/I18nProvider";
 
 const GALLERY_ITEMS = [
@@ -91,7 +91,10 @@ export function GalleryPreview() {
                 }`}
               >
                 {item.type === "video" ? (
-                  <SmartVideo src={item.src} poster={videoPosterJpg(item.src)} />
+                  <SmartVideo
+                    src={tileVideoSrc(item.src)}
+                    poster={videoPosterJpg(item.src)}
+                  />
                 ) : (
                   <Image
                     src={item.src}

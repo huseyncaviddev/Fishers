@@ -39,6 +39,31 @@ function reducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+interface HardwareNavigator extends Navigator {
+  deviceMemory?: number;
+}
+
+/**
+ * True for genuinely weak hardware.
+ *
+ * Concurrency is affordable because gallery tiles use a small rendition, but
+ * "affordable" still assumes a device with some headroom. Profiling a scroll
+ * through the gallery at 6x CPU throttle showed the page under real strain —
+ * so where the browser tells us the device is low-end, we spend fewer decoders
+ * rather than finding out the hard way on the user's phone.
+ *
+ * Both signals are advisory and absent in Safari, so a missing value is read
+ * as "not known to be weak" rather than assumed either way.
+ */
+function lowEndDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const mem = (navigator as HardwareNavigator).deviceMemory;
+  if (typeof mem === "number" && mem <= 4) return true;
+  const cores = navigator.hardwareConcurrency;
+  if (typeof cores === "number" && cores > 0 && cores <= 4) return true;
+  return false;
+}
+
 /**
  * Resolves the policy from device class first, network second.
  *
@@ -51,6 +76,7 @@ function reducedMotion(): boolean {
 export function resolvePolicy(net: NetworkSnapshot): MediaPolicy {
   const coarse = coarsePointer();
   const reduced = reducedMotion();
+  const weak = lowEndDevice();
   const saveData = net.saveData;
   const offline = !net.online || net.klass === "OFFLINE";
   const verySlow = net.klass === "VERY_SLOW";
@@ -74,13 +100,13 @@ export function resolvePolicy(net: NetworkSnapshot): MediaPolicy {
   }
 
   if (coarse) {
-    // Phones/tablets: video follows the scroll, but exactly ONE clip at a time
-    // and never speculatively. The tile the reader is actually looking at gets
-    // the single slot; everything else stays on its poster with no decoder and
-    // no bytes in flight. That keeps the gallery alive without the four
-    // simultaneous decoders that made scrolling stutter.
+    // Phones/tablets: several tiles may play at once, because gallery tiles now
+    // use the 640px `-tile` rendition (~5x cheaper to decode than the master).
+    // Three of those together cost less than a single full-size clip did, so
+    // the grid looks alive without the stutter that concurrency used to cause.
+    // Still no speculative warming — bytes are only spent on what is on screen.
     return {
-      maxPlaying: 1,
+      maxPlaying: slow || weak ? 1 : 3,
       maxWarm: 0,
       viewportAutoplay: true,
       hoverIntent: false,
@@ -92,10 +118,11 @@ export function resolvePolicy(net: NetworkSnapshot): MediaPolicy {
     };
   }
 
-  // Desktop: scroll drives playback too, and a deliberate hover can claim the
-  // slot ahead of whatever the scroll position picked.
+  // Desktop: scroll drives playback, a deliberate hover can claim a slot ahead
+  // of whatever scroll position picked, and the wider grid can afford more
+  // concurrent tiles.
   return {
-    maxPlaying: 1,
+    maxPlaying: slow || weak ? 2 : 6,
     maxWarm: slow ? 0 : 1,
     viewportAutoplay: true,
     hoverIntent: true,

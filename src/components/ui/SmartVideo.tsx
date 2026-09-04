@@ -206,3 +206,16 @@ export function videoPosterJpg(src: string): string {
   const name = src.split("/").pop()?.replace(/\.mp4$/, "") ?? "";
   return versionedMedia(`/videos/posters/${name}.jpg`);
 }
+
+/**
+ * Resolve the tile-sized rendition for a gallery source.
+ *
+ * A tile is 170-440px on screen, but the masters are 1280px at 1.3-2.6 Mbps.
+ * Decoding that into a small box is ~40x more pixels than the tile can show,
+ * and it is exactly why several tiles playing at once used to stall the page.
+ * The `-tile` variant is 640px on its longest edge at 24fps, roughly a fifth
+ * of the decode cost — which is what makes concurrent autoplay affordable.
+ */
+export function tileVideoSrc(src: string): string {
+  return src.replace(/\.mp4$/, "-tile.mp4");
+}

@@ -3,8 +3,6 @@
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { SmartVideo, videoPosterJpg } from "@/components/ui/SmartVideo";
-import { ResilientVideo } from "@/components/ui/ResilientVideo";
 import { useI18n } from "@/i18n/I18nProvider";
 
 type GalleryCategoryKey = "all" | "farm" | "processing" | "tech" | "moments";
@@ -19,7 +17,6 @@ const CATEGORIES: GalleryCategoryKey[] = [
 interface MediaItem {
   src: string;
   categoryKey: Exclude<GalleryCategoryKey, "all">;
-  type: "video" | "image";
   /** Natural dimensions, used to reserve masonry space (no layout shift). */
   w?: number;
   h?: number;
@@ -28,21 +25,17 @@ interface MediaItem {
 }
 
 const CURATED: MediaItem[] = [
-  { src: "/images/1.jpg", categoryKey: "farm", type: "image", titleIdx: 0 },
-  { src: "/videos/gallery-harvest.mp4", categoryKey: "farm", type: "video", titleIdx: 1 },
-  { src: "/images/4.jpg", categoryKey: "tech", type: "image", titleIdx: 2 },
-  { src: "/images/8.jpg", categoryKey: "farm", type: "image", titleIdx: 3 },
-  { src: "/videos/gallery-ai.mp4", categoryKey: "tech", type: "video", titleIdx: 4 },
-  { src: "/images/3.jpg", categoryKey: "farm", type: "image", titleIdx: 5 },
-  { src: "/images/6.jpg", categoryKey: "farm", type: "image", titleIdx: 6 },
-  { src: "/videos/gallery-tank.mp4", categoryKey: "farm", type: "video", titleIdx: 7 },
-  { src: "/images/14.jpg", categoryKey: "processing", type: "image", titleIdx: 8 },
-  { src: "/videos/gallery-factory.mp4", categoryKey: "processing", type: "video", titleIdx: 9 },
-  { src: "/images/5.jpg", categoryKey: "farm", type: "image", titleIdx: 10 },
-  { src: "/images/10.jpg", categoryKey: "processing", type: "image", titleIdx: 11 },
-  { src: "/images/16.jpg", categoryKey: "farm", type: "image", titleIdx: 12 },
-  { src: "/images/12.jpg", categoryKey: "tech", type: "image", titleIdx: 13 },
-  { src: "/images/9.jpg", categoryKey: "tech", type: "image", titleIdx: 14 },
+  { src: "/images/1.jpg", categoryKey: "farm", titleIdx: 0 },
+  { src: "/images/4.jpg", categoryKey: "tech", titleIdx: 2 },
+  { src: "/images/8.jpg", categoryKey: "farm", titleIdx: 3 },
+  { src: "/images/3.jpg", categoryKey: "farm", titleIdx: 5 },
+  { src: "/images/6.jpg", categoryKey: "farm", titleIdx: 6 },
+  { src: "/images/14.jpg", categoryKey: "processing", titleIdx: 8 },
+  { src: "/images/5.jpg", categoryKey: "farm", titleIdx: 10 },
+  { src: "/images/10.jpg", categoryKey: "processing", titleIdx: 11 },
+  { src: "/images/16.jpg", categoryKey: "farm", titleIdx: 12 },
+  { src: "/images/12.jpg", categoryKey: "tech", titleIdx: 13 },
+  { src: "/images/9.jpg", categoryKey: "tech", titleIdx: 14 },
 ];
 
 // Authentic operational photography — preserved at natural aspect ratio.
@@ -59,17 +52,15 @@ const MOMENT_DIMS: ReadonlyArray<[number, number]> = [
 const MOMENTS: MediaItem[] = MOMENT_DIMS.map(([w, h], i) => ({
   src: `/images/gallery/moment-${String(i + 1).padStart(2, "0")}.jpg`,
   categoryKey: "moments" as const,
-  type: "image" as const,
   w,
   h,
 }));
 
 const MEDIA: MediaItem[] = [...CURATED, ...MOMENTS];
 
-/** Natural aspect ratio (w/h) — videos are a fixed 16:9, images use their
- *  intrinsic dimensions so the balanced masonry never crops the subject. */
+/** Natural aspect ratio (w/h) — each photo keeps its intrinsic dimensions so
+ *  the balanced masonry never crops the subject. */
 function aspectOf(item: MediaItem): number {
-  if (item.type === "video") return 16 / 9;
   return (item.w ?? 1200) / (item.h ?? 900);
 }
 
@@ -149,34 +140,22 @@ export function GalleryContent() {
         onClick={() => setSelected(globalIndex)}
       >
         <div className="relative overflow-hidden img-hover-zoom">
-          {item.type === "video" ? (
-            <div className="relative aspect-video">
-              <SmartVideo src={item.src} poster={videoPosterJpg(item.src)} />
-            </div>
-          ) : (
-            <Image
+          <Image
               src={item.src}
               alt={titleOf(item)}
               width={item.w ?? 1200}
               height={item.h ?? 900}
               className="w-full h-auto block"
-              sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, (max-width: 1400px) 25vw, 350px"
-            />
-          )}
+            sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, (max-width: 1400px) 25vw, 350px"
+          />
 
           <div className="absolute inset-0 bg-gradient-to-t from-navy/70 via-navy/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
             <div className="w-11 h-11 rounded-full glass flex items-center justify-center">
-              {item.type === "video" ? (
-                <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                </svg>
-              )}
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+              </svg>
             </div>
           </div>
 
@@ -249,23 +228,15 @@ export function GalleryContent() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="rounded-2xl overflow-hidden shadow-2xl bg-navy max-h-[80vh] flex items-center justify-center">
-                {MEDIA[selected].type === "video" ? (
-                  <ResilientVideo
-                    src={MEDIA[selected].src}
-                    poster={videoPosterJpg(MEDIA[selected].src)}
-                    className="w-full aspect-video object-cover"
-                  />
-                ) : (
-                  <Image
-                    key={MEDIA[selected].src}
-                    src={MEDIA[selected].src}
-                    alt={titleOf(MEDIA[selected])}
-                    width={MEDIA[selected].w ?? 1200}
-                    height={MEDIA[selected].h ?? 900}
-                    className="w-auto h-auto max-w-full max-h-[80vh] object-contain"
-                    sizes="100vw"
-                  />
-                )}
+                <Image
+                  key={MEDIA[selected].src}
+                  src={MEDIA[selected].src}
+                  alt={titleOf(MEDIA[selected])}
+                  width={MEDIA[selected].w ?? 1200}
+                  height={MEDIA[selected].h ?? 900}
+                  className="w-auto h-auto max-w-full max-h-[80vh] object-contain"
+                  sizes="100vw"
+                />
               </div>
               <div className="mt-4 text-center">
                 <h3 className="font-display text-xl font-semibold text-white">

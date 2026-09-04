@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { SmartVideo } from "@/components/ui/SmartVideo";
+import { SmartVideo, videoPosterJpg } from "@/components/ui/SmartVideo";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -101,7 +101,7 @@ export function AboutPreview() {
               <div className="aspect-[4/3] rounded-2xl overflow-hidden relative img-hover-zoom border-glow depth-lg">
                 <SmartVideo
                   src="/videos/about-preview.mp4"
-                  poster="/videos/posters/about-preview.jpg"
+                  poster={videoPosterJpg("/videos/about-preview.mp4")}
                 />
                 <div className="absolute inset-0 z-[3] bg-gradient-to-tr from-ocean/15 via-transparent to-transparent" />
                 <div className="absolute inset-0 z-[3] pointer-events-none about-showcase-sheen" />

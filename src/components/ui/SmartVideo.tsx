@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMediaPolicy } from "@/lib/mediaPolicy";
+import { versionedMedia } from "@/lib/mediaVersion";
 import {
   MediaPriority,
   requestMedia,
@@ -20,40 +21,49 @@ interface SmartVideoProps {
 }
 
 // Deliberate hover, not pointer noise: the cursor must rest on a tile before we
-// spend a decoder on it, so sweeping across a grid starts nothing.
+// hand it the slot, so sweeping across a grid never starts anything.
 const HOVER_INTENT_MS = 140;
-// Small grace on exit so a pointer clipping a corner doesn't thrash play/pause.
 const HOVER_EXIT_MS = 120;
+
+// A tile must be *meaningfully* on screen before it asks to play. Below this it
+// is scenery, not something the reader is looking at.
+const AUTOPLAY_RATIO = 0.55;
+
+// Enough steps that the winner changes smoothly as you scroll, few enough that
+// the observer is not firing constantly.
+const RATIO_STEPS = [0, 0.25, 0.4, 0.55, 0.7, 0.85, 1];
 
 /**
  * A gallery/preview video governed entirely by the global media scheduler.
  *
- * It never autoplays on its own. What it does depends on the resolved policy:
+ * It never calls play() itself — it only ever *asks*, and the scheduler decides.
+ * Because the page-wide cap is one playing video, several tiles can want the
+ * slot at once and exactly one gets it.
  *
- *   coarse pointer  → poster only; a tap requests playback
- *   fine pointer    → deliberate hover requests playback
- *   poster-first    → poster only, no request at all
+ * Which one? The most visible. A tile's priority scales with how much of it is
+ * on screen, so as you scroll the slot hands off naturally from the tile
+ * leaving the viewport to the one entering it. A deliberate hover, or a tap on
+ * touch, outranks all of that and takes the slot immediately.
  *
  * Far from the viewport the source is released entirely (decoder + buffered
- * bytes freed), so scrolling a long gallery does not accumulate attached video.
+ * bytes freed), so a long gallery never accumulates attached video.
  */
 export function SmartVideo({
   src,
   poster,
   className,
-  rootMargin = "300px 0px",
+  rootMargin = "200px 0px",
   playLabel = "Videonu oynat",
 }: SmartVideoProps) {
   const ref = useRef<HTMLVideoElement>(null);
   const handleRef = useRef<MediaHandle | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const nearRef = useRef(false);
 
   const policy = useMediaPolicy();
   const [state, setState] = useState<MediaState>("POSTER");
-  // Sticky user intent on touch: once tapped, the tile keeps its slot until it
-  // scrolls away or something higher-priority takes over.
-  const [requested, setRequested] = useState(false);
+  const [ratio, setRatio] = useState(0);
+  // Explicit intent (tap / settled hover) — outranks scroll position.
+  const [claimed, setClaimed] = useState(false);
 
   const clearHoverTimer = () => {
     if (hoverTimer.current) {
@@ -69,7 +79,7 @@ export function SmartVideo({
     const handle = requestMedia({
       el,
       src,
-      priority: MediaPriority.USER,
+      priority: MediaPriority.AMBIENT,
       wantsPlay: false,
       onState: setState,
     });
@@ -80,60 +90,71 @@ export function SmartVideo({
     };
   }, [src]);
 
-  // Keep the scheduler's copy of the source in sync.
   useEffect(() => {
     handleRef.current?.update({ src });
   }, [src]);
 
-  // Near-viewport tracking. Leaving the near band withdraws the request, which
-  // makes the scheduler detach the source and free the decoder.
+  // Track how much of the tile is on screen.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        nearRef.current = entry.isIntersecting;
-        if (!entry.isIntersecting) {
+        const r = entry.isIntersecting ? entry.intersectionRatio : 0;
+        setRatio(r);
+        if (r === 0) {
           clearHoverTimer();
-          setRequested(false);
-          handleRef.current?.update({ wantsPlay: false });
+          setClaimed(false);
         }
       },
-      { rootMargin, threshold: 0 }
+      { rootMargin, threshold: RATIO_STEPS }
     );
     io.observe(el);
     return () => io.disconnect();
   }, [rootMargin]);
 
-  // Push the current intent to the scheduler.
+  // Translate visibility + intent into a scheduler request.
   useEffect(() => {
-    handleRef.current?.update({ wantsPlay: requested && !policy.posterFirst });
-  }, [requested, policy.posterFirst]);
+    if (policy.posterFirst) {
+      handleRef.current?.update({ wantsPlay: false });
+      return;
+    }
+    const visibleEnough = policy.viewportAutoplay && ratio >= AUTOPLAY_RATIO;
+    const wantsPlay = claimed || visibleEnough;
+    // Explicit intent wins outright. Otherwise the more of the tile that is on
+    // screen, the stronger its claim — so the slot follows the reader's eye
+    // instead of whichever tile happened to mount last.
+    const priority = claimed
+      ? MediaPriority.USER
+      : MediaPriority.AMBIENT + Math.round(ratio * 30);
+    handleRef.current?.update({ wantsPlay, priority });
+  }, [ratio, claimed, policy.viewportAutoplay, policy.posterFirst]);
 
   useEffect(() => () => clearHoverTimer(), []);
 
   const onPointerEnter = useCallback(() => {
     if (!policy.hoverIntent || policy.posterFirst) return;
     clearHoverTimer();
-    hoverTimer.current = setTimeout(() => {
-      if (nearRef.current) setRequested(true);
-    }, HOVER_INTENT_MS);
+    hoverTimer.current = setTimeout(() => setClaimed(true), HOVER_INTENT_MS);
   }, [policy.hoverIntent, policy.posterFirst]);
 
   const onPointerLeave = useCallback(() => {
     if (!policy.hoverIntent) return;
     clearHoverTimer();
-    hoverTimer.current = setTimeout(() => setRequested(false), HOVER_EXIT_MS);
+    hoverTimer.current = setTimeout(() => setClaimed(false), HOVER_EXIT_MS);
   }, [policy.hoverIntent]);
 
-  // Touch devices: an explicit tap is the only thing that starts motion.
+  // Touch: a tap pins this tile as the one that should be playing.
   const onTap = useCallback(() => {
     if (!policy.coarsePointer || policy.posterFirst) return;
-    setRequested((r) => !r);
+    setClaimed((c) => !c);
   }, [policy.coarsePointer, policy.posterFirst]);
 
   const showing = state === "PLAYING";
-  const showTapHint = policy.coarsePointer && !policy.posterFirst && !showing;
+  // Only offer the manual affordance where automatic playback will not happen
+  // anyway — otherwise it is a button that does nothing the scroll didn't.
+  const showTapHint =
+    policy.coarsePointer && !policy.posterFirst && !showing && ratio < AUTOPLAY_RATIO;
 
   return (
     <div
@@ -141,8 +162,8 @@ export function SmartVideo({
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
     >
-      {/* The poster carries the experience. It is a real element (not a video
-          frame) so it paints instantly and stays sharp when nothing plays. */}
+      {/* The poster carries the experience whenever this tile does not hold the
+          playback slot, so it must be a real, correctly-sized image. */}
       <div
         aria-hidden="true"
         className={`sv-fill sv-placeholder ${showing ? "sv-loaded" : ""}`}
@@ -174,8 +195,14 @@ export function SmartVideo({
   );
 }
 
-/** Resolve the poster frame for a `/videos/<name>.mp4` source. */
+/**
+ * Resolve the poster frame for a `/videos/<name>.mp4` source.
+ *
+ * Versioned like the clips themselves: posters live under /videos/ and are
+ * served `immutable`, so regenerating them without a new URL would leave every
+ * returning visitor on the old 32px placeholders for a year.
+ */
 export function videoPosterJpg(src: string): string {
   const name = src.split("/").pop()?.replace(/\.mp4$/, "") ?? "";
-  return `/videos/posters/${name}.jpg`;
+  return versionedMedia(`/videos/posters/${name}.jpg`);
 }

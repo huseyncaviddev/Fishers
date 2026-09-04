@@ -101,14 +101,16 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
     }
   };
 
-  const assign = (video: HTMLVideoElement, src: string) => {
-    if (video.getAttribute("src") === src) return;
+  /** Returns true when the source actually changed (and the element reloaded). */
+  const assign = (video: HTMLVideoElement, src: string): boolean => {
+    if (video.getAttribute("src") === src) return false;
     video.setAttribute("src", src);
     try {
       video.load();
     } catch {
       // ignore
     }
+    return true;
   };
 
   const safePlay = (video: HTMLVideoElement) => {
@@ -185,7 +187,10 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
         return;
       }
 
-      assign(video, src);
+      // A source swap reloads the element back to its black frame 0, so drop
+      // the reveal until a real frame is painted again — otherwise the stale
+      // `is-ready` would expose that black frame over the poster.
+      if (assign(video, src)) hide(i);
       video.preload = "auto";
 
       if (role === "active") {
@@ -227,6 +232,37 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
       reveal(i); // fade the video in over its poster
     };
 
+    // These clips fade in from black, so frame 0 is a black rectangle. Revealing
+    // on `canplay` (which only means bytes are buffered) therefore paints a
+    // black box over a perfectly good poster — and if playback never actually
+    // starts, it stays black forever. So we only reveal once the compositor has
+    // genuinely presented a frame past the black lead-in.
+    const FIRST_VISIBLE_FRAME_S = 0.05;
+    let rvfcHandle = 0;
+    type FrameCallbackVideo = HTMLVideoElement & {
+      requestVideoFrameCallback?: (cb: () => void) => number;
+      cancelVideoFrameCallback?: (handle: number) => void;
+    };
+    const fcVideo = video as FrameCallbackVideo;
+    const supportsFrameCallback =
+      typeof fcVideo.requestVideoFrameCallback === "function";
+
+    // Waits for an actually-presented frame (rVFC), re-arming until the clip is
+    // past its black first frame.
+    const awaitPaintedFrame = () => {
+      if (!supportsFrameCallback) return;
+      rvfcHandle = fcVideo.requestVideoFrameCallback!(() => {
+        if (video.currentTime > FIRST_VISIBLE_FRAME_S) markReady();
+        else awaitPaintedFrame();
+      });
+    };
+
+    // Fallback for browsers without rVFC (mainly older Firefox): `timeupdate`
+    // proves the clip is genuinely advancing, not merely buffered.
+    const onTimeUpdate = () => {
+      if (video.currentTime > FIRST_VISIBLE_FRAME_S) markReady();
+    };
+
     const armStallWatchdog = () => {
       if (timersRef.current.has(i)) return;
       timersRef.current.set(
@@ -247,7 +283,7 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
         retriesRef.current[i] = 0;
         const low = resolveSrc(i);
         if (low) {
-          assign(video, low);
+          if (assign(video, low)) hide(i); // reloading → back to poster until painted
           if (playbackAllowed) safePlay(video);
         }
         return;
@@ -278,14 +314,33 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
       );
     };
 
-    const onPlaying = markReady;
-    const onCanPlay = markReady;
+    const onPlaying = () => {
+      clearTimer(i);
+      awaitPaintedFrame();
+    };
+
+    // `canplay` is NOT proof of a painted frame — it only means enough data is
+    // buffered. Use it to (re)assert playback instead: swapping the source
+    // (e.g. the high→low switch that fires on every phone once the viewport is
+    // known) calls load(), which aborts the in-flight play() promise. Without
+    // this the clip would sit paused at its black frame 0 indefinitely.
+    const onCanPlay = () => {
+      clearTimer(i);
+      if (playbackAllowed) safePlay(video);
+    };
+
     const onWaiting = armStallWatchdog;
     const onStalled = armStallWatchdog;
     const onError = retry;
 
     video.addEventListener("playing", onPlaying);
     video.addEventListener("canplay", onCanPlay);
+    if (!supportsFrameCallback) {
+      video.addEventListener("timeupdate", onTimeUpdate);
+    }
+    // If we arrive already playing (src unchanged across a re-render), don't
+    // wait for another `playing` event that will never come.
+    if (!video.paused) awaitPaintedFrame();
     video.addEventListener("waiting", onWaiting);
     video.addEventListener("stalled", onStalled);
     video.addEventListener("error", onError);
@@ -293,9 +348,11 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
     return () => {
       video.removeEventListener("playing", onPlaying);
       video.removeEventListener("canplay", onCanPlay);
+      video.removeEventListener("timeupdate", onTimeUpdate);
       video.removeEventListener("waiting", onWaiting);
       video.removeEventListener("stalled", onStalled);
       video.removeEventListener("error", onError);
+      if (rvfcHandle) fcVideo.cancelVideoFrameCallback?.(rvfcHandle);
       clearTimer(i);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

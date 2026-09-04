@@ -53,11 +53,20 @@ export function pickHeroQuality({
     return "low";
   }
 
-  // 2g / 3g and other constrained links: lightweight variant that starts fast.
-  if (net.klass === "SLOW" || net.klass === "NORMAL") return "low";
+  // Genuinely constrained links (2g, or 4g with >400 ms RTT): start fast on the
+  // lightweight variant.
+  if (net.klass === "SLOW") return "low";
 
-  // FAST / ULTRA_FAST, or UNKNOWN (no Network Information API — most desktop
-  // Safari/Firefox): serve full quality.
+  // Everything else — including NORMAL — gets full quality on a large viewport.
+  //
+  // NORMAL covers effectiveType "3g" and downlink 1.5-5 Mbps, but those numbers
+  // are a coarse rolling *estimate*: Chrome routinely reports "3g" / ~1.25 Mbps
+  // on healthy desktop broadband, especially in the first seconds of a page
+  // load before many requests have completed. Trusting it was shipping the 480p
+  // clip to full-size desktops, which is exactly the "video looks blurry"
+  // complaint. Runtime evidence beats the hint: if the link genuinely can't
+  // sustain the clip, the stall watchdog in HeroVideoStack downgrades it within
+  // a few seconds — based on what actually happened rather than a guess.
   return "high";
 }
 

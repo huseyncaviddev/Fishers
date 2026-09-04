@@ -86,13 +86,18 @@ export function Navbar() {
       >
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <div className="flex h-20 items-center justify-between">
+            {/* `min-w-0` (not `shrink-0`): the wordmark must yield space before
+                the right-hand controls do. With shrink-0 here, at 320px the
+                brand claimed 221px and pushed the language switcher and the
+                menu button clean off the screen — leaving no way to open the
+                menu at all. */}
             <Link
               href="/"
-              className="flex items-center gap-3 shrink-0 group gold-focus rounded-lg"
+              className="flex min-w-0 items-center gap-2.5 sm:gap-3 group gold-focus rounded-lg"
               aria-label="United Fishers — Ana səhifə"
             >
               <div
-                className={`relative w-11 h-11 rounded-full flex items-center justify-center transition-all duration-500 ${
+                className={`relative w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-full flex items-center justify-center transition-all duration-500 ${
                   scrolled
                     ? "bg-[var(--color-deep-800)] text-[var(--color-gold-300)] shadow-md shadow-black/10"
                     : "bg-white/[0.06] backdrop-blur-sm text-[var(--color-gold-300)] border border-white/15"
@@ -111,9 +116,9 @@ export function Navbar() {
                   <path d="M8 16c1.3 1.3 2.7 2 4 2s2.7-.7 4-2" />
                 </svg>
               </div>
-              <div className="flex flex-col leading-none">
+              <div className="flex min-w-0 flex-col leading-none">
                 <span
-                  className={`font-display text-[19px] font-semibold tracking-[-0.01em] leading-none transition-colors duration-500 ${
+                  className={`font-display text-[17px] sm:text-[19px] font-semibold tracking-[-0.01em] leading-none truncate transition-colors duration-500 ${
                     scrolled ? "text-[var(--color-deep-900)]" : "text-white"
                   }`}
                 >
@@ -125,7 +130,7 @@ export function Navbar() {
                   style={{ background: "var(--gold-hairline)" }}
                 />
                 <span
-                  className={`mt-1 text-[10px] tracking-[0.28em] uppercase transition-colors duration-500 ${
+                  className={`mt-1 hidden min-[360px]:block text-[10px] tracking-[0.28em] uppercase truncate transition-colors duration-500 ${
                     scrolled ? "text-[var(--color-ink-500)]" : "text-white/50"
                   }`}
                 >
@@ -181,7 +186,7 @@ export function Navbar() {
               })}
             </nav>
 
-            <div className="flex items-center gap-1 sm:gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               <LanguageSwitcher scrolled={scrolled} />
               <MagneticButton strength={0.15}>
                 <button
@@ -230,8 +235,8 @@ export function Navbar() {
           >
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
               <div className="absolute inset-0 film-grain" />
-              <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-ocean/10 rounded-full blur-[120px] -translate-y-1/4 translate-x-1/4" />
-              <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-sand/5 rounded-full blur-[100px] translate-y-1/4 -translate-x-1/4" />
+              <div className="deco-blob absolute top-0 right-0 w-[600px] h-[600px] bg-ocean/10 rounded-full blur-[120px] -translate-y-1/4 translate-x-1/4" />
+              <div className="deco-blob absolute bottom-0 left-0 w-[400px] h-[400px] bg-sand/5 rounded-full blur-[100px] translate-y-1/4 -translate-x-1/4" />
             </div>
 
             <button

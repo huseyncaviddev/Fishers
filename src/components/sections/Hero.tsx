@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { useNetwork } from "@/lib/networkManager";
+import { useMediaPolicy } from "@/lib/mediaPolicy";
 import { pickHeroQuality } from "@/lib/videoQuality";
 import { HeroVideoStack, type HeroSlideMedia } from "@/components/sections/HeroVideoStack";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -74,7 +75,10 @@ export function Hero() {
   const lockRef = useRef(0);
   const heroVisibleRef = useRef(true);
   const touchStartYRef = useRef(0);
+  const touchStartXRef = useRef(0);
   const swipeHandledRef = useRef(false);
+  // True only while the active hero clip is genuinely painting frames.
+  const activePlayingRef = useRef(true);
   const mouseRafRef = useRef(0);
   const handoffRef = useRef(false);
 
@@ -82,6 +86,15 @@ export function Hero() {
   const reducedMotion = useReducedMotion() ?? false;
   const viewportWidth = useViewportWidth();
   const quality = pickHeroQuality({ net, reducedMotion, viewportWidth });
+  const policy = useMediaPolicy();
+
+  // Whether the hero is on screen with a visible tab. Drives the rAF lifecycle
+  // (state, so the effect can genuinely cancel the loop rather than idle in it).
+  const [heroActive, setHeroActive] = useState(true);
+
+  const handleActivePlaying = useCallback((playing: boolean) => {
+    activePlayingRef.current = playing;
+  }, []);
 
   // Single source of truth for changing the active slide. Both autoplay and
   // every manual gesture funnel through here, so the crossfade, the counter and
@@ -145,9 +158,15 @@ export function Hero() {
   );
 
   // Unified clock: one rAF loop drives BOTH the auto-advance and the progress
-  // ring, so they can never drift apart. It freezes while the user is
-  // interacting or the hero is off-screen, then resumes without a jump.
+  // ring, so they can never drift apart.
+  //
+  // The loop is genuinely CANCELLED whenever the hero is off-screen or the tab
+  // is hidden — not merely short-circuited by a `paused` flag. A rAF that keeps
+  // ticking (and writing CSS variables) while nothing is visible is pure
+  // main-thread and compositor waste on a phone, every frame, forever.
   useEffect(() => {
+    if (!heroActive) return;
+
     let raf = 0;
     let last = performance.now();
 
@@ -155,8 +174,11 @@ export function Hero() {
       const dt = Math.min(now - last, MAX_FRAME_MS);
       last = now;
 
+      // The slide clock measures useful viewing time: it does not advance while
+      // the user is interacting, nor while the active clip is still buffering,
+      // so a slide never spends its turn showing an unpainted frame.
       const paused =
-        !heroVisibleRef.current || Date.now() < suspendUntilRef.current;
+        Date.now() < suspendUntilRef.current || !activePlayingRef.current;
 
       if (!paused) {
         elapsedRef.current += dt;
@@ -175,26 +197,30 @@ export function Hero() {
 
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [goTo]);
+  }, [goTo, heroActive]);
 
-  // Pause autoplay when the hero scrolls out of view or the tab is hidden.
+  // Drives both the rAF lifecycle above and the ref the gesture handlers read.
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    let onScreen = true;
+    const commit = () => {
+      const active = onScreen && !document.hidden;
+      heroVisibleRef.current = active;
+      setHeroActive((prev) => (prev === active ? prev : active));
+    };
+
     const io = new IntersectionObserver(
       ([entry]) => {
-        heroVisibleRef.current = entry.isIntersecting && !document.hidden;
+        onScreen = entry.isIntersecting;
+        commit();
       },
-      { threshold: 0.35 }
+      { threshold: 0.2 }
     );
     io.observe(container);
 
-    const onVisibility = () => {
-      heroVisibleRef.current =
-        !document.hidden &&
-        (containerRef.current?.getBoundingClientRect().bottom ?? 0) > 0;
-    };
+    const onVisibility = () => commit();
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
@@ -234,29 +260,32 @@ export function Hero() {
     };
 
     const onTouchStart = (e: TouchEvent) => {
-      touchStartYRef.current = e.touches[0]?.clientY ?? 0;
+      const t = e.touches[0];
+      touchStartYRef.current = t?.clientY ?? 0;
+      touchStartXRef.current = t?.clientX ?? 0;
       swipeHandledRef.current = false;
     };
 
-    // Touch is NOT trapped. On a phone, scrolling *is* the primary gesture, and
-    // preventDefault-ing it made the page feel frozen: every swipe was consumed
-    // by the carousel, so escaping the hero took five separate swipes gated by
-    // an 850 ms cooldown (~4 s of a page that refuses to move).
+    // Touch is never trapped, and a VERTICAL swipe is now scroll and nothing
+    // else. Previously a vertical flick both scrolled the page and advanced the
+    // carousel, so the hero changed under the reader's thumb while they were
+    // simply trying to move down the page.
     //
-    // Instead the page scrolls natively — this listener is passive, so it never
-    // blocks the compositor — and a horizontal-ish flick still changes slide as
-    // a bonus. Vertical intent always belongs to the page.
+    // Only a clearly HORIZONTAL swipe navigates slides — the gesture users
+    // already expect from a carousel — and it never cancels the scroll, so this
+    // listener stays passive and the compositor is never blocked.
     const onTouchMove = (e: TouchEvent) => {
       if (swipeHandledRef.current) return;
       const t = e.touches[0];
       if (!t) return;
+      const dx = touchStartXRef.current - t.clientX;
       const dy = touchStartYRef.current - t.clientY;
-      // Only a deliberate, mostly-vertical flick *while the hero is pinned*
-      // advances a slide, and we never cancel the scroll that comes with it.
-      if (!isPinned() || Math.abs(dy) < SWIPE_THRESHOLD) return;
+      // Vertical intent always belongs to the page.
+      if (Math.abs(dx) <= Math.abs(dy)) return;
+      if (Math.abs(dx) < SWIPE_THRESHOLD) return;
       swipeHandledRef.current = true; // one flick = at most one slide
-      if (dy > 0 && currentRef.current < lastIndex) navigate(1);
-      else if (dy < 0 && currentRef.current > 0) navigate(-1);
+      if (dx > 0 && currentRef.current < lastIndex) navigate(1);
+      else if (dx < 0 && currentRef.current > 0) navigate(-1);
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -336,7 +365,13 @@ export function Hero() {
             "translate3d(var(--px, 0px), var(--py, 0px), 0) scale(1.05)",
         }}
       >
-        <HeroVideoStack slides={SLIDES} current={current} quality={quality} />
+        <HeroVideoStack
+          slides={SLIDES}
+          current={current}
+          quality={quality}
+          allowWarmNext={policy.heroWarmNext}
+          onActivePlaying={handleActivePlaying}
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-navy/70 via-navy/20 to-navy/80" />
         <div className="absolute inset-0 bg-gradient-to-r from-navy/40 via-transparent to-navy/30" />
       </div>

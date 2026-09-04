@@ -4,6 +4,7 @@ import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { LazyVideo } from "@/components/ui/LazyVideo";
 import { useI18n } from "@/i18n/I18nProvider";
+import { useContinuousMotion } from "@/lib/useAdaptiveMotion";
 
 export function VideoShowcase() {
   const { t } = useI18n();
@@ -13,8 +14,15 @@ export function VideoShowcase() {
     target: ref,
     offset: ["start end", "end start"],
   });
-  const y = useTransform(scrollYProgress, [0, 1], [80, -80]);
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.95, 1, 0.95]);
+  const continuous = useContinuousMotion();
+  // Parallax + scale on a full-screen video layer is the single most expensive
+  // scroll-linked effect on the page. Desktop keeps it; touch devices get the
+  // same composition rendered statically, which is what makes mobile scrolling
+  // feel smooth here.
+  const yRaw = useTransform(scrollYProgress, [0, 1], [80, -80]);
+  const scaleRaw = useTransform(scrollYProgress, [0, 0.5, 1], [0.95, 1, 0.95]);
+  const y = continuous ? yRaw : undefined;
+  const scale = continuous ? scaleRaw : undefined;
 
   return (
     <section ref={ref} className="relative py-0 overflow-hidden">

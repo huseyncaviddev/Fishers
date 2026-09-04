@@ -1,35 +1,56 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Ocean palette — luminous, airy aqua-teal */
-  --color-ocean: #0e97a8;
-  --color-ocean-dark: #0a7684;
-  --color-ocean-deeper: #075661;
-  --color-ocean-light: #e6f7f9;
-  --color-ocean-muted: #bfe8ec;
-  /* "sand" name preserved for existing components — now a bright aqua accent */
-  --color-sand: #4fc9d8;
-  --color-sand-light: #eafafb;
-  --color-navy: #0b2b3a;
-  --color-slate: #3a555f;
-  --color-mist: #f4fbfc;
+  /* ---------------------------------------------------------------
+     Marine palette. Deeper and quieter than a typical "startup blue":
+     the teal is desaturated toward ink so large dark surfaces read as
+     water rather than UI chrome, and the bright aqua is reserved for
+     small highlights instead of being the ambient colour.
+     --------------------------------------------------------------- */
+  --color-ocean: #0b8f9c;        /* primary brand */
+  --color-ocean-dark: #087482;   /* active / hover */
+  --color-ocean-deeper: #065763;
+  --color-ocean-light: #ddf6f7;
+  --color-ocean-muted: #b9e6ea;
+  /* "sand" name preserved for existing components — an aqua highlight,
+     used selectively (eyebrows, hairlines, small accents). */
+  --color-sand: #65d5dd;
+  --color-sand-light: #ddf6f7;
+  --color-navy: #071d26;         /* primary dark / marine ink */
+  --color-slate: #566d74;        /* secondary text */
+  --color-mist: #f3f9f9;         /* ocean mist surface */
   --color-white: #ffffff;
 
-  /* United Fishers — accent system (names kept "gold-*", now ocean-aqua) */
-  --color-gold-50:  #ecfbfd;
-  --color-gold-100: #cff2f6;
-  --color-gold-300: #7fe0ec;
-  --color-gold-500: #16a5b8;   /* primary aqua accent */
-  --color-gold-600: #0e8293;
-  --color-gold-700: #0a6373;
-  --color-gold-900: #063f49;
+  /* Accent ramp (names kept "gold-*" for compatibility — ocean-aqua). */
+  --color-gold-50:  #f0fafb;
+  --color-gold-100: #ddf6f7;
+  --color-gold-300: #8fe3ea;
+  --color-gold-500: #18a9b4;   /* premium teal */
+  --color-gold-600: #0b8f9c;
+  --color-gold-700: #087482;
+  --color-gold-900: #06414c;
 
-  /* Deep ocean surface layers — teal-shifted */
-  --color-deep-900: #04222c;
-  --color-deep-800: #063341;
-  --color-deep-700: #0b3a4a;
-  --color-deep-600: #0f4a5c;
-  --color-deep-400: #1f6a7e;
+  /* One warm accent, inspired by sand/sunlight. Used sparingly: badges,
+     hairlines, a single focal detail. The identity stays marine. */
+  --color-brass: #d6b36a;
+  --color-brass-soft: #f0e3c6;
+
+  /* Deep surface layers. */
+  --color-deep-900: #071d26;
+  --color-deep-800: #0a2a35;
+  --color-deep-700: #103b48;
+  --color-deep-600: #16505f;
+  --color-deep-400: #2b6d7c;
+
+  /* Premium light surfaces. */
+  --color-surface-0: #fafcfc;
+  --color-surface-1: #f3f9f9;
+  --color-surface-2: #edf5f5;
+
+  /* Text ramp. */
+  --color-text-primary: #102c35;
+  --color-text-secondary: #566d74;
+  --color-text-muted: #83959b;
 
   /* Sophisticated neutrals */
   --color-ink-950:  #06090c;
@@ -47,14 +68,23 @@
 
 /* Metallic gold gradient — for text, hairlines, accents only. Use sparingly. */
 :root {
-  /* Luminous ocean-chrome sheen — replaces the old gold gradient */
+  /* --- Motion language ------------------------------------------------
+     A small shared vocabulary so every surface moves the same way.
+     Quiet, deliberate, and short enough to feel responsive. */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-ui: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --dur-fast: 180ms;
+  --dur-base: 240ms;
+  --dur-slow: 340ms;
+
+  /* Luminous ocean-chrome sheen — light moving through water. */
   --gold-metallic: linear-gradient(
     135deg,
-    #0a7684 0%,
-    #22b8cf 28%,
-    #9af0fa 50%,
-    #16a5b8 72%,
-    #075661 100%
+    #065763 0%,
+    #0b8f9c 28%,
+    #8fe3ea 50%,
+    #18a9b4 72%,
+    #06414c 100%
   );
   --gold-hairline: linear-gradient(
     90deg,
@@ -69,11 +99,13 @@
   --shadow-elev-3: 0 8px 24px rgba(6, 42, 51, 0.10), 0 24px 56px rgba(6, 42, 51, 0.08);
   --shadow-gold-glow: 0 0 0 1px rgba(22, 165, 184, 0.28), 0 8px 28px rgba(14, 151, 168, 0.30);
 
-  /* Ocean gradient system — light, not paint. Reused across premium surfaces. */
-  --gradient-ocean: linear-gradient(135deg, #063f49 0%, #0e8293 55%, #16a5b8 100%);
-  --gradient-lagoon: linear-gradient(135deg, #0e8293 0%, #22b8cf 60%, #7fe0ec 100%);
-  --gradient-primary: linear-gradient(135deg, #0e8293 0%, #16a5b8 48%, #22b8cf 100%);
-  --gradient-primary-hover: linear-gradient(135deg, #0a7684 0%, #1aa9bd 48%, #34c6d9 100%);
+  /* Ocean gradient system — light, not paint. Reused across premium surfaces.
+     Deliberately few, and each one reads as depth rather than decoration. */
+  --gradient-ocean: linear-gradient(135deg, #06414c 0%, #087482 55%, #0b8f9c 100%);
+  --gradient-lagoon: linear-gradient(135deg, #087482 0%, #18a9b4 60%, #65d5dd 100%);
+  --gradient-primary: linear-gradient(135deg, #087482 0%, #0b8f9c 50%, #18a9b4 100%);
+  --gradient-primary-hover: linear-gradient(135deg, #0b8f9c 0%, #18a9b4 50%, #3cc2cd 100%);
+  --gradient-surface: linear-gradient(180deg, #ffffff 0%, #f3f9f9 100%);
   --gradient-glass: linear-gradient(135deg, rgba(22, 165, 184, 0.12), rgba(22, 165, 184, 0.03));
   --gradient-glass-hover: linear-gradient(135deg, rgba(22, 165, 184, 0.18), rgba(22, 165, 184, 0.06));
 }
@@ -94,6 +126,10 @@ body {
     radial-gradient(1200px 800px at 12% -8%, rgba(79, 201, 216, 0.10), transparent 60%),
     radial-gradient(1000px 700px at 100% 0%, rgba(14, 151, 168, 0.07), transparent 55%),
     var(--color-mist);
+  /* `fixed` forces the browser to re-rasterise this full-viewport gradient on
+     every scroll frame. On desktop that is affordable; on phones it is one of
+     the biggest single causes of scroll jank, so the mobile block below drops
+     it back to `scroll`. */
   background-attachment: fixed;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
@@ -722,7 +758,15 @@ html {
   letter-spacing: 0.01em;
   border-radius: 9999px;
   padding: 0.875rem 2rem;
-  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  /* Targeted, not `all`: transitioning every property meant the browser also
+     animated layout-adjacent ones, and 500ms felt sluggish under the pointer.
+     Compositor-friendly transform + opacity carry the motion. */
+  transition:
+    transform var(--dur-base) var(--ease-standard),
+    box-shadow var(--dur-slow) var(--ease-standard),
+    background-color var(--dur-base) var(--ease-ui),
+    border-color var(--dur-base) var(--ease-ui),
+    color var(--dur-fast) var(--ease-ui);
   overflow: hidden;
   cursor: pointer;
   outline: none;
@@ -756,7 +800,7 @@ html {
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.26),
     0 2px 6px rgba(6, 42, 51, 0.12),
@@ -789,7 +833,7 @@ html {
 .btn-secondary:hover {
   background: var(--gradient-glass-hover);
   border-color: rgba(22, 165, 184, 0.5);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 8px 22px rgba(14, 140, 155, 0.14);
@@ -1272,4 +1316,241 @@ html {
 
 @media (prefers-reduced-motion: reduce) {
   .about-showcase-sheen { animation: none !important; }
+}
+
+/* ===================================================================
+   MOBILE GPU POLICY
+   -------------------------------------------------------------------
+   Phones do not get a cheaper version of the design — they get the same
+   composition rendered with cheaper machinery. Every rule here removes
+   per-frame GPU work that a touch device cannot afford, while leaving
+   colour, spacing, typography and hierarchy untouched.
+   =================================================================== */
+@media (pointer: coarse) {
+  /* Re-rasterising a full-viewport gradient every scroll frame is the single
+     most expensive thing on this page for a mobile compositor. */
+  body {
+    background-attachment: scroll;
+  }
+
+  /* Procedural film grain was a 400%x400% (16x viewport) animated SVG
+     turbulence layer. It is imperceptible at phone DPI and costs a continuous
+     full-screen repaint, so it is removed outright rather than reduced. */
+  .film-grain::after,
+  .animate-grain {
+    display: none !important;
+    animation: none !important;
+  }
+
+  /* Real-time backdrop blur is the second biggest cost. Swap to slightly more
+     opaque surfaces with a hairline border — visually equivalent at a glance,
+     free to composite. */
+  .glass,
+  .glass-dark,
+  .glass-ocean,
+  .nav-glass {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .glass {
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+  .glass-dark {
+    background: rgba(7, 29, 38, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .glass-ocean {
+    background: rgba(10, 42, 53, 0.86);
+  }
+
+  /* Enormous blurred decorative blobs raster a huge invisible surface for a
+     barely-visible tint. A flat radial gradient reads the same and is free. */
+  .deco-blob {
+    filter: none !important;
+    opacity: 0.5;
+  }
+
+  /* Decorative infinite animations: quiet them all. Premium is not the same as
+     perpetually in motion, and each of these is a permanent compositor job. */
+  .animate-float,
+  .animate-shimmer,
+  .animate-pulse-glow,
+  .animate-wave,
+  .scroll-pulse,
+  .about-showcase-sheen {
+    animation: none !important;
+  }
+
+  /* Never leave a permanent compositing hint on a phone. */
+  .hero-slide {
+    will-change: auto;
+  }
+}
+
+/* ===================================================================
+   MEDIA SURFACES (scheduler-driven)
+   =================================================================== */
+.sv-root {
+  position: absolute;
+  inset: 0;
+}
+
+/* Tap-to-play affordance for touch devices, where nothing autoplays. */
+.sv-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3rem;
+  height: 3rem;
+  margin: -1.5rem 0 0 -1.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  color: #fff;
+  background: rgba(7, 29, 38, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 6px 20px rgba(7, 29, 38, 0.28);
+  z-index: 4;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 200ms ease;
+}
+.sv-play:active {
+  transform: scale(0.94);
+  background: rgba(7, 29, 38, 0.7);
+}
+.sv-play svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-left: 2px;
+}
+
+/* Ambient background video fades in only once the scheduler has it playing. */
+.lv-video {
+  opacity: 0;
+  transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lv-video.is-ready {
+  opacity: 1;
+}
+
+/* ===================================================================
+   PREMIUM CARD SYSTEM
+   Restraint over effects: spacing, a hairline border and a soft layered
+   shadow do the work; hover adds 2px of lift and a little more depth.
+   =================================================================== */
+.pc-card {
+  border: 1px solid rgba(86, 109, 116, 0.08);
+  box-shadow:
+    0 1px 2px rgba(7, 29, 38, 0.04),
+    0 8px 24px rgba(7, 29, 38, 0.05);
+  transition:
+    transform var(--dur-slow) var(--ease-standard),
+    box-shadow var(--dur-slow) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-ui);
+}
+
+.pc-card.is-hovered {
+  transform: translateY(-2px);
+  border-color: rgba(11, 143, 156, 0.18);
+  box-shadow:
+    0 2px 4px rgba(7, 29, 38, 0.05),
+    0 18px 44px -12px rgba(11, 143, 156, 0.18);
+}
+
+/* Touch: a tap should feel acknowledged, without simulating hover. */
+.pc-card--static:active {
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 4px rgba(7, 29, 38, 0.05),
+    0 12px 30px -12px rgba(11, 143, 156, 0.16);
+}
+
+.pc-icon {
+  transition:
+    transform var(--dur-slow) var(--ease-standard),
+    box-shadow var(--dur-slow) var(--ease-standard);
+}
+.pc-icon.is-hovered {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 1px rgba(11, 143, 156, 0.14), 0 6px 18px rgba(11, 143, 156, 0.16);
+}
+
+.pc-link {
+  transition: color var(--dur-fast) var(--ease-ui);
+}
+.pc-link:hover {
+  color: var(--color-ocean-dark);
+}
+
+.pc-arrow {
+  transition: transform var(--dur-base) var(--ease-standard);
+}
+.pc-arrow.is-hovered,
+.pc-link:hover .pc-arrow {
+  transform: translateX(4px);
+}
+
+/* ===================================================================
+   SHARED HOVER LANGUAGE
+   Four categories, reused everywhere, instead of per-component effects.
+   =================================================================== */
+
+/* Links: a hairline that grows from the left. */
+.hover-underline {
+  position: relative;
+}
+.hover-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 1px;
+  width: 0;
+  background: currentColor;
+  transition: width var(--dur-slow) var(--ease-standard);
+}
+.hover-underline:hover::after {
+  width: 100%;
+}
+
+/* Media: a restrained scale, never an aggressive zoom. */
+.hover-media {
+  transition: transform var(--dur-slow) var(--ease-standard);
+}
+.hover-media:hover {
+  transform: scale(1.03);
+}
+
+@media (pointer: coarse) {
+  /* Hover categories are meaningless on touch — make sure none of them leave a
+     transition running or a transform stuck after a tap. */
+  .hover-underline::after,
+  .hover-media,
+  .pc-card,
+  .pc-icon,
+  .pc-arrow {
+    transition-duration: var(--dur-fast);
+  }
+  .hover-media:hover {
+    transform: none;
+  }
+}
+
+/* Honour reduced motion across the whole card/hover system. */
+@media (prefers-reduced-motion: reduce) {
+  .pc-card,
+  .pc-icon,
+  .pc-arrow,
+  .hover-media,
+  .hover-underline::after,
+  .btn {
+    transition: none !important;
+  }
+  .pc-card.is-hovered,
+  .pc-card--static:active,
+  .pc-icon.is-hovered,
+  .hover-media:hover {
+    transform: none !important;
+  }
 }

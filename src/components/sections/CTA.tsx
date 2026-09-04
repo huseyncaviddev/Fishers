@@ -145,13 +145,23 @@ export function CTA() {
               <p className="mt-3 text-white/60 text-sm font-light">
                 {t.cta.newsletterBody}
               </p>
-              <div className="mt-6 flex gap-3">
+              {/* Stacks below `sm`. `min-w-0` is the important part: a flex item
+                  defaults to min-width:auto, so this input refused to shrink
+                  below its placeholder width and pushed the shrink-0 button
+                  clean off a 320px screen. */}
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <label htmlFor="cta-newsletter-email" className="sr-only">
+                  {t.cta.newsletterPlaceholder}
+                </label>
                 <input
+                  id="cta-newsletter-email"
                   type="email"
+                  autoComplete="email"
+                  inputMode="email"
                   placeholder={t.cta.newsletterPlaceholder}
-                  className="flex-1 bg-white/10 text-white text-sm rounded-full px-5 py-3 placeholder:text-white/30 border border-white/10 focus:border-white/30 focus:outline-none transition-colors"
+                  className="min-w-0 flex-1 bg-white/10 text-white text-sm rounded-full px-5 py-3 placeholder:text-white/40 border border-white/15 focus:border-sand/60 focus:bg-white/[0.14] focus:outline-none transition-colors"
                 />
-                <button className="btn btn-sand btn-sm shrink-0">
+                <button className="btn btn-sand btn-sm shrink-0 w-full sm:w-auto">
                   {t.cta.newsletterButton}
                 </button>
               </div>

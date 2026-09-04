@@ -5,6 +5,7 @@ import { SmartVideo } from "@/components/ui/SmartVideo";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { useI18n } from "@/i18n/I18nProvider";
+import { useContinuousMotion } from "@/lib/useAdaptiveMotion";
 
 export function AboutPreview() {
   const { t } = useI18n();
@@ -15,7 +16,9 @@ export function AboutPreview() {
     target: containerRef,
     offset: ["start end", "end start"],
   });
-  const imgY = useTransform(scrollYProgress, [0, 1], [30, -30]);
+  const continuous = useContinuousMotion();
+  const imgYRaw = useTransform(scrollYProgress, [0, 1], [30, -30]);
+  const imgY = continuous ? imgYRaw : undefined;
 
   return (
     <section id="about" className="py-24 lg:py-36 bg-white overflow-hidden" ref={containerRef}>

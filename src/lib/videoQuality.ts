@@ -1,4 +1,5 @@
 import type { NetworkSnapshot } from "./networkManager";
+import { versionedMedia } from "./mediaVersion";
 
 /**
  * Delivery decision for a hero background video.
@@ -88,6 +89,12 @@ interface SlidePlanInputs {
   activeReady: boolean;
   /** False while the hero is off-screen or the tab is hidden. */
   playbackAllowed: boolean;
+  /**
+   * Whether this device is permitted to warm the next slide at all. Phones pass
+   * false: speculative preload is exactly the wasted bandwidth and decoder work
+   * that makes a mobile hero feel heavy.
+   */
+  allowWarmNext: boolean;
 }
 
 /**
@@ -104,10 +111,11 @@ export function planSlideRole({
   quality,
   activeReady,
   playbackAllowed,
+  allowWarmNext,
 }: SlidePlanInputs): SlideRole {
   if (quality === "none") return "idle";
   if (index === current) return "active";
-  if (!activeReady || !playbackAllowed) return "idle";
+  if (!allowWarmNext || !activeReady || !playbackAllowed) return "idle";
   const next = (current + 1) % slideCount;
   return index === next ? "warm" : "idle";
 }
@@ -119,6 +127,8 @@ const LOW_SUFFIX = "-low.mp4";
  * `high` returns the master untouched; `low` maps to the `-low.mp4` variant.
  */
 export function heroVideoSrc(baseSrc: string, quality: "high" | "low"): string {
-  if (quality === "high") return baseSrc;
-  return baseSrc.replace(/\.mp4$/, LOW_SUFFIX);
+  const src = quality === "high" ? baseSrc : baseSrc.replace(/\.mp4$/, LOW_SUFFIX);
+  // Versioned so re-encoded masters are not pinned in browser caches by the
+  // long immutable TTL these files are served with.
+  return versionedMedia(src);
 }

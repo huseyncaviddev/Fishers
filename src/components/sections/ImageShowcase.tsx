@@ -4,6 +4,7 @@ import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
 import { useI18n } from "@/i18n/I18nProvider";
+import { useContinuousMotion } from "@/lib/useAdaptiveMotion";
 
 const SHOWCASE_IMAGES = [
   { src: "/images/8.jpg", span: "col-span-2 row-span-2" },
@@ -23,8 +24,13 @@ export function ImageShowcase() {
     target: containerRef,
     offset: ["start end", "end start"],
   });
-  const y1 = useTransform(scrollYProgress, [0, 1], [40, -40]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [20, -60]);
+  const continuous = useContinuousMotion();
+  // Six tiles each driving a scroll-linked transform is a lot of per-frame work
+  // for a grid that already reads well static.
+  const y1Raw = useTransform(scrollYProgress, [0, 1], [40, -40]);
+  const y2Raw = useTransform(scrollYProgress, [0, 1], [20, -60]);
+  const y1 = continuous ? y1Raw : undefined;
+  const y2 = continuous ? y2Raw : undefined;
 
   return (
     <section ref={containerRef} className="py-24 lg:py-36 bg-white overflow-hidden">

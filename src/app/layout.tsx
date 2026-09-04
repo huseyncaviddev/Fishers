@@ -4,7 +4,6 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { AppShell } from "@/components/ui/AppShell";
 import { I18nProvider } from "@/i18n/I18nProvider";
 
@@ -125,8 +124,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
+      {/* No loading veil: the hero poster is preloaded and paints with the
+          first frame, so an artificial overlay could only ever delay the very
+          content it was pretending to wait for. */}
       <body className="min-h-screen flex flex-col antialiased" suppressHydrationWarning>
-        <LoadingScreen />
         <AppShell />
         <I18nProvider>
           <Navbar />

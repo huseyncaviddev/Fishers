@@ -15,6 +15,10 @@ interface HeroVideoStackProps {
   current: number;
   /** Delivery tier chosen from network + reduced-motion + viewport width. */
   quality: HeroQuality;
+  /** Device policy: phones never warm the next slide. */
+  allowWarmNext: boolean;
+  /** Notified when the active clip is genuinely painting frames. */
+  onActivePlaying?: (playing: boolean) => void;
 }
 
 // Bounded stall/error recovery — never an infinite retry storm.
@@ -42,10 +46,18 @@ const STALL_TIMEOUT_MS = 6000;
  * frame — so the hero is never a black rectangle and the handoff is
  * imperceptible.
  */
-export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps) {
+export function HeroVideoStack({
+  slides,
+  current,
+  quality,
+  allowWarmNext,
+  onActivePlaying,
+}: HeroVideoStackProps) {
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const retriesRef = useRef<number[]>(slides.map(() => 0));
   const downgradedRef = useRef<boolean[]>(slides.map(() => false));
+  /** Quality a slide's clip was actually attached at (see resolveSrc). */
+  const latchedQualityRef = useRef<Array<"high" | "low" | null>>(slides.map(() => null));
   const timersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
   const firstSlideRef = useRef<HTMLDivElement>(null);
 
@@ -82,10 +94,21 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
   };
 
   // Effective source for a slide, honouring any runtime downgrade of that clip.
+  //
+  // Quality is *latched* per slide once a clip is attached. Without this, a
+  // late `low -> high` upgrade (the viewport/network hint settling a beat after
+  // hydration) re-downloads a clip that is already playing perfectly well —
+  // wasted bytes and a visible reload for no gain. Upgrades therefore apply
+  // from the next slide onward. Downgrades are never latched: if the link
+  // genuinely cannot sustain the clip, dropping quality is the whole point.
   const resolveSrc = (i: number): string | null => {
     if (quality === "none") return null;
-    const wantHigh = quality === "high" && !downgradedRef.current[i];
-    return heroVideoSrc(slides[i].video, wantHigh ? "high" : "low");
+    let tier: "high" | "low" = quality === "high" ? "high" : "low";
+    // Defer an upgrade on a clip that is already attached at the lighter tier.
+    if (latchedQualityRef.current[i] === "low") tier = "low";
+    // A runtime stall downgrade always wins.
+    if (downgradedRef.current[i]) tier = "low";
+    return heroVideoSrc(slides[i].video, tier);
   };
 
   const unload = (video: HTMLVideoElement) => {
@@ -121,6 +144,9 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
   const resetRecovery = (i: number) => {
     retriesRef.current[i] = 0;
     downgradedRef.current[i] = false;
+    // Released slides re-evaluate quality freshly next time they are shown,
+    // so a deferred upgrade takes effect on the slide's next appearance.
+    latchedQualityRef.current[i] = null;
     clearTimer(i);
   };
 
@@ -171,6 +197,7 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
         quality,
         activeReady,
         playbackAllowed,
+        allowWarmNext,
       });
 
       if (role === "idle") {
@@ -191,6 +218,7 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
       // the reveal until a real frame is painted again — otherwise the stale
       // `is-ready` would expose that black frame over the poster.
       if (assign(video, src)) hide(i);
+      latchedQualityRef.current[i] = src.includes("-low.mp4") ? "low" : "high";
       video.preload = "auto";
 
       if (role === "active") {
@@ -217,7 +245,7 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
     // resolveSrc/unload closures are stable via refs; only these inputs decide
     // what work runs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [current, quality, activeReady, playbackAllowed, nextIndex, slides]);
+  }, [current, quality, activeReady, playbackAllowed, allowWarmNext, nextIndex, slides]);
 
   // --- Recovery: bounded retry → downgrade → poster, for the ACTIVE clip. ----
   useEffect(() => {
@@ -357,6 +385,15 @@ export function HeroVideoStack({ slides, current, quality }: HeroVideoStackProps
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current, quality, playbackAllowed]);
+
+  // The hero's slide clock should measure *useful viewing time*, so report
+  // whether the active clip is genuinely painting frames right now. A slide
+  // spent buffering therefore does not burn its turn on screen.
+  useEffect(() => {
+    onActivePlaying?.(
+      quality === "none" ? true : Boolean(revealed[current]) && playbackAllowed
+    );
+  }, [revealed, current, quality, playbackAllowed, onActivePlaying]);
 
   // --- Unmount: flush any pending timers. ------------------------------------
   useEffect(() => {

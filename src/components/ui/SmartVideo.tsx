@@ -1,158 +1,180 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useNetwork } from "@/lib/networkManager";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useMediaPolicy } from "@/lib/mediaPolicy";
+import {
+  MediaPriority,
+  requestMedia,
+  type MediaHandle,
+  type MediaState,
+} from "@/lib/mediaScheduler";
 
 interface SmartVideoProps {
   src: string;
   poster?: string;
   className?: string;
-  /** Distance from viewport (px) at which the video begins loading. */
+  /** Distance from the viewport at which the tile is considered "near". */
   rootMargin?: string;
+  /** Accessible label for the tap-to-play affordance on touch devices. */
+  playLabel?: string;
 }
 
-/** Bounded auto-retry so a stalled/failed load on weak networks recovers. */
-const MAX_RETRIES = 4;
+// Deliberate hover, not pointer noise: the cursor must rest on a tile before we
+// spend a decoder on it, so sweeping across a grid starts nothing.
+const HOVER_INTENT_MS = 140;
+// Small grace on exit so a pointer clipping a corner doesn't thrash play/pause.
+const HOVER_EXIT_MS = 120;
 
 /**
- * Premium, self-contained lazy video.
+ * A gallery/preview video governed entirely by the global media scheduler.
  *
- * Two-stage IntersectionObserver:
- *   - LOAD observer (near-viewport, wide margin): attaches the source so a
- *     tile that scrolls in has already buffered its first frames.
- *   - PLAY observer (actually visible, no margin): starts playback while the
- *     tile is on screen and pauses it the moment it scrolls away. Prevents
- *     the gallery from playing four offscreen videos at once on mobile.
+ * It never autoplays on its own. What it does depends on the resolved policy:
  *
- * Also pauses the video when the tab is hidden and resumes on return, so a
- * backgrounded tab never keeps decoding.
+ *   coarse pointer  → poster only; a tap requests playback
+ *   fine pointer    → deliberate hover requests playback
+ *   poster-first    → poster only, no request at all
  *
- * Render inside a `relative` container.
+ * Far from the viewport the source is released entirely (decoder + buffered
+ * bytes freed), so scrolling a long gallery does not accumulate attached video.
  */
 export function SmartVideo({
   src,
   poster,
   className,
-  rootMargin = "600px 0px",
+  rootMargin = "300px 0px",
+  playLabel = "Videonu oynat",
 }: SmartVideoProps) {
   const ref = useRef<HTMLVideoElement>(null);
-  const inViewRef = useRef(false);
-  const [active, setActive] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const retriesRef = useRef(0);
-  // Offline is the only hard stop; slow connections still buffer and play.
-  const online = useNetwork().online;
+  const handleRef = useRef<MediaHandle | null>(null);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nearRef = useRef(false);
 
+  const policy = useMediaPolicy();
+  const [state, setState] = useState<MediaState>("POSTER");
+  // Sticky user intent on touch: once tapped, the tile keeps its slot until it
+  // scrolls away or something higher-priority takes over.
+  const [requested, setRequested] = useState(false);
+
+  const clearHoverTimer = () => {
+    if (hoverTimer.current) {
+      clearTimeout(hoverTimer.current);
+      hoverTimer.current = null;
+    }
+  };
+
+  // Register with the scheduler once the element exists.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-
-    const applyPlayState = () => {
-      const shouldPlay =
-        inViewRef.current &&
-        (typeof document === "undefined" || !document.hidden);
-      if (shouldPlay) {
-        void el.play?.().catch(() => {});
-      } else {
-        try {
-          el.pause?.();
-        } catch {
-          // ignore
-        }
-      }
-    };
-
-    // LOAD observer — near-viewport. Only flips `active` on so the <video>
-    // begins buffering; play state is decided by the PLAY observer below.
-    const ioLoad = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) setActive(true);
-      },
-      { rootMargin, threshold: 0.01 }
-    );
-    ioLoad.observe(el);
-
-    // PLAY observer — actually visible. Governs playback so an offscreen
-    // buffered tile is not still decoding frames.
-    const ioPlay = new IntersectionObserver(
-      ([entry]) => {
-        inViewRef.current = entry.isIntersecting;
-        applyPlayState();
-      },
-      { threshold: 0.15 }
-    );
-    ioPlay.observe(el);
-
-    const onVisibility = () => applyPlayState();
-    document.addEventListener("visibilitychange", onVisibility);
-
+    const handle = requestMedia({
+      el,
+      src,
+      priority: MediaPriority.USER,
+      wantsPlay: false,
+      onState: setState,
+    });
+    handleRef.current = handle;
     return () => {
-      ioLoad.disconnect();
-      ioPlay.disconnect();
-      document.removeEventListener("visibilitychange", onVisibility);
+      handle.release();
+      handleRef.current = null;
     };
-  }, [rootMargin]);
+  }, [src]);
 
-  // Resilient recovery: on stall/error, reload the source and retry playback.
+  // Keep the scheduler's copy of the source in sync.
+  useEffect(() => {
+    handleRef.current?.update({ src });
+  }, [src]);
+
+  // Near-viewport tracking. Leaving the near band withdraws the request, which
+  // makes the scheduler detach the source and free the decoder.
   useEffect(() => {
     const el = ref.current;
-    if (!el || !active || !online) return;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        nearRef.current = entry.isIntersecting;
+        if (!entry.isIntersecting) {
+          clearHoverTimer();
+          setRequested(false);
+          handleRef.current?.update({ wantsPlay: false });
+        }
+      },
+      { rootMargin, threshold: 0 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [rootMargin]);
 
-    const tryPlay = () => {
-      if (typeof document !== "undefined" && document.hidden) return;
-      if (!inViewRef.current) return;
-      void el.play?.().catch(() => {});
-    };
-    const recover = () => {
-      if (retriesRef.current >= MAX_RETRIES) return;
-      retriesRef.current += 1;
-      try {
-        el.load();
-      } catch {
-        // ignore
-      }
-      tryPlay();
-    };
+  // Push the current intent to the scheduler.
+  useEffect(() => {
+    handleRef.current?.update({ wantsPlay: requested && !policy.posterFirst });
+  }, [requested, policy.posterFirst]);
 
-    el.addEventListener("stalled", recover);
-    el.addEventListener("error", recover);
-    el.addEventListener("canplay", tryPlay);
-    tryPlay();
+  useEffect(() => () => clearHoverTimer(), []);
 
-    return () => {
-      el.removeEventListener("stalled", recover);
-      el.removeEventListener("error", recover);
-      el.removeEventListener("canplay", tryPlay);
-    };
-  }, [active, online, src]);
+  const onPointerEnter = useCallback(() => {
+    if (!policy.hoverIntent || policy.posterFirst) return;
+    clearHoverTimer();
+    hoverTimer.current = setTimeout(() => {
+      if (nearRef.current) setRequested(true);
+    }, HOVER_INTENT_MS);
+  }, [policy.hoverIntent, policy.posterFirst]);
 
-  const loadedClass = loaded ? "sv-loaded" : "";
+  const onPointerLeave = useCallback(() => {
+    if (!policy.hoverIntent) return;
+    clearHoverTimer();
+    hoverTimer.current = setTimeout(() => setRequested(false), HOVER_EXIT_MS);
+  }, [policy.hoverIntent]);
+
+  // Touch devices: an explicit tap is the only thing that starts motion.
+  const onTap = useCallback(() => {
+    if (!policy.coarsePointer || policy.posterFirst) return;
+    setRequested((r) => !r);
+  }, [policy.coarsePointer, policy.posterFirst]);
+
+  const showing = state === "PLAYING";
+  const showTapHint = policy.coarsePointer && !policy.posterFirst && !showing;
 
   return (
-    <>
+    <div
+      className="sv-root"
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
+    >
+      {/* The poster carries the experience. It is a real element (not a video
+          frame) so it paints instantly and stays sharp when nothing plays. */}
       <div
         aria-hidden="true"
-        className={`sv-fill sv-placeholder ${loadedClass}`}
+        className={`sv-fill sv-placeholder ${showing ? "sv-loaded" : ""}`}
         style={poster ? { backgroundImage: `url(${poster})` } : undefined}
       />
       <video
         ref={ref}
-        src={active ? src : undefined}
         poster={poster}
         muted
         loop
         playsInline
         preload="none"
         aria-hidden="true"
-        onLoadedData={() => setLoaded(true)}
-        onCanPlay={() => setLoaded(true)}
-        className={`sv-fill sv-video ${loadedClass} ${className ?? ""}`}
+        className={`sv-fill sv-video ${showing ? "sv-loaded" : ""} ${className ?? ""}`}
       />
-    </>
+      {showTapHint && (
+        <button
+          type="button"
+          onClick={onTap}
+          aria-label={playLabel}
+          className="sv-play"
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </button>
+      )}
+    </div>
   );
 }
 
-/** Resolve the tiny poster frame for a `/videos/<name>.mp4` source. */
+/** Resolve the poster frame for a `/videos/<name>.mp4` source. */
 export function videoPosterJpg(src: string): string {
   const name = src.split("/").pop()?.replace(/\.mp4$/, "") ?? "";
   return `/videos/posters/${name}.jpg`;

@@ -37,8 +37,8 @@ export function Services() {
 
   return (
     <section id="services" className="py-24 lg:py-36 bg-mist relative overflow-hidden section-fade" ref={ref}>
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-ocean/[0.03] rounded-full blur-[120px] -translate-y-1/3 translate-x-1/3" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-sand/[0.04] rounded-full blur-[100px] translate-y-1/3 -translate-x-1/3" />
+      <div className="deco-blob absolute top-0 right-0 w-[500px] h-[500px] bg-ocean/[0.03] rounded-full blur-[120px] -translate-y-1/3 translate-x-1/3" />
+      <div className="deco-blob absolute bottom-0 left-0 w-[400px] h-[400px] bg-sand/[0.04] rounded-full blur-[100px] translate-y-1/3 -translate-x-1/3" />
 
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12 relative z-10">
         <motion.div

@@ -379,19 +379,19 @@ export const az = {
         expertise: ["IoT Sistemlər", "Aqrar Texnologiya", "R&D"],
       },
       {
-        name: "Əli Həsənov",
+        name: "Vidadi Heybətov",
         role: "Baş Direktor",
         desc: "25+ illik akvakultura təcrübəsi ilə şirkətin strateji inkişafına rəhbərlik edir. Beynəlxalq akvakultura konfranslarının mütəmadi iştirakçısı.",
         expertise: ["Strateji İdarəetmə", "Biznes İnkişaf", "Beynəlxalq Əlaqələr"],
       },
       {
-        name: "Leyla Məmmədova",
+        name: "Sabir Qənizadə",
         role: "Əməliyyat Direktoru",
         desc: "İstehsal proseslərinin optimallaşdırılması və əməliyyat səmərəliliyinin artırılması üzrə geniş təcrübəyə malikdir.",
         expertise: ["Əməliyyat İdarəetmə", "Proses Optimallaşdırma", "Keyfiyyət Nəzarəti"],
       },
       {
-        name: "Nigar Əliyeva",
+        name: "Çingiz Məmmədov",
         role: "Keyfiyyət Meneceri",
         desc: "ISO və HACCP sertifikasiya proseslərinin idarəsi, laboratoriya analizləri və qida təhlükəsizliyi mütəxəssisi.",
         expertise: ["Qida Təhlükəsizliyi", "ISO Sertifikasiya", "Laboratoriya"],

@@ -373,9 +373,15 @@ export const az = {
       "Hər biri öz sahəsində mütəxəssis olan peşəkar komandamız ilə tanış olun.",
     members: [
       {
+        name: "Niyazi Heybətov",
+        role: "Təsisçi",
+        desc: "Müasir akvakultura texnologiyalarının tətbiqi və R&D layihələrinin idarə edilməsi sahəsində ekspert.",
+        expertise: ["IoT Sistemlər", "Aqrar Texnologiya", "R&D"],
+      },
+      {
         name: "Əli Həsənov",
         role: "Baş Direktor",
-        desc: "20 illik akvakultura təcrübəsi ilə şirkətin strateji inkişafına rəhbərlik edir. Beynəlxalq akvakultura konfranslarının mütəmadi iştirakçısı.",
+        desc: "25+ illik akvakultura təcrübəsi ilə şirkətin strateji inkişafına rəhbərlik edir. Beynəlxalq akvakultura konfranslarının mütəmadi iştirakçısı.",
         expertise: ["Strateji İdarəetmə", "Biznes İnkişaf", "Beynəlxalq Əlaqələr"],
       },
       {
@@ -383,12 +389,6 @@ export const az = {
         role: "Əməliyyat Direktoru",
         desc: "İstehsal proseslərinin optimallaşdırılması və əməliyyat səmərəliliyinin artırılması üzrə geniş təcrübəyə malikdir.",
         expertise: ["Əməliyyat İdarəetmə", "Proses Optimallaşdırma", "Keyfiyyət Nəzarəti"],
-      },
-      {
-        name: "Rəşad Quliyev",
-        role: "Baş Texnoloq",
-        desc: "Müasir akvakultura texnologiyalarının tətbiqi və R&D layihələrinin idarə edilməsi sahəsində ekspert.",
-        expertise: ["IoT Sistemlər", "Aqrar Texnologiya", "R&D"],
       },
       {
         name: "Nigar Əliyeva",

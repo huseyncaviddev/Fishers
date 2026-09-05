@@ -9,9 +9,22 @@ import { getNetworkSnapshot, subscribeNetwork, type NetworkSnapshot } from "./ne
  * heuristic, so the whole page agrees on a single policy.
  */
 export interface MediaPolicy {
-  /** Hard page-wide cap on simultaneously PLAYING videos. */
+  /**
+   * Safety cap on simultaneously PLAYING videos.
+   *
+   * Normally `Infinity`: what plays is decided by what is genuinely on screen,
+   * not by an arbitrary number. A grid showing five visible tiles should play
+   * five. The cap exists only as a fallback for hardware that cannot cope —
+   * see `lowEndDevice()` — where it drops to 1-2 and the most-visible tiles win.
+   */
   maxPlaying: number;
-  /** Cap on speculatively warmed (buffering, not playing) videos. */
+  /**
+   * How many off-screen-but-near videos may hold an attached source.
+   *
+   * This is memory retention, not speculative loading: it stops a clip being
+   * torn down and re-fetched when the user nudges it a few pixels past the play
+   * threshold. Bounded so a long gallery cannot accumulate decoders.
+   */
   maxWarm: number;
   /** May a gallery tile start playing purely because it scrolled into view? */
   viewportAutoplay: boolean;
@@ -100,14 +113,18 @@ export function resolvePolicy(net: NetworkSnapshot): MediaPolicy {
   }
 
   if (coarse) {
-    // Phones/tablets: several tiles may play at once, because gallery tiles now
-    // use the 640px `-tile` rendition (~5x cheaper to decode than the master).
-    // Three of those together cost less than a single full-size clip did, so
-    // the grid looks alive without the stutter that concurrency used to cause.
-    // Still no speculative warming — bytes are only spent on what is on screen.
+    // Phones/tablets: whatever is genuinely on screen plays. Gallery tiles use
+    // the 640px `-tile` rendition (~5x cheaper to decode than the master), so a
+    // screenful of them costs about what one full-size clip used to.
+    //
+    // The cap only bites on hardware that has told us it is weak, or on a link
+    // too slow to feed several streams. Everything else is governed by
+    // visibility alone — a phone showing four tiles plays four.
     return {
-      maxPlaying: slow || weak ? 1 : 3,
-      maxWarm: 0,
+      maxPlaying: slow || weak ? 1 : Number.POSITIVE_INFINITY,
+      // Retain one just-offscreen clip so nudging the scroll does not tear a
+      // source down and immediately re-fetch it. Never more, on a phone.
+      maxWarm: slow || weak ? 0 : 1,
       viewportAutoplay: true,
       hoverIntent: false,
       heroWarmNext: false,
@@ -118,12 +135,11 @@ export function resolvePolicy(net: NetworkSnapshot): MediaPolicy {
     };
   }
 
-  // Desktop: scroll drives playback, a deliberate hover can claim a slot ahead
-  // of whatever scroll position picked, and the wider grid can afford more
-  // concurrent tiles.
+  // Desktop: same rule — visibility decides. A deliberate hover can still claim
+  // playback for a tile the scroll position alone would not have started.
   return {
-    maxPlaying: slow || weak ? 2 : 6,
-    maxWarm: slow ? 0 : 1,
+    maxPlaying: slow || weak ? 2 : Number.POSITIVE_INFINITY,
+    maxWarm: slow || weak ? 0 : 3,
     viewportAutoplay: true,
     hoverIntent: true,
     heroWarmNext: !slow,

@@ -25,13 +25,17 @@ interface SmartVideoProps {
 const HOVER_INTENT_MS = 140;
 const HOVER_EXIT_MS = 120;
 
-// A tile must be *meaningfully* on screen before it asks to play. Below this it
-// is scenery, not something the reader is looking at.
-const AUTOPLAY_RATIO = 0.55;
+// A tile must be *meaningfully* on screen before it plays — a sliver at the
+// edge of the viewport is scenery, not something the reader is watching.
+const PLAY_ENTER_RATIO = 0.35;
+// Hysteresis: once playing, a tile keeps going until it is clearly on its way
+// out. Without this gap a few pixels of scroll around a single threshold would
+// toggle playback (and, worse, the source) back and forth.
+const PLAY_EXIT_RATIO = 0.2;
 
-// Enough steps that the winner changes smoothly as you scroll, few enough that
-// the observer is not firing constantly.
-const RATIO_STEPS = [0, 0.25, 0.4, 0.55, 0.7, 0.85, 1];
+// Fine-grained steps so the observer reports movement across the band, not just
+// a single crossing.
+const RATIO_STEPS = [0, 0.1, 0.2, 0.28, 0.35, 0.5, 0.7, 0.9, 1];
 
 /**
  * A gallery/preview video governed entirely by the global media scheduler.
@@ -62,6 +66,10 @@ export function SmartVideo({
   const policy = useMediaPolicy();
   const [state, setState] = useState<MediaState>("POSTER");
   const [ratio, setRatio] = useState(0);
+  // Latched play decision, so the hysteresis band is remembered between frames.
+  const [inPlayBand, setInPlayBand] = useState(false);
+  // Within the NEAR band: keep the source attached but do not play.
+  const [near, setNear] = useState(false);
   // Explicit intent (tap / settled hover) — outranks scroll position.
   const [claimed, setClaimed] = useState(false);
 
@@ -94,20 +102,44 @@ export function SmartVideo({
     handleRef.current?.update({ src });
   }, [src]);
 
-  // Track how much of the tile is on screen.
+  // PLAY observer — the real viewport, deliberately with NO rootMargin. Play
+  // must reflect what the user can actually see; margins would start clips that
+  // are still off-screen.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      ([entry]) => {
+      (entries) => {
+        // Last entry, not first: a fast scroll crosses several thresholds
+        // between frames and the observer delivers them together, oldest first.
+        // Reading entries[0] drops the newest state — which is how a tile ends
+        // up still playing well outside the viewport.
+        const entry = entries[entries.length - 1];
         const r = entry.isIntersecting ? entry.intersectionRatio : 0;
         setRatio(r);
+        setInPlayBand((was) =>
+          was ? r >= PLAY_EXIT_RATIO : r >= PLAY_ENTER_RATIO
+        );
         if (r === 0) {
           clearHoverTimer();
           setClaimed(false);
         }
       },
-      { rootMargin, threshold: RATIO_STEPS }
+      { threshold: RATIO_STEPS }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // NEAR observer — a wider band that governs *source retention only*. Leaving
+  // it is what releases the decoder and buffered bytes; the gap between the two
+  // bands is the hysteresis that stops scroll jitter thrashing the source.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => setNear(entries[entries.length - 1].isIntersecting),
+      { rootMargin, threshold: 0 }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -116,19 +148,22 @@ export function SmartVideo({
   // Translate visibility + intent into a scheduler request.
   useEffect(() => {
     if (policy.posterFirst) {
-      handleRef.current?.update({ wantsPlay: false });
+      handleRef.current?.update({ wantsPlay: false, wantsWarm: false });
       return;
     }
-    const visibleEnough = policy.viewportAutoplay && ratio >= AUTOPLAY_RATIO;
-    const wantsPlay = claimed || visibleEnough;
+    const wantsPlay = claimed || (policy.viewportAutoplay && inPlayBand);
+    // Only retain a source for a clip that is near but not playing. Anything
+    // outside the near band drops to `false` on both counts, which is what
+    // makes the scheduler detach it.
+    const wantsWarm = !wantsPlay && near;
     // Explicit intent wins outright. Otherwise the more of the tile that is on
-    // screen, the stronger its claim — so the slot follows the reader's eye
-    // instead of whichever tile happened to mount last.
+    // screen, the stronger its claim — which only matters on a capped
+    // (low-end) device, where the most-visible tiles should be the ones kept.
     const priority = claimed
       ? MediaPriority.USER
       : MediaPriority.AMBIENT + Math.round(ratio * 30);
-    handleRef.current?.update({ wantsPlay, priority });
-  }, [ratio, claimed, policy.viewportAutoplay, policy.posterFirst]);
+    handleRef.current?.update({ wantsPlay, wantsWarm, priority });
+  }, [ratio, inPlayBand, near, claimed, policy.viewportAutoplay, policy.posterFirst]);
 
   useEffect(() => () => clearHoverTimer(), []);
 
@@ -154,7 +189,7 @@ export function SmartVideo({
   // Only offer the manual affordance where automatic playback will not happen
   // anyway — otherwise it is a button that does nothing the scroll didn't.
   const showTapHint =
-    policy.coarsePointer && !policy.posterFirst && !showing && ratio < AUTOPLAY_RATIO;
+    policy.coarsePointer && !policy.posterFirst && !showing && ratio < PLAY_ENTER_RATIO;
 
   return (
     <div

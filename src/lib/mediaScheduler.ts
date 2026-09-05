@@ -131,16 +131,24 @@ function reconcile() {
 
   const all = [...clients.values()];
 
-  // Contenders sorted by priority, newest-first as the tiebreak so the most
-  // recent user intent wins an otherwise equal contest.
+  // Everything genuinely on screen wants to play. Priority (higher first) only
+  // decides who survives when a cap is in force — normally there is no cap, so
+  // every visible client plays and the set is simply "what the user can see".
   const wantPlay = all
     .filter((c) => c.wantsPlay)
     .sort((a, b) => b.priority - a.priority || b.id - a.id);
 
   const maxPlaying = hidden || exclusiveDepth > 0 ? 0 : policy.maxPlaying;
-  const winners = new Set(wantPlay.slice(0, maxPlaying).map((c) => c.id));
+  const winners = new Set(
+    (Number.isFinite(maxPlaying) ? wantPlay.slice(0, maxPlaying) : wantPlay).map(
+      (c) => c.id
+    )
+  );
 
-  // Warm slots go to explicit warm requests that did not win a play slot.
+  // Retention, not speculation: a client that has left the play band but is
+  // still near keeps its source so a few pixels of scroll cannot cause an
+  // attach/detach/attach cycle. Bounded, so a long gallery cannot accumulate
+  // decoders behind the user.
   const wantWarm = all
     .filter((c) => c.wantsWarm && !winners.has(c.id))
     .sort((a, b) => b.priority - a.priority || b.id - a.id);

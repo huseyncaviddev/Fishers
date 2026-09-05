@@ -54,14 +54,24 @@ export function LazyVideo({
     };
   }, [src, priority]);
 
-  // Only ask for a slot while actually on screen — an ambient backdrop that has
-  // scrolled away has no claim on the single playback slot.
+  // Play only while genuinely on screen, with the same hysteresis band the
+  // gallery tiles use: enter at 35% visible, keep going until 20%. A backdrop
+  // the user has scrolled past has no claim on the decoder.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
-      { threshold: 0.2 }
+      (entries) => {
+        // Take the LAST entry, not the first. A fast scroll can cross several
+        // thresholds between frames, and the observer then delivers them all in
+        // one callback — oldest first. Reading `entries[0]` uses stale state and
+        // silently drops the final "ratio 0", leaving a clip playing far off
+        // screen because the component still believes it is visible.
+        const entry = entries[entries.length - 1];
+        const r = entry.isIntersecting ? entry.intersectionRatio : 0;
+        setVisible((was) => (was ? r >= 0.2 : r >= 0.35));
+      },
+      { threshold: [0, 0.1, 0.2, 0.28, 0.35, 0.5, 0.75, 1] }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -69,7 +79,11 @@ export function LazyVideo({
 
   useEffect(() => {
     const wants = visible && autoplay && !policy.posterFirst;
-    handleRef.current?.update({ wantsPlay: wants });
+    // No retention for full-size section backdrops: these are the heaviest
+    // clips on the page, so once one is off screen its source is released
+    // rather than held. Re-attaching costs a fetch; holding costs memory on
+    // every phone that scrolled past it.
+    handleRef.current?.update({ wantsPlay: wants, wantsWarm: false });
   }, [visible, autoplay, policy.posterFirst]);
 
   const cls = className

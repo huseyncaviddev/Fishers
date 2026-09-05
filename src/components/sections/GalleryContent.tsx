@@ -56,7 +56,12 @@ const MOMENTS: MediaItem[] = MOMENT_DIMS.map(([w, h], i) => ({
   h,
 }));
 
-const MEDIA: MediaItem[] = [...CURATED, ...MOMENTS];
+// "Hamısı" (All) shows VIP Ziyarət first — unchanged — then every Anlar
+// (Moments) photo, so a first-time visitor sees the authentic operational
+// moments before the rest of the curated set. Only the default/all ordering
+// is affected: selecting a single category still filters this same array, so
+// "Anlar" and "Təsərrüfat" tabs are unaffected and keep their own order.
+const MEDIA: MediaItem[] = [CURATED[0], ...MOMENTS, ...CURATED.slice(1)];
 
 /** Natural aspect ratio (w/h) — each photo keeps its intrinsic dimensions so
  *  the balanced masonry never crops the subject. */

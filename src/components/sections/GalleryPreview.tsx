@@ -7,20 +7,21 @@ import { useRef } from "react";
 import { SmartVideo, tileVideoSrc, videoPosterJpg } from "@/components/ui/SmartVideo";
 import { useI18n } from "@/i18n/I18nProvider";
 
+// `titleIdx` points into t.galleryPreview.items so captions stay attached to
+// the right tile — removing gallery-ai (AI monitoring overlay) and gallery-07
+// (net/cage hauling) would otherwise shift every caption after them by one.
 const GALLERY_ITEMS = [
-  { src: "/images/4.jpg", type: "image" as const },
-  { src: "/videos/gallery-harvest.mp4", type: "video" as const },
-  { src: "/images/3.jpg", type: "image" as const },
-  { src: "/videos/gallery-ai.mp4", type: "video" as const },
-  { src: "/images/14.jpg", type: "image" as const },
-  { src: "/images/16.jpg", type: "image" as const },
-  { src: "/videos/gallery-01.mp4", type: "video" as const },
-  { src: "/videos/gallery-02.mp4", type: "video" as const },
-  { src: "/videos/gallery-03.mp4", type: "video" as const },
-  { src: "/videos/gallery-04.mp4", type: "video" as const },
-  { src: "/videos/gallery-05.mp4", type: "video" as const },
-  { src: "/videos/gallery-06.mp4", type: "video" as const },
-  { src: "/videos/gallery-07.mp4", type: "video" as const },
+  { src: "/images/4.jpg", type: "image" as const, titleIdx: 0 },
+  { src: "/videos/gallery-harvest.mp4", type: "video" as const, titleIdx: 1 },
+  { src: "/images/3.jpg", type: "image" as const, titleIdx: 2 },
+  { src: "/images/14.jpg", type: "image" as const, titleIdx: 4 },
+  { src: "/images/16.jpg", type: "image" as const, titleIdx: 5 },
+  { src: "/videos/gallery-01.mp4", type: "video" as const, titleIdx: 6 },
+  { src: "/videos/gallery-02.mp4", type: "video" as const, titleIdx: 7 },
+  { src: "/videos/gallery-03.mp4", type: "video" as const, titleIdx: 8 },
+  { src: "/videos/gallery-04.mp4", type: "video" as const, titleIdx: 9 },
+  { src: "/videos/gallery-05.mp4", type: "video" as const, titleIdx: 10 },
+  { src: "/videos/gallery-06.mp4", type: "video" as const, titleIdx: 11 },
 ];
 
 export function GalleryPreview() {
@@ -98,7 +99,7 @@ export function GalleryPreview() {
                 ) : (
                   <Image
                     src={item.src}
-                    alt={t.galleryPreview.items[i]}
+                    alt={t.galleryPreview.items[item.titleIdx]}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 50vw, 33vw"
@@ -122,7 +123,7 @@ export function GalleryPreview() {
                     )}
                   </div>
                   <span className="text-white font-medium text-sm">
-                    {t.galleryPreview.items[i]}
+                    {t.galleryPreview.items[item.titleIdx]}
                   </span>
                 </div>
               </div>

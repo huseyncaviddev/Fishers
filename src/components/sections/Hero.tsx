@@ -212,8 +212,11 @@ export function Hero() {
     };
 
     const io = new IntersectionObserver(
-      ([entry]) => {
-        onScreen = entry.isIntersecting;
+      (entries) => {
+        // Last entry wins: a fast scroll can deliver several crossings in one
+        // callback, oldest first, and reading entries[0] would leave the hero
+        // clock running after the hero has left the screen.
+        onScreen = entries[entries.length - 1].isIntersecting;
         commit();
       },
       { threshold: 0.2 }

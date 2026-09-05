@@ -166,10 +166,13 @@ export function HeroVideoStack({
     };
 
     const io = new IntersectionObserver(
-      ([entry]) => {
+      (entries) => {
         // 0.1 threshold: even a sliver of hero visible still counts as "in
         // view" so a normal scroll doesn't stutter the video during a nav.
-        inView = entry.isIntersecting;
+        // Last entry wins — a fast scroll delivers several crossings at once,
+        // oldest first, and entries[0] would leave the hero clip decoding after
+        // it has scrolled away.
+        inView = entries[entries.length - 1].isIntersecting;
         commit();
       },
       { threshold: 0.1 }

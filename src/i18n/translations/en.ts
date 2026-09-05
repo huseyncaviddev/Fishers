@@ -375,9 +375,15 @@ export const en: Dictionary = {
       "Meet our professional team, each an expert in their field.",
     members: [
       {
+        name: "Niyazi Heybatov",
+        role: "Founder",
+        desc: "An expert in applying modern aquaculture technologies and managing R&D projects.",
+        expertise: ["IoT Systems", "Agri-Technology", "R&D"],
+      },
+      {
         name: "Ali Hasanov",
         role: "Chief Executive Officer",
-        desc: "With 20 years of aquaculture experience, he leads the company's strategic development. A regular participant in international aquaculture conferences.",
+        desc: "With 25+ years of aquaculture experience, he leads the company's strategic development. A regular participant in international aquaculture conferences.",
         expertise: ["Strategic Management", "Business Development", "International Relations"],
       },
       {
@@ -385,12 +391,6 @@ export const en: Dictionary = {
         role: "Chief Operating Officer",
         desc: "She has extensive experience in optimizing production processes and improving operational efficiency.",
         expertise: ["Operations Management", "Process Optimization", "Quality Control"],
-      },
-      {
-        name: "Rashad Guliyev",
-        role: "Chief Technologist",
-        desc: "An expert in applying modern aquaculture technologies and managing R&D projects.",
-        expertise: ["IoT Systems", "Agri-Technology", "R&D"],
       },
       {
         name: "Nigar Aliyeva",

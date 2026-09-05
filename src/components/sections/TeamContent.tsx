@@ -6,6 +6,15 @@ import Image from "next/image";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { useI18n } from "@/i18n/I18nProvider";
 
+// Photos are locale-independent, so they stay outside i18n and line up
+// positionally with the (translated) t.teamContent.members array.
+const MEMBER_PHOTOS = [
+  "/images/team/niyazi-heybetov.jpg",
+  "/images/team/ali-hasanov.jpg",
+  "/images/team/leyla-mammadova.jpg",
+  "/images/team/nigar-aliyeva.jpg",
+] as const;
+
 // Captions come from i18n (t.teamContent.cultureTiles) so they translate.
 const CULTURE_TILES = [
   {
@@ -29,15 +38,6 @@ const CULTURE_TILES = [
     area: "tile-d",
   },
 ] as const;
-
-function getInitials(name: string): string {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((word) => word.charAt(0))
-    .join("")
-    .toUpperCase();
-}
 
 export function TeamContent() {
   const { t } = useI18n();
@@ -83,8 +83,14 @@ export function TeamContent() {
                 className="group"
               >
                 <div className="bg-mist rounded-xl sm:rounded-2xl p-5 sm:p-8 text-center card-lift h-full flex flex-col border border-transparent hover:border-ocean/10">
-                  <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-ocean to-ocean-dark mx-auto flex items-center justify-center shadow-lg shadow-ocean/20 group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-ocean/30 transition-all duration-500">
-                    <span className="text-white font-display text-lg sm:text-2xl font-bold">{getInitials(member.name)}</span>
+                  <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden mx-auto shadow-lg shadow-ocean/20 group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-ocean/30 transition-all duration-500">
+                    <Image
+                      src={MEMBER_PHOTOS[i]}
+                      alt={member.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 64px, 96px"
+                    />
                   </div>
                   <h3 className="mt-4 sm:mt-6 font-display text-base sm:text-xl font-semibold text-navy">{member.name}</h3>
                   <p className="mt-1 text-ocean text-xs sm:text-sm font-medium">{member.role}</p>

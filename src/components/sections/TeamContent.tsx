@@ -10,9 +10,9 @@ import { useI18n } from "@/i18n/I18nProvider";
 // positionally with the (translated) t.teamContent.members array.
 const MEMBER_PHOTOS = [
   "/images/team/niyazi-heybetov.jpg",
-  "/images/team/ali-hasanov.jpg",
-  "/images/team/leyla-mammadova.jpg",
-  "/images/team/nigar-aliyeva.jpg",
+  "/images/team/vidadi-heybetov.jpg",
+  "/images/team/sabir-qenizade.jpg",
+  "/images/team/cingiz-memmedov.jpg",
 ] as const;
 
 // Captions come from i18n (t.teamContent.cultureTiles) so they translate.

@@ -381,19 +381,19 @@ export const en: Dictionary = {
         expertise: ["IoT Systems", "Agri-Technology", "R&D"],
       },
       {
-        name: "Ali Hasanov",
+        name: "Vidadi Heybatov",
         role: "Chief Executive Officer",
         desc: "With 25+ years of aquaculture experience, he leads the company's strategic development. A regular participant in international aquaculture conferences.",
         expertise: ["Strategic Management", "Business Development", "International Relations"],
       },
       {
-        name: "Leyla Mammadova",
+        name: "Sabir Ganizada",
         role: "Chief Operating Officer",
-        desc: "She has extensive experience in optimizing production processes and improving operational efficiency.",
+        desc: "He has extensive experience in optimizing production processes and improving operational efficiency.",
         expertise: ["Operations Management", "Process Optimization", "Quality Control"],
       },
       {
-        name: "Nigar Aliyeva",
+        name: "Chingiz Mammadov",
         role: "Quality Manager",
         desc: "A food safety specialist managing ISO and HACCP certification processes and laboratory analyses.",
         expertise: ["Food Safety", "ISO Certification", "Laboratory"],

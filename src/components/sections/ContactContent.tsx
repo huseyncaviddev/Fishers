@@ -26,8 +26,8 @@ const CONTACT_ICONS = [
 
 const SOCIAL_LABELS: Record<SocialKey, string> = {
   facebook: "Facebook",
-  instagram: "Instagram",
-  linkedin: "LinkedIn",
+  tiktok: "TikTok",
+  whatsapp: "WhatsApp",
 };
 
 /**

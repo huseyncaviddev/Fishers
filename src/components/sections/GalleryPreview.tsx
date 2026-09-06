@@ -15,7 +15,7 @@ const GALLERY_ITEMS = [
   { src: "/videos/gallery-harvest.mp4", type: "video" as const, titleIdx: 1 },
   { src: "/images/3.jpg", type: "image" as const, titleIdx: 2 },
   { src: "/images/14.jpg", type: "image" as const, titleIdx: 4 },
-  { src: "/images/16.jpg", type: "image" as const, titleIdx: 5 },
+  { src: "/images/ChatGPT Image Sep 6, 2026, 05_35_33 PM.png", type: "image" as const, titleIdx: 5 },
   { src: "/videos/gallery-01.mp4", type: "video" as const, titleIdx: 6 },
   { src: "/videos/gallery-02.mp4", type: "video" as const, titleIdx: 7 },
   { src: "/videos/gallery-03.mp4", type: "video" as const, titleIdx: 8 },

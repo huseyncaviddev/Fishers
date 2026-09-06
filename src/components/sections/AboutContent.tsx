@@ -80,7 +80,7 @@ export function AboutContent() {
               <div className="aspect-[4/3] rounded-2xl overflow-hidden relative border-glow">
                 <motion.div style={{ y: imgY }} className="absolute inset-[-10%] w-[120%] h-[120%]">
                   <Image
-                    src="/images/1.jpg"
+                    src="/images/ChatGPT Image Sep 6, 2026, 05_34_16 PM.png"
                     alt="United Fishers akvakultura təsərrüfatı"
                     fill
                     className="object-cover"

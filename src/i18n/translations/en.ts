@@ -378,19 +378,19 @@ export const en: Dictionary = {
         name: "Niyazi Heybatov",
         role: "Founder",
         desc: "An expert in applying modern aquaculture technologies and managing R&D projects.",
-        expertise: ["IoT Systems", "Agri-Technology", "R&D"],
+        expertise: ["Strategic Management", "Business Development", "International Relations"],
       },
       {
         name: "Vidadi Heybatov",
         role: "Chief Executive Officer",
         desc: "With 25+ years of aquaculture experience, he leads the company's strategic development. A regular participant in international aquaculture conferences.",
-        expertise: ["Strategic Management", "Business Development", "International Relations"],
+        expertise: ["Operations Management", "Process Optimization", "Quality Control"],
       },
       {
         name: "Sabir Ganizada",
         role: "Chief Operating Officer",
         desc: "He has extensive experience in optimizing production processes and improving operational efficiency.",
-        expertise: ["Operations Management", "Process Optimization", "Quality Control"],
+        expertise: ["IoT Systems", "Agri-Technology", "R&D"],
       },
       {
         name: "Chingiz Mammadov",

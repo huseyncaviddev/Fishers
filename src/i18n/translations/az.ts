@@ -376,19 +376,19 @@ export const az = {
         name: "Niyazi Heybətov",
         role: "Təsisçi",
         desc: "Müasir akvakultura texnologiyalarının tətbiqi və R&D layihələrinin idarə edilməsi sahəsində ekspert.",
-        expertise: ["IoT Sistemlər", "Aqrar Texnologiya", "R&D"],
+        expertise: ["Strateji İdarəetmə", "Biznes İnkişaf", "Beynəlxalq Əlaqələr"],
       },
       {
         name: "Vidadi Heybətov",
         role: "Baş Direktor",
         desc: "25+ illik akvakultura təcrübəsi ilə şirkətin strateji inkişafına rəhbərlik edir. Beynəlxalq akvakultura konfranslarının mütəmadi iştirakçısı.",
-        expertise: ["Strateji İdarəetmə", "Biznes İnkişaf", "Beynəlxalq Əlaqələr"],
+        expertise: ["Əməliyyat İdarəetmə", "Proses Optimallaşdırma", "Keyfiyyət Nəzarəti"],
       },
       {
         name: "Sabir Qənizadə",
         role: "Əməliyyat Direktoru",
         desc: "İstehsal proseslərinin optimallaşdırılması və əməliyyat səmərəliliyinin artırılması üzrə geniş təcrübəyə malikdir.",
-        expertise: ["Əməliyyat İdarəetmə", "Proses Optimallaşdırma", "Keyfiyyət Nəzarəti"],
+        expertise: ["IoT Sistemlər", "Aqrar Texnologiya", "R&D"],
       },
       {
         name: "Çingiz Məmmədov",

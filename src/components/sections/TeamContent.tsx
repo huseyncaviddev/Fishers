@@ -83,13 +83,18 @@ export function TeamContent() {
                 className="group"
               >
                 <div className="bg-mist rounded-xl sm:rounded-2xl p-5 sm:p-8 text-center card-lift h-full flex flex-col border border-transparent hover:border-ocean/10">
-                  <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-xl sm:rounded-2xl overflow-hidden mx-auto shadow-lg shadow-ocean/20 group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-ocean/30 transition-all duration-500">
+                  {/* Premium portrait: larger square-rounded frame, hairline aqua
+                      ring for depth, soft layered shadow, subtle lift on hover.
+                      next/image serves it at ~256px on desktop from the 1400px
+                      master so it stays sharp on any DPR. */}
+                  <div className="relative w-24 h-24 sm:w-32 sm:h-32 lg:w-36 lg:h-36 rounded-2xl overflow-hidden mx-auto ring-1 ring-ocean/10 shadow-[0_10px_30px_-10px_rgba(11,143,156,0.35)] group-hover:-translate-y-0.5 group-hover:shadow-[0_18px_44px_-12px_rgba(11,143,156,0.45)] group-hover:ring-ocean/25 transition-all duration-500">
                     <Image
                       src={MEMBER_PHOTOS[i]}
                       alt={member.name}
                       fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 64px, 96px"
+                      className="object-cover object-top"
+                      sizes="(max-width: 640px) 96px, (max-width: 1024px) 128px, 144px"
+                      quality={90}
                     />
                   </div>
                   <h3 className="mt-4 sm:mt-6 font-display text-base sm:text-xl font-semibold text-navy">{member.name}</h3>

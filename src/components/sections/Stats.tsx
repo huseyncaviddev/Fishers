@@ -55,8 +55,8 @@ function AnimatedNumber({ value, suffix, label, inView, delay }: StatItemProps) 
 
 const STATS = [
   { value: 15, suffix: "+" },
-  { value: 500, suffix: "T" },
-  { value: 50, suffix: "+" },
+  { value: 50, suffix: "T+" },
+  { value: 20, suffix: "+" },
   { value: 98, suffix: "%" },
 ];
 

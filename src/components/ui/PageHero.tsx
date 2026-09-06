@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
+import Image, { type ImageProps } from "next/image";
 import Link from "next/link";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { ProductSlug } from "@/data/products";
@@ -11,7 +11,11 @@ type PageKey = "about" | "team" | "gallery" | "products" | "contact";
 interface PageHeroProps {
   pageKey?: PageKey;
   productSlug?: ProductSlug;
-  image?: string;
+  image?: ImageProps["src"];
+  /** Preserve a prepared photo without another resize or lossy encode. */
+  imageUnoptimized?: boolean;
+  /** Decorative texture can be omitted when photographic detail matters. */
+  showGrain?: boolean;
   /** CSS object-position for the background image's focal point. */
   imagePosition?: string;
   /** Overlay gradient classes; override for brighter photos (e.g. group shots). */
@@ -28,6 +32,8 @@ export function PageHero({
   pageKey,
   productSlug,
   image,
+  imageUnoptimized = false,
+  showGrain = true,
   imagePosition = "center",
   overlayClassName = DEFAULT_OVERLAY,
   contentAlign = "center",
@@ -61,6 +67,7 @@ export function PageHero({
           style={{ objectPosition: imagePosition }}
           sizes="100vw"
           quality={90}
+          unoptimized={imageUnoptimized}
           priority
           fetchPriority="high"
           {...(imageBlurDataURL
@@ -69,7 +76,7 @@ export function PageHero({
         />
       )}
       <div className={`absolute inset-0 ${overlayClassName}`} />
-      <div className="absolute inset-0 film-grain pointer-events-none" />
+      {showGrain && <div className="absolute inset-0 film-grain pointer-events-none" />}
 
       <div
         className={`relative z-10 text-center px-6 ${

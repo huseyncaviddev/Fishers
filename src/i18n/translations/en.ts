@@ -199,7 +199,7 @@ export const en: Dictionary = {
     titleTail: "With Us",
     body: "Reach out to us for your questions, suggestions, or partnership opportunities. Our professional team is ready to help you.",
     info: [
-      { label: "Address", text: "Neftchala, Kura River side" },
+      { label: "Address", text: "Neftchala, Azerbaijan" },
       { label: "Phone", text: "+994 51 911 55 11" },
       { label: "Email", text: "azerbaijanaquaculture@gmail.com" },
     ],
@@ -216,7 +216,7 @@ export const en: Dictionary = {
     colInfo: "Information",
     infoItems: ["Certificates", "Sustainability", "Partnership", "News"],
     colAddress: "Our Address",
-    addressLines: ["Kura River side", "Neftchala", "Azerbaijan"],
+    addressLines: ["Neftchala", "Azerbaijan"],
     colContact: "Contact",
     partnersLabel: "For partners:",
     rights: "All rights reserved.",
@@ -432,7 +432,7 @@ export const en: Dictionary = {
     info: [
       {
         title: "Address",
-        lines: ["Neftchala, Azerbaijan", "Kura River side"],
+        lines: ["Neftchala, Azerbaijan"],
       },
       {
         title: "Phone",

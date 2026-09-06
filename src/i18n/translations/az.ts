@@ -197,7 +197,7 @@ export const az = {
     titleTail: "Saxlayın",
     body: "Suallarınız, təklifləriniz və ya əməkdaşlıq imkanları üçün bizimlə əlaqə saxlayın. Peşəkar komandamız sizə kömək etməyə hazırdır.",
     info: [
-      { label: "Ünvan", text: "Neftçala, Kür çayı sahili" },
+      { label: "Ünvan", text: "Neftçala, Azərbaycan" },
       { label: "Telefon", text: "+994 51 911 55 11" },
       { label: "E-poçt", text: "azerbaijanaquaculture@gmail.com" },
     ],
@@ -214,7 +214,7 @@ export const az = {
     colInfo: "Məlumat",
     infoItems: ["Sertifikatlar", "Davamlılıq", "Tərəfdaşlıq", "Xəbərlər"],
     colAddress: "Ünvanımız",
-    addressLines: ["Kür çayı sahili", "Neftçala", "Azərbaycan"],
+    addressLines: ["Neftçala", "Azərbaycan"],
     colContact: "Əlaqə",
     partnersLabel: "Tərəfdaşlar üçün:",
     rights: "Bütün hüquqlar qorunur.",
@@ -430,7 +430,7 @@ export const az = {
     info: [
       {
         title: "Ünvan",
-        lines: ["Neftçala, Azərbaycan", "Kür çayı sahili"],
+        lines: ["Neftçala, Azərbaycan"],
       },
       {
         title: "Telefon",

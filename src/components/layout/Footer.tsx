@@ -51,7 +51,7 @@ export function Footer() {
         </div>
 
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12 pt-12 sm:pt-16 lg:pt-20 pb-8">
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
             <div>
               <h4 className="font-display text-sm font-semibold tracking-wide text-sand">
                 {t.footer.colCompany}
@@ -66,28 +66,6 @@ export function Footer() {
                       <span className="w-0 h-px bg-sand group-hover:w-3 transition-all duration-300" />
                       {t.nav[link.key]}
                     </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-display text-sm font-semibold tracking-wide text-sand">
-                {t.footer.colInfo}
-              </h4>
-              <ul className="mt-5 space-y-3">
-                {/* Plain text, not links. These four labels have no pages
-                    behind them, and there is no route that honestly stands in
-                    for "Xəbərlər". They used to be `href="#"` anchors, which
-                    read as navigation and did nothing. Give them real
-                    destinations here the moment those pages exist. */}
-                {t.footer.infoItems.map((label) => (
-                  <li
-                    key={label}
-                    className="text-white/40 text-sm inline-flex items-center gap-1.5"
-                  >
-                    <span className="w-3 h-px bg-sand/40" />
-                    {label}
                   </li>
                 ))}
               </ul>

@@ -33,37 +33,37 @@ export const PRODUCTS: Product[] = [
   {
     slug: "xezer-neresi",
     categoryKey: "fish",
-    image: "/images/10.jpg",
+    image: "/images/improved/ChatGPT Image Sep 6, 2026, 04_06_45 PM.png",
     video: "/videos/farm-1.mp4",
   },
   {
     slug: "qara-kuru",
     categoryKey: "premium",
-    image: "/images/3.jpg",
+    image: "/images/improved/ChatGPT Image Sep 6, 2026, 04_10_54 PM.png",
     video: "/videos/farm-2.mp4",
   },
   {
     slug: "alabaliq",
     categoryKey: "fish",
-    image: "/images/14.jpg",
+    image: "/images/improved/ChatGPT Image Sep 6, 2026, 05_03_41 PM.png",
     video: "/videos/farm-3.mp4",
   },
   {
     slug: "hise-verilmis-alabaliq",
     categoryKey: "premium",
-    image: "/images/9.jpg",
+    image: "/images/improved/ChatGPT Image Sep 6, 2026, 04_09_24 PM.png",
     video: "/videos/farm-4.mp4",
   },
   {
     slug: "premium-baliq-yemi",
     categoryKey: "feedTech",
-    image: "/images/12.jpg",
+    image: "/images/improved/ChatGPT Image Sep 6, 2026, 03_35_56 PM (2).png",
     video: "/videos/farm-5.mp4",
   },
   {
     slug: "iot-monitorinq",
     categoryKey: "feedTech",
-    image: "/images/5.jpg",
+    image: "/images/improved/ChatGPT Image Sep 6, 2026, 03_22_48 PM (4).png",
     video: "/videos/farm-2.mp4",
   },
 ];

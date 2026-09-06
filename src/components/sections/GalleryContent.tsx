@@ -4,7 +4,14 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useI18n } from "@/i18n/I18nProvider";
-import { GALLERY_IMAGES, type GalleryImage } from "@/data/galleryImages";
+import {
+  GALLERY_IMAGES,
+  type GalleryImage,
+  type GalleryCategory,
+} from "@/data/galleryImages";
+
+type FilterKey = "all" | GalleryCategory;
+const CATEGORIES: FilterKey[] = ["all", "farm", "processing", "tech", "moments"];
 
 /** Natural aspect ratio (w/h) — each photo keeps its intrinsic dimensions so
  *  the balanced masonry never crops the subject. */
@@ -36,10 +43,20 @@ export function GalleryContent() {
   const gc = t.galleryContent;
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-50px" });
+  const [activeCategory, setActiveCategory] = useState<FilterKey>("all");
   const [selected, setSelected] = useState<number | null>(null);
   const columnCount = useColumnCount();
 
-  const total = GALLERY_IMAGES.length;
+  // `selected` indexes into `filtered`, so switching filters would point it at
+  // the wrong photo — close the lightbox whenever the filter changes.
+  const filtered = useMemo(
+    () =>
+      activeCategory === "all"
+        ? GALLERY_IMAGES
+        : GALLERY_IMAGES.filter((m) => m.category === activeCategory),
+    [activeCategory],
+  );
+  const total = filtered.length;
 
   // Keyboard control for the lightbox: Escape closes, arrows page through.
   useEffect(() => {
@@ -55,21 +72,20 @@ export function GalleryContent() {
 
   // Greedy shortest-column packing keeps the columns visually balanced (no one
   // column running much taller) while preserving each photo's natural ratio.
-  // Each column keeps the images' original order for a stable, readable flow.
   const columns = useMemo(() => {
     const cols: { item: GalleryImage; index: number }[][] = Array.from(
       { length: columnCount },
       () => [],
     );
     const heights = new Array(columnCount).fill(0);
-    GALLERY_IMAGES.forEach((item, index) => {
+    filtered.forEach((item, index) => {
       let k = 0;
       for (let j = 1; j < columnCount; j++) if (heights[j] < heights[k]) k = j;
       cols[k].push({ item, index });
       heights[k] += 1 / aspectOf(item);
     });
     return cols;
-  }, [columnCount]);
+  }, [filtered, columnCount]);
 
   const renderTile = (item: GalleryImage, index: number) => (
     <motion.div
@@ -100,6 +116,12 @@ export function GalleryContent() {
             </svg>
           </div>
         </div>
+
+        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+          <span className="text-white/70 text-[10px] font-medium tracking-[0.15em] uppercase">
+            {gc.categories[item.category]}
+          </span>
+        </div>
       </div>
     </motion.div>
   );
@@ -107,6 +129,30 @@ export function GalleryContent() {
   return (
     <section className="py-16 lg:py-24 bg-white" ref={ref}>
       <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="flex flex-wrap gap-2 sm:gap-3 justify-center mb-12 lg:mb-16"
+        >
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => {
+                setActiveCategory(cat);
+                setSelected(null);
+              }}
+              className={`px-5 sm:px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-500 ${
+                activeCategory === cat
+                  ? "bg-ocean text-white shadow-md shadow-ocean/20"
+                  : "bg-mist text-slate/60 hover:bg-ocean-light hover:text-ocean"
+              }`}
+            >
+              {gc.categories[cat]}
+            </button>
+          ))}
+        </motion.div>
+
         <div className="flex items-start gap-3 sm:gap-4 lg:gap-5">
           {columns.map((col, ci) => (
             <div
@@ -120,7 +166,7 @@ export function GalleryContent() {
       </div>
 
       <AnimatePresence>
-        {selected !== null && (
+        {selected !== null && filtered[selected] && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -138,21 +184,23 @@ export function GalleryContent() {
             >
               <div className="rounded-2xl overflow-hidden shadow-2xl bg-navy max-h-[82vh] flex items-center justify-center">
                 <Image
-                  key={GALLERY_IMAGES[selected].src}
-                  src={GALLERY_IMAGES[selected].src}
+                  key={filtered[selected].src}
+                  src={filtered[selected].src}
                   alt={gc.momentsCaption}
-                  width={GALLERY_IMAGES[selected].w}
-                  height={GALLERY_IMAGES[selected].h}
+                  width={filtered[selected].w}
+                  height={filtered[selected].h}
                   className="w-auto h-auto max-w-full max-h-[82vh] object-contain"
                   sizes="100vw"
                 />
               </div>
               <div className="mt-4 flex items-center justify-center gap-3 text-white/50 text-sm font-light">
+                <span className="text-ocean-light tracking-[0.15em] uppercase text-xs">
+                  {gc.categories[filtered[selected].category]}
+                </span>
                 <span className="h-px w-8 bg-white/20" />
                 <span suppressHydrationWarning>
                   {selected + 1} / {total}
                 </span>
-                <span className="h-px w-8 bg-white/20" />
               </div>
             </motion.div>
 

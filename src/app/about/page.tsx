@@ -3,7 +3,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { AboutContent } from "@/components/sections/AboutContent";
 
 export const metadata: Metadata = {
-  title: "Haqqımızda | United Fishers",
+  title: "Haqqımızda",
   description:
     "United Fishers haqqında ətraflı məlumat — missiyamız, vizyonumuz və dəyərlərimiz.",
 };

@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!product) return {};
   const item = az.products.items[product.slug];
   return {
-    title: `${item.name} | United Fishers`,
+    title: item.name,
     description: item.shortDesc,
   };
 }

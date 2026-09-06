@@ -26,8 +26,10 @@ const AUTO_ADVANCE_MS = 5500;
 const SUSPEND_AFTER_INPUT_MS = 4000;
 // Minimum gap between two gesture-driven slide changes — one flick = one slide.
 const GESTURE_COOLDOWN_MS = 850;
-// Vertical swipe distance (px) required to count as a slide change on touch.
+// Horizontal swipe distance (px) required to count as a slide change on touch.
 const SWIPE_THRESHOLD = 48;
+// Horizontal wheel/trackpad delta before a slide change is considered.
+const WHEEL_X_THRESHOLD = 40;
 // We only capture wheel/touch while the hero is pinned at the very top.
 const PINNED_EPSILON = 4;
 // Never let a single frame advance the progress clock by more than this (guards
@@ -80,7 +82,6 @@ export function Hero() {
   // True only while the active hero clip is genuinely painting frames.
   const activePlayingRef = useRef(true);
   const mouseRafRef = useRef(0);
-  const handoffRef = useRef(false);
 
   const net = useNetwork();
   const reducedMotion = useReducedMotion() ?? false;
@@ -109,40 +110,6 @@ export function Hero() {
 
   const suspendAutoplay = useCallback(() => {
     suspendUntilRef.current = Date.now() + SUSPEND_AFTER_INPUT_MS;
-  }, []);
-
-  // Hand off from the last slide into the section below (the "HAQQIMIZDA"
-  // About preview, id="about"): one smooth glide instead of a partial nudge.
-  // We animate the scroll ourselves with rAF rather than scrollIntoView({smooth})
-  // because the browser cancels a programmatic smooth-scroll the moment more
-  // wheel/touch momentum arrives — which, combined with our preventDefault,
-  // would leave the page stuck on the last slide.
-  const releaseToContent = useCallback(() => {
-    // Ignore the leftover momentum from the flick that just landed on the last
-    // slide, so the final video is actually seen before we glide away.
-    if (handoffRef.current || Date.now() < lockRef.current) return;
-    handoffRef.current = true;
-
-    const target = document.getElementById("about");
-    const startY = window.scrollY;
-    const destY = target
-      ? startY + target.getBoundingClientRect().top
-      : startY + window.innerHeight;
-    const distance = destY - startY;
-    const duration = 750;
-    const start = performance.now();
-    const easeOutCubic = (p: number) => 1 - Math.pow(1 - p, 3);
-
-    const step = (now: number) => {
-      const p = Math.min(1, (now - start) / duration);
-      window.scrollTo(0, startY + distance * easeOutCubic(p));
-      if (p < 1) {
-        requestAnimationFrame(step);
-      } else {
-        handoffRef.current = false;
-      }
-    };
-    requestAnimationFrame(step);
   }, []);
 
   // Rate-limited manual step used by wheel / touch / keyboard.
@@ -232,34 +199,27 @@ export function Hero() {
     };
   }, []);
 
-  // Scroll / swipe / keyboard capture. While the hero is pinned at the top we
-  // translate a downward gesture into "next slide" and an upward one into
-  // "previous". On the last slide a further downward gesture is left alone, so
-  // the page scrolls naturally into the content below; scrolling back to the top
-  // re-engages slide mode.
+  // Carousel gestures. The hero is a HORIZONTAL carousel: sideways gestures
+  // move between slides, and vertical movement is always the page's.
+  //
+  // Vertical wheel is no longer intercepted at all. It used to preventDefault
+  // and convert scrolling into slide changes, which meant a reader trying to
+  // move down the page was instead marched through five slides before the page
+  // would budge — the scroll felt broken. Leaving the page's own scroll alone
+  // is the whole point of this model.
   useEffect(() => {
     const isPinned = () => window.scrollY <= PINNED_EPSILON;
     const lastIndex = SLIDES.length - 1;
 
+    // Horizontal trackpad / shift-wheel only. Vertical deltas are ignored so
+    // the page scrolls natively; this listener stays passive as a result.
     const onWheel = (e: WheelEvent) => {
-      if (handoffRef.current) {
-        e.preventDefault(); // don't let native momentum fight our rAF glide
-        return;
-      }
-      if (!isPinned() || Math.abs(e.deltaY) < 2) return;
-      if (e.deltaY > 0) {
-        e.preventDefault();
-        if (currentRef.current < lastIndex) {
-          navigate(1);
-        } else {
-          releaseToContent(); // last slide -> glide into the About section
-        }
-      } else {
-        if (currentRef.current > 0) {
-          e.preventDefault();
-          navigate(-1);
-        }
-      }
+      if (!isPinned()) return;
+      const dx = e.shiftKey ? e.deltaY : e.deltaX;
+      if (Math.abs(dx) < Math.abs(e.deltaY) && !e.shiftKey) return;
+      if (Math.abs(dx) < WHEEL_X_THRESHOLD) return;
+      if (dx > 0 && currentRef.current < lastIndex) navigate(1);
+      else if (dx < 0 && currentRef.current > 0) navigate(-1);
     };
 
     const onTouchStart = (e: TouchEvent) => {
@@ -291,27 +251,23 @@ export function Hero() {
       else if (dx < 0 && currentRef.current > 0) navigate(-1);
     };
 
+    // Left/Right match the carousel's axis. Up/Down/PageUp/PageDown are left to
+    // the browser so keyboard users can scroll the page normally.
     const onKeyDown = (e: KeyboardEvent) => {
-      if (handoffRef.current || !isPinned()) return;
-      const down = e.key === "ArrowDown" || e.key === "PageDown";
-      const up = e.key === "ArrowUp" || e.key === "PageUp";
-      if (down && currentRef.current < lastIndex) {
+      if (!isPinned()) return;
+      if (e.key === "ArrowRight" && currentRef.current < lastIndex) {
         e.preventDefault();
         navigate(1);
-      } else if (down && currentRef.current >= lastIndex) {
-        e.preventDefault();
-        releaseToContent();
-      } else if (up && currentRef.current > 0) {
+      } else if (e.key === "ArrowLeft" && currentRef.current > 0) {
         e.preventDefault();
         navigate(-1);
       }
     };
 
-    window.addEventListener("wheel", onWheel, { passive: false });
+    // Every listener here is passive: none of them cancel a scroll, so the
+    // compositor never has to wait on JS to decide whether the page may move.
+    window.addEventListener("wheel", onWheel, { passive: true });
     window.addEventListener("touchstart", onTouchStart, { passive: true });
-    // Passive: a non-passive touchmove on window forces the browser to consult
-    // JS before every scroll frame, adding input latency across the whole site
-    // on mobile — not just inside the hero.
     window.addEventListener("touchmove", onTouchMove, { passive: true });
     window.addEventListener("keydown", onKeyDown);
     return () => {
@@ -320,7 +276,7 @@ export function Hero() {
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [navigate, releaseToContent]);
+  }, [navigate]);
 
   // Subtle mouse parallax on the video stack.
   useEffect(() => {
@@ -387,16 +343,20 @@ export function Hero() {
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={current}
+            // Horizontal motion, matching the carousel's axis: the next slide
+            // enters from the right and the outgoing one leaves to the left.
+            // Offsets are deliberately small — a long travel across a
+            // full-width layer costs far more to composite than it adds.
             initial={{
               opacity: 0,
-              y: direction > 0 ? 60 : -60,
+              x: direction > 0 ? 48 : -48,
             }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, x: 0 }}
             exit={{
               opacity: 0,
-              y: direction > 0 ? -40 : 40,
+              x: direction > 0 ? -32 : 32,
             }}
-            transition={{ duration: 0.7, ease: EASE }}
+            transition={{ duration: 0.55, ease: EASE }}
             className="max-w-5xl"
           >
             <motion.div

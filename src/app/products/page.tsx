@@ -3,7 +3,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { ProductsContent } from "@/components/sections/ProductsContent";
 
 export const metadata: Metadata = {
-  title: "Məhsullar | United Fishers",
+  title: "Məhsullar",
   description:
     "United Fishers akvakultura məhsulları — premium balıq, kürü, yem və texnoloji həllər.",
 };

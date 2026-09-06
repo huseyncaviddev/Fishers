@@ -7,13 +7,15 @@ import { Footer } from "@/components/layout/Footer";
 import { AppShell } from "@/components/ui/AppShell";
 import { I18nProvider } from "@/i18n/I18nProvider";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fishers.az";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.united-fishers.com";
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#04222c",
+  // Matches --color-deep-900 / --color-navy in the marine palette; the previous
+  // value was the pre-refresh deep tone and no longer appears anywhere.
+  themeColor: "#071d26",
 };
 
 export const metadata: Metadata = {

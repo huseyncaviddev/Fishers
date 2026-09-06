@@ -3,7 +3,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { GalleryContent } from "@/components/sections/GalleryContent";
 
 export const metadata: Metadata = {
-  title: "Qalereya | United Fishers",
+  title: "Qalereya",
   description:
     "United Fishers balıqçılıq təsərrüfatının foto və video qalereyası — istehsal proseslərimiz və infrastrukturumuz.",
 };

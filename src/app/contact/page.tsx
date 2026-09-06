@@ -3,7 +3,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { ContactContent } from "@/components/sections/ContactContent";
 
 export const metadata: Metadata = {
-  title: "Əlaqə | United Fishers",
+  title: "Əlaqə",
   description:
     "United Fishers ilə əlaqə saxlayın — ünvan, telefon, e-poçt və əlaqə formu.",
 };

@@ -2,6 +2,7 @@
 
 import { currentPolicy } from "./mediaPolicy";
 import { versionedMedia } from "./mediaVersion";
+import { subscribeNetwork } from "./networkManager";
 
 /**
  * The single authority for which <video> elements may play or buffer.
@@ -53,7 +54,19 @@ export interface MediaRequest {
 interface Client extends MediaRequest {
   id: number;
   state: MediaState;
+  /** Consecutive rejected play() calls, for bounded backoff. */
+  playAttempts?: number;
+  retryTimer?: ReturnType<typeof setTimeout>;
+  /** Pending "has a frame actually been painted yet" watchers. */
+  paintHandle?: number;
+  paintTimer?: ReturnType<typeof setTimeout>;
 }
+
+/** A video element that may implement the rVFC extension. */
+type FrameVideo = HTMLVideoElement & {
+  requestVideoFrameCallback?: (cb: () => void) => number;
+  cancelVideoFrameCallback?: (handle: number) => void;
+};
 
 const clients = new Map<number, Client>();
 let nextId = 1;
@@ -85,6 +98,7 @@ function attach(c: Client) {
 }
 
 function detach(c: Client) {
+  clearPaintWatch(c);
   const el = c.el;
   try {
     el.pause();
@@ -103,12 +117,133 @@ function detach(c: Client) {
   }
 }
 
+/** Bounded recovery for a rejected play(), so we never loop load/play forever. */
+const MAX_PLAY_ATTEMPTS = 3;
+const PLAY_BACKOFF_MS = [250, 900, 2000] as const;
+/** How often the no-rVFC fallback checks whether real frames are flowing. */
+const PAINT_POLL_MS = 120;
+
+function clearPaintWatch(c: Client) {
+  if (c.paintHandle !== undefined) {
+    (c.el as FrameVideo).cancelVideoFrameCallback?.(c.paintHandle);
+    c.paintHandle = undefined;
+  }
+  if (c.paintTimer !== undefined) {
+    clearTimeout(c.paintTimer);
+    c.paintTimer = undefined;
+  }
+}
+
+/**
+ * Promote to PLAYING only once a frame has genuinely been presented.
+ *
+ * A resolved `play()` promise is not proof of a painted frame — it only means
+ * the element was allowed to start. `SmartVideo` fades the poster out on
+ * PLAYING, so promoting on resolution alone risks showing an empty box until
+ * the first frame decodes. `HeroVideoStack` already reveals on a real frame for
+ * exactly this reason; this brings the scheduler-managed path in line with it.
+ *
+ * Honesty about the evidence: on localhost the tiles reach readyState 4 before
+ * play() resolves, so the gap never actually opens here — removing this gate
+ * and re-running the suite still passes. It is hardening for slow networks and
+ * cold decoders, where the ordering is not guaranteed, not a fix for a failure
+ * reproduced in this environment.
+ */
+function confirmPainted(c: Client) {
+  clearPaintWatch(c);
+  const el = c.el as FrameVideo;
+
+  const settle = () => {
+    if (!clients.has(c.id) || !c.wantsPlay) return;
+    clearPaintWatch(c);
+    setState(c, "PLAYING");
+  };
+
+  // rVFC fires on the first frame actually presented to the compositor.
+  if (typeof el.requestVideoFrameCallback === "function") {
+    c.paintHandle = el.requestVideoFrameCallback(settle);
+  }
+
+  // Safety net for engines without rVFC, and for a stall where rVFC never
+  // fires: require decoded data AND a clock that has actually moved.
+  const poll = () => {
+    c.paintTimer = undefined;
+    if (!clients.has(c.id) || !c.wantsPlay) return;
+    if (!el.paused && el.readyState >= 2 && el.currentTime > 0) {
+      settle();
+      return;
+    }
+    c.paintTimer = setTimeout(poll, PAINT_POLL_MS);
+  };
+  c.paintTimer = setTimeout(poll, PAINT_POLL_MS);
+}
+
+/**
+ * Start playback and only report PLAYING once the browser confirms it.
+ *
+ * `play()` returns a promise, and Safari rejects it in situations this app
+ * cannot detect up front — iOS Low Power Mode being the important one, where
+ * autoplay is refused outright. The previous code swallowed that rejection
+ * (`p.catch(() => {})`) while the caller set PLAYING unconditionally, so
+ * `SmartVideo` faded the poster out over a video that had been refused
+ * permission to start: a frozen frame with no indication anything was wrong.
+ *
+ * That refusal cannot be reproduced under Playwright — neither Chromium nor
+ * WebKit emulates Low Power Mode — so this is a correctness fix for a state
+ * machine that could lie, not a verified reproduction of the reported symptom.
+ *
+ * Now the promise decides: confirmed playback waits for a real frame, and a
+ * rejection leaves the poster in place and schedules a bounded retry.
+ */
 function play(c: Client) {
-  const p = c.el.play();
-  if (p && typeof p.catch === "function") p.catch(() => {});
+  const el = c.el;
+
+  // Set the mobile autoplay preconditions imperatively, immediately before the
+  // call. React props alone are not enough here: an imperative `src` swap can
+  // land between render and play, and WebKit checks these at call time.
+  el.muted = true;
+  el.defaultMuted = true;
+  if (!el.hasAttribute("muted")) el.setAttribute("muted", "");
+  if (!el.hasAttribute("playsinline")) el.setAttribute("playsinline", "");
+
+  const attempt = c.playAttempts ?? 0;
+  const p = el.play();
+
+  if (!p || typeof p.then !== "function") {
+    // Ancient signature with no promise — still wait for a real frame.
+    if (!el.paused) confirmPainted(c);
+    else setState(c, "READY");
+    return;
+  }
+
+  p.then(
+    () => {
+      c.playAttempts = 0;
+      // Only wait for paint if this client still wants it; a scroll may have
+      // overtaken the promise.
+      if (c.wantsPlay) confirmPainted(c);
+    },
+    (err: unknown) => {
+      const name = err instanceof Error ? err.name : "";
+      // AbortError just means a newer load()/pause() superseded this call — the
+      // next reconcile handles it, so it is not a failure worth retrying.
+      if (name === "AbortError" || !c.wantsPlay) return;
+
+      setState(c, "READY"); // poster stays visible; we are NOT playing
+      if (attempt >= MAX_PLAY_ATTEMPTS) return;
+
+      c.playAttempts = attempt + 1;
+      if (c.retryTimer) clearTimeout(c.retryTimer);
+      c.retryTimer = setTimeout(() => {
+        c.retryTimer = undefined;
+        if (c.wantsPlay && clients.has(c.id)) play(c);
+      }, PLAY_BACKOFF_MS[Math.min(attempt, PLAY_BACKOFF_MS.length - 1)]);
+    }
+  );
 }
 
 function pause(c: Client) {
+  clearPaintWatch(c);
   try {
     c.el.pause();
   } catch {
@@ -159,8 +294,8 @@ function reconcile() {
     if (winners.has(c.id)) {
       c.el.preload = "auto";
       attach(c);
+      // State is set by play() itself, once the browser confirms it — not here.
       play(c);
-      setState(c, "PLAYING");
       continue;
     }
     if (warmers.has(c.id)) {
@@ -170,10 +305,17 @@ function reconcile() {
       setState(c, "READY");
       continue;
     }
-    // Not selected. A client that still *wants* to play keeps its source (so
-    // resuming is instant when the tab returns or a slot frees) but stops
-    // decoding. Anything else is fully released back to its poster.
-    if (c.wantsPlay || c.wantsWarm) {
+    // Not selected.
+    //
+    // A client that lost a *play* slot to a cap keeps its source: it is on
+    // screen, the cap is the only reason it is not playing, and a freed slot
+    // should resume it instantly. The same applies while the tab is hidden.
+    //
+    // A client that lost a *warm* slot must be released. Keeping it attached is
+    // what previously let retained sources exceed maxWarm — the budget counted
+    // winners while the losers quietly held their decoders anyway.
+    const cappedOutOfPlaySlot = c.wantsPlay && (hidden || Number.isFinite(maxPlaying));
+    if (cappedOutOfPlaySlot) {
       pause(c);
       setState(c, hidden ? "PAUSED" : "QUEUED");
     } else {
@@ -196,6 +338,18 @@ function bindVisibility() {
   if (visibilityBound || typeof document === "undefined") return;
   visibilityBound = true;
   document.addEventListener("visibilitychange", schedule);
+
+  // Policy is an input to every decision, so a policy change has to trigger a
+  // pass of its own. Without this the scheduler only re-evaluated when some
+  // component happened to update: a connection dropping to 2g (maxPlaying
+  // Infinity -> 1) left five clips playing until an unrelated scroll event
+  // eventually forced a reconcile.
+  subscribeNetwork(schedule);
+  if (typeof window !== "undefined" && window.matchMedia) {
+    for (const q of ["(pointer: coarse)", "(prefers-reduced-motion: reduce)"]) {
+      window.matchMedia(q).addEventListener("change", schedule);
+    }
+  }
 }
 
 export interface MediaHandle {
@@ -243,6 +397,7 @@ export function requestMedia(req: MediaRequest): MediaHandle {
     release() {
       const c = clients.get(id);
       if (!c) return;
+      if (c.retryTimer) clearTimeout(c.retryTimer);
       detach(c);
       clients.delete(id);
       schedule();

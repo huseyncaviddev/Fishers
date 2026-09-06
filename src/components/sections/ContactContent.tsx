@@ -1,11 +1,12 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { useI18n } from "@/i18n/I18nProvider";
-import { SOCIAL_ICON_PATHS, SOCIAL_KEYS, type SocialKey } from "@/lib/socialIcons";
+import { SOCIAL_ICON_PATHS, configuredSocials, type SocialKey } from "@/lib/socialIcons";
+import { buildMailto, openMailto } from "@/lib/mailto";
 
 const CONTACT_ICONS = [
   <svg key="0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-6 h-6">
@@ -29,11 +30,48 @@ const SOCIAL_LABELS: Record<SocialKey, string> = {
   linkedin: "LinkedIn",
 };
 
+/**
+ * The published company address. The form hands off to the visitor's own mail
+ * client rather than posting anywhere: there is no approved backend or form
+ * service for this site, and standing one up would mean inventing credentials.
+ *
+ * The previous handler was `onSubmit={(e) => e.preventDefault()}` — pressing
+ * Send cleared nothing, said nothing and sent nothing. A mailto handoff is
+ * honest by construction: the visitor sees their message in their own client
+ * and presses send themselves, so nothing can silently vanish.
+ */
+const CONTACT_EMAIL = "azerbaijanaquaculture@gmail.com";
+
 export function ContactContent() {
   const { t } = useI18n();
   const cc = t.contactContent;
+  const socials = configuredSocials();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-50px" });
+  const [handedOff, setHandedOff] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const get = (k: string) => String(fd.get(k) ?? "").trim();
+
+    const subjectKey = get("subject");
+    const subjectLabel =
+      subjectKey && subjectKey in cc.subjects
+        ? cc.subjects[subjectKey as keyof typeof cc.subjects]
+        : cc.formTitle;
+
+    const body = [
+      `${cc.nameLabel}: ${get("name")}`,
+      `${cc.emailLabel}: ${get("email")}`,
+      `${cc.phoneLabel}: ${get("phone")}`,
+      "",
+      get("message"),
+    ].join("\n");
+
+    openMailto(buildMailto(CONTACT_EMAIL, subjectLabel, body));
+    setHandedOff(true);
+  };
 
   return (
     <PageTransition>
@@ -72,7 +110,7 @@ export function ContactContent() {
               animate={inView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.7, delay: 0.3 }}
               className="bg-mist rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-10"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={handleSubmit}
             >
               <div className="w-10 h-[2px] bg-sand mb-5" />
               <h3 className="font-display text-2xl font-bold text-navy mb-6">
@@ -85,6 +123,8 @@ export function ContactContent() {
                   </label>
                   <input
                     type="text"
+                    name="name"
+                    autoComplete="name"
                     placeholder={cc.namePlaceholder}
                     required
                     className="w-full px-4 py-3 rounded-xl border border-ocean-muted/30 bg-white text-navy placeholder:text-slate/40 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-all"
@@ -96,6 +136,8 @@ export function ContactContent() {
                   </label>
                   <input
                     type="email"
+                    name="email"
+                    autoComplete="email"
                     placeholder={cc.emailPlaceholder}
                     required
                     className="w-full px-4 py-3 rounded-xl border border-ocean-muted/30 bg-white text-navy placeholder:text-slate/40 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-all"
@@ -108,6 +150,8 @@ export function ContactContent() {
                 </label>
                 <input
                   type="tel"
+                  name="phone"
+                  autoComplete="tel"
                   placeholder={cc.phonePlaceholder}
                   className="w-full px-4 py-3 rounded-xl border border-ocean-muted/30 bg-white text-navy placeholder:text-slate/40 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-all"
                 />
@@ -116,7 +160,7 @@ export function ContactContent() {
                 <label className="block text-sm font-medium text-navy mb-2">
                   {cc.subjectLabel}
                 </label>
-                <select className="w-full px-4 py-3 rounded-xl border border-ocean-muted/30 bg-white text-navy focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-all">
+                <select name="subject" className="w-full px-4 py-3 rounded-xl border border-ocean-muted/30 bg-white text-navy focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-all">
                   <option value="">{cc.subjectPlaceholder}</option>
                   <option value="partnership">{cc.subjects.partnership}</option>
                   <option value="purchase">{cc.subjects.purchase}</option>
@@ -131,6 +175,7 @@ export function ContactContent() {
                 </label>
                 <textarea
                   rows={5}
+                  name="message"
                   placeholder={cc.messagePlaceholder}
                   required
                   className="w-full px-4 py-3 rounded-xl border border-ocean-muted/30 bg-white text-navy placeholder:text-slate/40 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-all resize-none"
@@ -142,6 +187,11 @@ export function ContactContent() {
                   <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </button>
+              {/* Say up front where the button leads, so the mail client
+                  opening is expected rather than surprising. */}
+              <p className="mt-3 text-xs text-slate/50 text-center" role={handedOff ? "status" : undefined}>
+                {handedOff ? cc.mailtoOpened : cc.mailtoHint}
+              </p>
             </motion.form>
 
             <motion.div
@@ -162,6 +212,10 @@ export function ContactContent() {
                 />
               </div>
 
+              {/* The whole card is conditional: it exists only to point at
+                  social profiles, so with none configured it has nothing to
+                  say. */}
+              {socials.length > 0 && (
               <div className="rounded-2xl overflow-hidden relative">
                 <div className="absolute inset-0">
                   <Image
@@ -180,11 +234,16 @@ export function ContactContent() {
                   <p className="text-white/70 mt-2 text-sm">
                     {cc.followBody}
                   </p>
+                  {/* Hidden entirely when no profile URLs are configured — a
+                      "follow us" invitation above an empty row is worse than
+                      no invitation. */}
                   <div className="flex gap-3 mt-5">
-                    {SOCIAL_KEYS.map((s) => (
+                    {socials.map(({ key: s, url }) => (
                       <a
                         key={s}
-                        href="#"
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center text-white hover:bg-white/30 hover:scale-110 transition-all duration-300"
                         aria-label={SOCIAL_LABELS[s]}
                       >
@@ -196,6 +255,7 @@ export function ContactContent() {
                   </div>
                 </div>
               </div>
+              )}
             </motion.div>
           </div>
         </div>

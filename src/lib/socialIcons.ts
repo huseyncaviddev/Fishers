@@ -10,3 +10,34 @@ export const SOCIAL_ICON_PATHS: Record<SocialKey, string> = {
 };
 
 export const SOCIAL_KEYS: ReadonlyArray<SocialKey> = ["facebook", "instagram", "linkedin"];
+
+/**
+ * Real profile URLs, supplied by configuration — never guessed here.
+ *
+ * These icons previously all pointed at `href="#"`, which looks like a working
+ * link and does nothing when tapped. Rather than invent plausible profile URLs
+ * (which would be worse: a confident link to somebody else's account), the set
+ * is read from the environment. `NEXT_PUBLIC_` is correct here because these
+ * are public profile addresses rendered into the markup, not secrets.
+ *
+ * Nothing configured means the row simply does not render. An absent icon is
+ * honest; a dead one is not.
+ */
+export const SOCIAL_URLS: Partial<Record<SocialKey, string>> = {
+  facebook: process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK,
+  instagram: process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM,
+  linkedin: process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN,
+};
+
+export interface SocialLink {
+  key: SocialKey;
+  url: string;
+}
+
+/** Only the networks that actually have an address configured. */
+export function configuredSocials(): SocialLink[] {
+  return SOCIAL_KEYS.flatMap((key) => {
+    const url = SOCIAL_URLS[key];
+    return url ? [{ key, url }] : [];
+  });
+}

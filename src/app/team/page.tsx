@@ -3,7 +3,7 @@ import { PageHero } from "@/components/ui/PageHero";
 import { TeamContent } from "@/components/sections/TeamContent";
 
 export const metadata: Metadata = {
-  title: "Komanda | United Fishers",
+  title: "Komanda",
   description:
     "United Fishers komandası — rəhbərlik, mütəxəssislər və peşəkar əməkdaşlarımız haqqında məlumat.",
 };

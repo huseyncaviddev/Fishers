@@ -534,9 +534,13 @@ html {
   position: absolute;
   inset: 0;
   opacity: 0;
-  transform: scale(1.06);
-  transition: opacity 1.3s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 1.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Horizontal carousel: an inactive slide rests slightly off-axis and slides
+     in as it becomes active. The offset is small on purpose — translating a
+     full-viewport video layer any real distance is expensive to composite,
+     and the motion reads just as clearly at 3%. */
+  transform: translate3d(3%, 0, 0) scale(1.04);
+  transition: opacity 0.62s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.62s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity, transform;
   backface-visibility: hidden;
   /* Clean deep-ocean surface beneath the video — no poster photo, no black. */
@@ -545,6 +549,7 @@ html {
 
 .hero-slide.is-active {
   opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1.04);
   animation: hero-kenburns 16s ease-out forwards;
 }
 
@@ -577,8 +582,8 @@ html {
 }
 
 @keyframes hero-kenburns {
-  from { transform: scale(1.06); }
-  to { transform: scale(1.16); }
+  from { transform: translate3d(0, 0, 0) scale(1.04); }
+  to { transform: translate3d(0, 0, 0) scale(1.12); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1552,5 +1557,23 @@ html {
   .pc-icon.is-hovered,
   .hover-media:hover {
     transform: none !important;
+  }
+}
+
+/* Scrolled navbar surface. Desktop keeps a restrained blur; a coarse pointer
+   gets an opaque surface instead — a full-width backdrop-filter is one of the
+   most expensive things a phone can be asked to composite on every scroll
+   frame, and at this opacity the two are visually near-identical. */
+.nav-surface {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+@media (pointer: coarse) {
+  .nav-surface {
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }

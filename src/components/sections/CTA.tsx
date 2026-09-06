@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { TextReveal } from "@/components/ui/TextReveal";
 import { useI18n } from "@/i18n/I18nProvider";
+import { buildMailto, openMailto } from "@/lib/mailto";
+import { ScrollDrift } from "@/components/ui/ParallaxBackdrop";
 
 // Captions come from i18n (t.cta.partnerTiles) so they translate; alt text stays
 // descriptive per image.
@@ -17,17 +19,24 @@ const PARTNER_TILES = [
   { src: "/images/partnership/network.jpg", alt: "Qlobal tərəfdaşlıq şəbəkəsi", area: "ptile-e" },
 ] as const;
 
+/** Same published address the footer and contact page already show. */
+const CONTACT_EMAIL = "azerbaijanaquaculture@gmail.com";
+
 export function CTA() {
   const { t } = useI18n();
+
+  const handleSubscribe = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const email = String(new FormData(e.currentTarget).get("email") ?? "").trim();
+    if (!email) return;
+    openMailto(
+      buildMailto(CONTACT_EMAIL, t.cta.newsletterTitle, `${t.cta.newsletterPlaceholder}: ${email}`)
+    );
+  };
+
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
-  const imgScale = useTransform(scrollYProgress, [0, 1], [1.05, 1]);
-  const imgY = useTransform(scrollYProgress, [0, 1], [20, -20]);
+  const containerRef = useRef<HTMLElement>(null);
 
   return (
     <section ref={containerRef}>
@@ -74,7 +83,7 @@ export function CTA() {
               transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
               className="relative"
             >
-              <motion.div style={{ scale: imgScale, y: imgY }} className="partner-mosaic">
+              <ScrollDrift target={containerRef} className="partner-mosaic">
                 {PARTNER_TILES.map((tile, i) => (
                   <motion.figure
                     key={tile.src}
@@ -99,7 +108,7 @@ export function CTA() {
                     </figcaption>
                   </motion.figure>
                 ))}
-              </motion.div>
+              </ScrollDrift>
             </motion.div>
           </div>
         </div>
@@ -149,22 +158,28 @@ export function CTA() {
                   defaults to min-width:auto, so this input refused to shrink
                   below its placeholder width and pushed the shrink-0 button
                   clean off a 320px screen. */}
-              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              {/* Hands off to the visitor's mail client for the same reason as
+                  the contact form: there is no subscription backend, and a
+                  button that quietly does nothing is worse than one that is
+                  honest about where it goes. */}
+              <form className="mt-6 flex flex-col sm:flex-row gap-3" onSubmit={handleSubscribe}>
                 <label htmlFor="cta-newsletter-email" className="sr-only">
                   {t.cta.newsletterPlaceholder}
                 </label>
                 <input
                   id="cta-newsletter-email"
+                  name="email"
                   type="email"
+                  required
                   autoComplete="email"
                   inputMode="email"
                   placeholder={t.cta.newsletterPlaceholder}
                   className="min-w-0 flex-1 bg-white/10 text-white text-sm rounded-full px-5 py-3 placeholder:text-white/40 border border-white/15 focus:border-sand/60 focus:bg-white/[0.14] focus:outline-none transition-colors"
                 />
-                <button className="btn btn-sand btn-sm shrink-0 w-full sm:w-auto">
+                <button type="submit" className="btn btn-sand btn-sm shrink-0 w-full sm:w-auto">
                   {t.cta.newsletterButton}
                 </button>
-              </div>
+              </form>
             </div>
           </motion.div>
         </div>

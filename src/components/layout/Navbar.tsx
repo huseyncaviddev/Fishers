@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { useI18n } from "@/i18n/I18nProvider";
-import { SOCIAL_ICON_PATHS, SOCIAL_KEYS } from "@/lib/socialIcons";
+import { SOCIAL_ICON_PATHS, configuredSocials } from "@/lib/socialIcons";
+import { searchSite } from "@/lib/siteSearch";
 
 const NAV_LINKS = [
   { key: "about", href: "/about" },
@@ -32,6 +33,8 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(!isHome);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const results = useMemo(() => searchSite(query, t), [query, t]);
 
   useEffect(() => {
     // Mount flag for hydration-safe animation of the active-link indicator.
@@ -75,12 +78,16 @@ export function Navbar() {
   return (
     <>
       <motion.header
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.8, ease: EASE, delay: 1.8 }}
+        // Navigation is available immediately. This used to slide in after a
+        // 1.8s delay plus a 0.8s animation, so for the first ~2.6s the primary
+        // nav — including the only way to open the mobile menu — was off
+        // screen. A short fade is enough of an entrance; it never gates use.
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.35, ease: EASE }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
           scrolled
-            ? "bg-white/80 backdrop-blur-2xl shadow-[0_1px_3px_rgba(0,0,0,0.04)] border-b border-black/[0.03]"
+            ? "nav-surface shadow-[0_1px_3px_rgba(0,0,0,0.04)] border-b border-black/[0.03]"
             : "bg-transparent"
         }`}
       >
@@ -323,14 +330,14 @@ export function Navbar() {
                     <div className="text-white/50 text-sm space-y-2">
                       <p className="font-medium text-white/80 text-base">{t.nav.contactHeading}</p>
                       <p><a href="tel:+994519115511" className="hover:text-white transition-colors">+994 51 911 55 11</a></p>
-                      <p><a href="mailto:azerbaijanaquaculture@gmail.com" className="hover:text-white transition-colors">azerbaijanaquaculture@gmail.com</a></p>
+                      <p className="break-words"><a href="mailto:azerbaijanaquaculture@gmail.com" className="hover:text-white transition-colors">azerbaijanaquaculture@gmail.com</a></p>
                       <p className="pt-2">{t.contactPreview.info[0].text}</p>
                       <p>{t.footer.addressLines[2]}</p>
                       <div className="flex gap-3 pt-4">
-                        {SOCIAL_KEYS.map((s) => (
-                          <a key={s} href="#" className="w-9 h-9 rounded-full bg-white/[0.06] flex items-center justify-center hover:bg-ocean hover:text-white text-white/40 transition-all duration-300" aria-label={s}>
+                        {configuredSocials().map((s) => (
+                          <a key={s.key} href={s.url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/[0.06] flex items-center justify-center hover:bg-ocean hover:text-white text-white/40 transition-all duration-300" aria-label={s.key}>
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                              <path d={SOCIAL_ICON_PATHS[s]} />
+                              <path d={SOCIAL_ICON_PATHS[s.key]} />
                             </svg>
                           </a>
                         ))}
@@ -362,12 +369,52 @@ export function Navbar() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4, ease: EASE }}>
                 <span className="text-white/20 text-[10px] tracking-[0.3em] uppercase block mb-4">{t.nav.searchLabel}</span>
                 <div className="relative">
-                  <input type="text" placeholder={t.nav.searchPlaceholder} autoFocus
-                    className="w-full bg-transparent text-white text-2xl lg:text-3xl font-display font-light border-b border-white/15 pb-4 placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors" />
+                  <label htmlFor="site-search" className="sr-only">{t.nav.searchLabel}</label>
+                  <input
+                    id="site-search"
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={t.nav.searchPlaceholder}
+                    autoFocus
+                    autoComplete="off"
+                    className="w-full bg-transparent text-white text-2xl lg:text-3xl font-display font-light border-b border-white/15 pb-4 pr-10 placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors" />
                   <svg className="absolute right-0 bottom-5 w-6 h-6 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
+
+                {/* Results are rendered only once the query is long enough to
+                    mean something, so an empty box never shows an empty list. */}
+                {query.trim().length >= 2 && (
+                  <div className="mt-6 max-h-[50vh] overflow-y-auto">
+                    {results.length === 0 ? (
+                      <p className="text-white/40 text-sm font-light">{t.nav.searchEmpty}</p>
+                    ) : (
+                      <ul className="space-y-1" data-search-results>
+                        {results.map((r) => (
+                          <li key={r.href}>
+                            <Link
+                              href={r.href}
+                              onClick={() => { setSearchOpen(false); setQuery(""); }}
+                              className="block rounded-xl px-4 py-3 hover:bg-white/[0.06] transition-colors group"
+                            >
+                              <span className="block text-[10px] tracking-[0.25em] uppercase text-white/25">
+                                {r.group}
+                              </span>
+                              <span className="block text-white text-base font-medium group-hover:text-sand transition-colors">
+                                {r.title}
+                              </span>
+                              <span className="block text-white/40 text-sm font-light line-clamp-1">
+                                {r.detail}
+                              </span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
               </motion.div>
             </div>
           </motion.div>

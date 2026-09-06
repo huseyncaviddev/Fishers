@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { useI18n } from "@/i18n/I18nProvider";
-import { SOCIAL_ICON_PATHS, SOCIAL_KEYS } from "@/lib/socialIcons";
+import { SOCIAL_ICON_PATHS, configuredSocials } from "@/lib/socialIcons";
 
 const COMPANY_LINKS = [
   { key: "about", href: "/about" },
@@ -76,19 +76,20 @@ export function Footer() {
                 {t.footer.colInfo}
               </h4>
               <ul className="mt-5 space-y-3">
-                {t.footer.infoItems.map(
-                  (label) => (
-                    <li key={label}>
-                      <a
-                        href="#"
-                        className="text-white/40 hover:text-white text-sm transition-colors duration-300 group inline-flex items-center gap-1.5"
-                      >
-                        <span className="w-0 h-px bg-sand group-hover:w-3 transition-all duration-300" />
-                        {label}
-                      </a>
-                    </li>
-                  )
-                )}
+                {/* Plain text, not links. These four labels have no pages
+                    behind them, and there is no route that honestly stands in
+                    for "Xəbərlər". They used to be `href="#"` anchors, which
+                    read as navigation and did nothing. Give them real
+                    destinations here the moment those pages exist. */}
+                {t.footer.infoItems.map((label) => (
+                  <li
+                    key={label}
+                    className="text-white/40 text-sm inline-flex items-center gap-1.5"
+                  >
+                    <span className="w-3 h-px bg-sand/40" />
+                    {label}
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -109,9 +110,12 @@ export function Footer() {
               </h4>
               <div className="mt-5 text-sm text-white/40 space-y-1 font-light">
                 <p><a href="tel:+994519115511" className="hover:text-white transition-colors duration-300">+994 51 911 55 11</a></p>
-                <p><a href="mailto:azerbaijanaquaculture@gmail.com" className="hover:text-white transition-colors duration-300">azerbaijanaquaculture@gmail.com</a></p>
+                {/* `break-words` on the address: it is one 31-character token
+                    with nowhere to break, so in a 320-360px column it overflows
+                    its box and gets clipped. */}
+                <p className="break-words"><a href="mailto:azerbaijanaquaculture@gmail.com" className="hover:text-white transition-colors duration-300">azerbaijanaquaculture@gmail.com</a></p>
                 <p className="pt-2 text-white/20">{t.footer.partnersLabel}</p>
-                <p><a href="mailto:azerbaijanaquaculture@gmail.com" className="hover:text-white transition-colors duration-300">azerbaijanaquaculture@gmail.com</a></p>
+                <p className="break-words"><a href="mailto:azerbaijanaquaculture@gmail.com" className="hover:text-white transition-colors duration-300">azerbaijanaquaculture@gmail.com</a></p>
               </div>
             </div>
 
@@ -149,15 +153,17 @@ export function Footer() {
               &copy; {new Date().getFullYear()} United Fishers. {t.footer.rights}
             </p>
             <div className="flex gap-3">
-              {SOCIAL_KEYS.map((social) => (
+              {configuredSocials().map(({ key, url }) => (
                 <a
-                  key={social}
-                  href="#"
+                  key={key}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-white/30 hover:bg-ocean hover:text-white hover:scale-110 transition-all duration-500"
-                  aria-label={social}
+                  aria-label={key}
                 >
                   <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d={SOCIAL_ICON_PATHS[social]} />
+                    <path d={SOCIAL_ICON_PATHS[key]} />
                   </svg>
                 </a>
               ))}

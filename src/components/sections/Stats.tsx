@@ -1,9 +1,9 @@
 "use client";
 
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
-import Image from "next/image";
+import { motion, useInView, useReducedMotion } from "framer-motion";
+import { useRef, useEffect } from "react";
 import { useI18n } from "@/i18n/I18nProvider";
+import { ParallaxBackdrop } from "@/components/ui/ParallaxBackdrop";
 
 interface StatItemProps {
   value: number;
@@ -13,37 +13,60 @@ interface StatItemProps {
   delay: number;
 }
 
+const COUNT_DURATION_MS = 1600;
+
+/**
+ * A statistic that renders its REAL value in the HTML and treats the count-up
+ * purely as an enhancement.
+ *
+ * Two things were wrong with the previous version. It initialised state to 0,
+ * so the server-rendered markup (and therefore crawlers, and anyone whose JS
+ * fails) advertised "0T+" and "0%" as the company's figures. And it drove the
+ * animation with a 60-step setInterval per stat — around 240 React renders
+ * across the row, on the main thread, on a phone.
+ *
+ * Now the number is correct in the markup from the start, and the animation
+ * writes to the DOM node directly from a single rAF loop: no state, no
+ * re-renders, and it never runs at all under reduced motion.
+ */
 function AnimatedNumber({ value, suffix, label, inView, delay }: StatItemProps) {
-  const [display, setDisplay] = useState(0);
+  const numRef = useRef<HTMLSpanElement>(null);
+  const reduceMotion = useReducedMotion() ?? false;
 
   useEffect(() => {
-    if (!inView) return;
-    const duration = 2000;
-    const steps = 60;
-    const increment = value / steps;
-    let current = 0;
-    let interval: ReturnType<typeof setInterval> | null = null;
-    const timer = setTimeout(() => {
-      interval = setInterval(() => {
-        current += increment;
-        if (current >= value) {
-          setDisplay(value);
-          if (interval) clearInterval(interval);
-        } else {
-          setDisplay(Math.floor(current));
-        }
-      }, duration / steps);
-    }, delay);
-    return () => {
-      clearTimeout(timer);
-      if (interval) clearInterval(interval);
+    const el = numRef.current;
+    if (!el || !inView || reduceMotion) return;
+
+    let raf = 0;
+    let start = 0;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const step = (now: number) => {
+      if (!start) start = now;
+      const p = Math.min(1, (now - start) / COUNT_DURATION_MS);
+      // easeOutCubic — fast first, settling gently on the real figure.
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = String(Math.round(value * eased));
+      if (p < 1) raf = requestAnimationFrame(step);
+      else el.textContent = String(value);
     };
-  }, [inView, value, delay]);
+
+    timer = setTimeout(() => {
+      el.textContent = "0";
+      raf = requestAnimationFrame(step);
+    }, delay);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      if (raf) cancelAnimationFrame(raf);
+      el.textContent = String(value);
+    };
+  }, [inView, value, delay, reduceMotion]);
 
   return (
     <div className="text-center">
       <div className="font-display text-3xl sm:text-5xl lg:text-7xl font-bold text-white tracking-tight">
-        {display}
+        <span ref={numRef}>{value}</span>
         <span className="text-sand">{suffix}</span>
       </div>
       <div className="mt-3 text-white/50 text-xs sm:text-sm tracking-[0.15em] uppercase font-light">
@@ -64,24 +87,11 @@ export function Stats() {
   const { t } = useI18n();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-100px" });
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
+  const containerRef = useRef<HTMLElement>(null);
 
   return (
     <section id="stats" className="relative py-28 lg:py-36 overflow-hidden" ref={containerRef}>
-      <motion.div style={{ y: bgY }} className="absolute inset-0 -top-[10%] -bottom-[10%]">
-        <Image
-          src="/images/6.jpg"
-          alt=""
-          fill
-          className="object-cover"
-          sizes="100vw"
-        />
-      </motion.div>
+      <ParallaxBackdrop src="/images/6.jpg" target={containerRef} />
       <div className="absolute inset-0 bg-navy/85" />
       <div className="absolute inset-0 film-grain pointer-events-none" />
 

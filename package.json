@@ -7,7 +7,15 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test:media": "node tests/media-lifecycle.spec.mjs",
+    "test:hero": "node tests/hero-carousel.spec.mjs",
+    "test:responsive": "node tests/responsive.spec.mjs",
+    "test:controls": "node tests/controls.spec.mjs",
+    "test:perf": "node tests/perf-mobile.mjs",
+    "test:e2e": "npm run test:media && npm run test:hero && npm run test:responsive && npm run test:controls",
+    "verify": "npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
     "framer-motion": "^12.40.0",
@@ -17,6 +25,7 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

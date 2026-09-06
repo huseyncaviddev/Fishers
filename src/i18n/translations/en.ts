@@ -384,13 +384,13 @@ export const en: Dictionary = {
         name: "Vidadi Heybatov",
         role: "Chief Executive Officer",
         desc: "With 25+ years of aquaculture experience, he leads the company's strategic development. A regular participant in international aquaculture conferences.",
-        expertise: ["Operations Management", "Process Optimization", "Quality Control"],
+        expertise: ["IoT Systems", "Agri-Technology", "R&D"],
       },
       {
         name: "Sabir Ganizada",
         role: "Chief Operating Officer",
         desc: "He has extensive experience in optimizing production processes and improving operational efficiency.",
-        expertise: ["IoT Systems", "Agri-Technology", "R&D"],
+        expertise: ["Operations Management", "Process Optimization", "Quality Control"],
       },
       {
         name: "Chingiz Mammadov",

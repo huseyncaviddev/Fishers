@@ -147,7 +147,7 @@ export function CTA() {
             transition={{ duration: 0.7, delay: 0.3 }}
             className="max-w-xl mx-auto lg:mx-0 lg:ml-auto"
           >
-            <div className="glass rounded-2xl p-6 sm:p-8 lg:p-10">
+            <div className="rounded-2xl p-6 sm:p-8 lg:p-10 bg-white/[0.16] backdrop-blur-2xl border border-white/25 shadow-[0_20px_60px_-20px_rgba(6,42,51,0.45)]">
               <h3 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-tight">
                 {t.cta.newsletterTitle}
               </h3>

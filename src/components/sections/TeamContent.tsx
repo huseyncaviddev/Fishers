@@ -12,7 +12,7 @@ const MEMBER_PHOTOS = [
   "/images/team/niyazi-heybetov.jpg",
   "/images/team/vidadi-heybetov.jpg",
   "/images/team/sabir-qenizade.jpg",
-  "/images/team/cingiz-memmedov.jpg",
+  "/images/team/cingiz-memmedov.png",
 ] as const;
 
 // Captions come from i18n (t.teamContent.cultureTiles) so they translate.

@@ -140,15 +140,15 @@ export function CTA() {
           </svg>
         </div>
 
-        <div className="mx-auto max-w-[1400px] px-6 lg:px-12 py-20 lg:py-24 relative z-10">
+        <div className="mx-auto max-w-[1400px] px-6 lg:px-12 py-14 sm:py-20 lg:py-24 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className="max-w-xl lg:ml-auto"
+            className="max-w-xl mx-auto lg:mx-0 lg:ml-auto"
           >
-            <div className="glass rounded-2xl p-8 lg:p-10">
-              <h3 className="font-display text-2xl lg:text-3xl font-bold text-white">
+            <div className="glass rounded-2xl p-6 sm:p-8 lg:p-10">
+              <h3 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold text-white leading-tight">
                 {t.cta.newsletterTitle}
               </h3>
               <p className="mt-3 text-white/60 text-sm font-light">

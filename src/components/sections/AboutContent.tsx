@@ -240,17 +240,21 @@ export function AboutContent() {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="relative"
             >
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden relative border-glow">
-                <motion.div style={{ y: qualityImgY }} className="absolute inset-[-10%] w-[120%] h-[120%]">
+              {/* This is a photograph of the actual state certificate document
+                  (Şəhadətnamə AZ № 0191). Documents need object-contain — cover
+                  would crop the letterhead. A soft mist background keeps the
+                  card size consistent with the rest of the layout when the
+                  document's aspect ratio doesn't fill 4/3. */}
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden relative border-glow bg-mist">
+                <motion.div style={{ y: qualityImgY }} className="absolute inset-0">
                   <Image
-                    src="/images/6.jpg"
-                    alt="Keyfiyyət nəzarəti"
+                    src="/images/certificate.jpg"
+                    alt="Şəhadətnamə AZ № 0191"
                     fill
-                    className="object-cover"
+                    className="object-contain p-4 sm:p-6"
                     sizes="(max-width: 1024px) 100vw, 50vw"
                   />
                 </motion.div>
-                <div className="absolute inset-0 bg-gradient-to-t from-navy/30 to-transparent" />
               </div>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}

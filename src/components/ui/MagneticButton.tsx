@@ -43,9 +43,15 @@ export function MagneticButton({
       className={className}
       onClick={onClick}
     >
+      {/* Inner wrapper handles the secondary magnetic pull, but shouldn't
+          swallow the outer's flex context. Without this, an outer .btn (which
+          is inline-flex with gap) sees only one flex child, so a text span
+          plus an icon svg lose their gap and can wrap onto separate lines
+          — visible on the footer CTA. */}
       <motion.div
         animate={{ x: pos.x * 0.3, y: pos.y * 0.3 }}
         transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+        className="inline-flex items-center justify-center gap-2"
       >
         {children}
       </motion.div>

@@ -1,12 +1,11 @@
 export type ProductSlug =
-  | "xezer-neresi"
-  | "qara-kuru"
-  | "alabaliq"
-  | "hise-verilmis-alabaliq"
+  | "ceki"
+  | "ag-amur"
+  | "ag-shalinali"
   | "premium-baliq-yemi"
   | "iot-monitorinq";
 
-export type ProductCategoryKey = "fish" | "premium" | "feedTech";
+export type ProductCategoryKey = "fish" | "feedTech";
 
 export type CategoryFilterKey = "all" | ProductCategoryKey;
 
@@ -14,6 +13,10 @@ export type CategoryFilterKey = "all" | ProductCategoryKey;
  * Language-independent product structure. All human-readable text
  * (name, descriptions, specs, features, uses) lives in the i18n
  * dictionaries under `products.items[slug]`.
+ *
+ * The three fish species reflect the state aquaculture certificate
+ * (Şəhadətnamə AZ № 0191): common carp, grass carp and silver carp,
+ * raised in Neftçala rayonu with water from the Kür river.
  */
 export interface Product {
   slug: ProductSlug;
@@ -25,34 +28,27 @@ export interface Product {
 export const CATEGORY_FILTERS: CategoryFilterKey[] = [
   "all",
   "fish",
-  "premium",
   "feedTech",
 ];
 
 export const PRODUCTS: Product[] = [
   {
-    slug: "xezer-neresi",
+    slug: "ceki",
     categoryKey: "fish",
-    image: "/images/improved/ChatGPT Image Sep 6, 2026, 04_06_45 PM.png",
+    image: "/images/improved/ChatGPT Image Sep 6, 2026, 03_53_42 PM.png",
     video: "/videos/farm-1.mp4",
   },
   {
-    slug: "qara-kuru",
-    categoryKey: "premium",
-    image: "/images/improved/ChatGPT Image Sep 6, 2026, 04_10_54 PM.png",
-    video: "/videos/farm-2.mp4",
-  },
-  {
-    slug: "alabaliq",
+    slug: "ag-amur",
     categoryKey: "fish",
-    image: "/images/improved/ChatGPT Image Sep 6, 2026, 05_03_41 PM.png",
+    image: "/images/improved/ChatGPT Image Sep 6, 2026, 04_09_24 PM.png",
     video: "/videos/farm-3.mp4",
   },
   {
-    slug: "hise-verilmis-alabaliq",
-    categoryKey: "premium",
-    image: "/images/improved/ChatGPT Image Sep 6, 2026, 04_09_24 PM.png",
-    video: "/videos/farm-4.mp4",
+    slug: "ag-shalinali",
+    categoryKey: "fish",
+    image: "/images/improved/ChatGPT Image Sep 6, 2026, 05_03_41 PM.png",
+    video: "/videos/farm-2.mp4",
   },
   {
     slug: "premium-baliq-yemi",

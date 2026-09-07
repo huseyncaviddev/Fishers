@@ -32,7 +32,6 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { src: "/images/improved/ChatGPT Image Sep 6, 2026, 02_58_30 PM (1).png", category: "moments", w: 1086, h: 1448 },
   { src: "/images/improved/ChatGPT Image Sep 6, 2026, 02_58_30 PM (3).png", category: "moments", w: 1086, h: 1448 },
   { src: "/images/improved/ChatGPT Image Sep 6, 2026, 02_58_31 PM (4).png", category: "farm", w: 1254, h: 1254 },
-  { src: "/images/improved/ChatGPT Image Sep 6, 2026, 02_58_31 PM (5).png", category: "moments", w: 1448, h: 1086 },
   { src: "/images/improved/ChatGPT Image Sep 6, 2026, 03_22_47 PM (1).png", category: "tech", w: 1254, h: 1254 },
   { src: "/images/improved/ChatGPT Image Sep 6, 2026, 03_22_47 PM (3).png", category: "moments", w: 1448, h: 1086 },
   { src: "/images/improved/ChatGPT Image Sep 6, 2026, 03_22_48 PM (4).png", category: "tech", w: 1254, h: 1254 },
@@ -69,4 +68,5 @@ export const GALLERY_IMAGES: GalleryImage[] = [
   { src: "/images/improved/ChatGPT Image Sep 6, 2026, 05_30_02 PM.png", category: "farm", w: 1549, h: 1015 },
   { src: "/images/improved/ChatGPT Image Sep 6, 2026, 05_31_19 PM.png", category: "processing", w: 1254, h: 1254 },
   { src: "/images/improved/ChatGPT Image Sep 6, 2026, 05_32_55 PM.png", category: "farm", w: 1254, h: 1254 },
+  { src: "/images/improved/ChatGPT Image Sep 7, 2026, 10_45_07 PM.png", category: "moments", w: 1448, h: 1086 },
 ];

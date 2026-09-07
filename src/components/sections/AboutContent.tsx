@@ -1,10 +1,26 @@
 "use client";
 
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { AnimatePresence, motion, useInView, useScroll, useTransform } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { useI18n } from "@/i18n/I18nProvider";
+
+// Certificate scans shown in the quality section — the state licence and the
+// honorary order recognising the founder's contribution to fishery.
+// The carousel below auto-cycles between them.
+const CERTIFICATE_IMAGES = [
+  {
+    src: "/images/improved/ChatGPT Image Sep 7, 2026, 10_24_53 PM.png",
+    alt: "Şəhadətnamə AZ № 0191 — Balıqçılıq və Akvakultura Mərkəzi",
+  },
+  {
+    src: "/images/improved/ChatGPT Image Sep 7, 2026, 10_45_07 PM.png",
+    alt: "Fəxri Fərman — Aqrar Sahə İşçilərinin Həmkarlar İttifaqı Birliyi",
+  },
+] as const;
+
+const CERTIFICATE_INTERVAL_MS = 5500;
 
 const VALUE_ICONS = [
   <svg key="0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" /><circle cx="12" cy="12" r="4" /></svg>,
@@ -38,6 +54,20 @@ export function AboutContent() {
   const qualityParallaxRef = useRef(null);
   const { scrollYProgress: qualityScrollY } = useScroll({ target: qualityParallaxRef, offset: ["start end", "end start"] });
   const qualityImgY = useTransform(qualityScrollY, [0, 1], [20, -20]);
+
+  // Certificate carousel: auto-advances every ~5.5 s; hover pauses it so the
+  // viewer can read the certificate text without it swapping out from under
+  // them.
+  const [certIdx, setCertIdx] = useState(0);
+  const [certPaused, setCertPaused] = useState(false);
+  useEffect(() => {
+    if (certPaused) return;
+    const id = setInterval(
+      () => setCertIdx((i) => (i + 1) % CERTIFICATE_IMAGES.length),
+      CERTIFICATE_INTERVAL_MS,
+    );
+    return () => clearInterval(id);
+  }, [certPaused]);
 
   return (
     <PageTransition>
@@ -240,21 +270,64 @@ export function AboutContent() {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="relative"
             >
-              {/* This is a photograph of the actual state certificate document
-                  (Şəhadətnamə AZ № 0191). Documents need object-contain — cover
-                  would crop the letterhead. A soft mist background keeps the
-                  card size consistent with the rest of the layout when the
-                  document's aspect ratio doesn't fill 4/3. */}
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden relative border-glow bg-mist">
+              {/* Certificate carousel — the state licence (AZ № 0191) and the
+                  Fəxri Fərman award. `object-contain` on a soft mist ground
+                  because certificates have their own letterhead and framing
+                  that mustn't be cropped. The mist background also fills the
+                  4/3 card when a certificate's own aspect ratio doesn't. */}
+              <div
+                className="aspect-[4/3] rounded-2xl overflow-hidden relative border-glow bg-mist"
+                onMouseEnter={() => setCertPaused(true)}
+                onMouseLeave={() => setCertPaused(false)}
+                onFocusCapture={() => setCertPaused(true)}
+                onBlurCapture={() => setCertPaused(false)}
+              >
                 <motion.div style={{ y: qualityImgY }} className="absolute inset-0">
-                  <Image
-                    src="/images/certificate.jpg"
-                    alt="Şəhadətnamə AZ № 0191"
-                    fill
-                    className="object-contain p-4 sm:p-6"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={CERTIFICATE_IMAGES[certIdx].src}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+                      className="absolute inset-0"
+                    >
+                      <Image
+                        src={CERTIFICATE_IMAGES[certIdx].src}
+                        alt={CERTIFICATE_IMAGES[certIdx].alt}
+                        fill
+                        className="object-contain p-4 sm:p-6"
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                        priority={certIdx === 0}
+                      />
+                    </motion.div>
+                  </AnimatePresence>
                 </motion.div>
+
+                {/* Dot navigation — small enough to sit alongside the floating
+                    badge below without collision, and clickable for direct
+                    selection. */}
+                <div
+                  className="absolute bottom-3 sm:bottom-4 left-4 flex gap-2 z-10"
+                  role="tablist"
+                  aria-label={a.qualityBadgeLabel}
+                >
+                  {CERTIFICATE_IMAGES.map((cert, i) => (
+                    <button
+                      key={cert.src}
+                      type="button"
+                      role="tab"
+                      aria-selected={certIdx === i}
+                      aria-label={cert.alt}
+                      onClick={() => setCertIdx(i)}
+                      className={`h-2 rounded-full transition-all duration-500 ${
+                        certIdx === i
+                          ? "w-8 bg-ocean"
+                          : "w-2 bg-ocean/30 hover:bg-ocean/60"
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}

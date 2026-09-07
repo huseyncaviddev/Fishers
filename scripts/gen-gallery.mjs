@@ -4,8 +4,11 @@
 // PRIORITY lists the tiles that must lead the gallery, in order; every other
 // image in public/images/improved is appended after them (sorted by name).
 // CATEGORY maps each file to a gallery filter bucket (farm/processing/tech/
-// moments); anything unmapped falls back to DEFAULT_CATEGORY. Natural pixel
-// dimensions are read with sharp so the masonry reserves space (no layout shift).
+// moments); anything unmapped falls back to DEFAULT_CATEGORY. EXCLUDE keeps
+// specific files out of the gallery entirely (e.g. the state licence, which
+// belongs on the About-page certificate carousel, not the general gallery).
+// Natural pixel dimensions are read with sharp so the masonry reserves space
+// (no layout shift).
 
 import sharp from "sharp";
 import { readdir, writeFile } from "node:fs/promises";
@@ -14,6 +17,15 @@ import path from "node:path";
 const PUB = "./public/images";
 const IMPROVED = path.join(PUB, "improved");
 const DEFAULT_CATEGORY = "farm";
+
+// Files under improved/ that must NOT appear in the gallery.
+// - 02_58_31 (5): superseded by 10_45_07 (award certificate)
+// - Sep 7 10_24_53: the state licence scan — used only in the About page
+//   certificate carousel, not in the general gallery.
+const EXCLUDE = new Set([
+  "ChatGPT Image Sep 6, 2026, 02_58_31 PM (5).png",
+  "ChatGPT Image Sep 7, 2026, 10_24_53 PM.png",
+]);
 
 const dims = async (file) => {
   const m = await sharp(file).metadata();
@@ -63,7 +75,7 @@ const CATEGORY = {
   "ChatGPT Image Sep 6, 2026, 03_22_47 PM (2).png": "moments",
   "ChatGPT Image Sep 6, 2026, 02_58_30 PM (1).png": "moments",
   "ChatGPT Image Sep 6, 2026, 02_58_30 PM (3).png": "moments",
-  "ChatGPT Image Sep 6, 2026, 02_58_31 PM (5).png": "moments",
+  "ChatGPT Image Sep 7, 2026, 10_45_07 PM.png": "moments",
   "ChatGPT Image Sep 6, 2026, 03_22_47 PM (3).png": "moments",
   "ChatGPT Image Sep 6, 2026, 03_33_40 PM.png": "moments",
   "ChatGPT Image Sep 6, 2026, 03_50_30 PM.png": "moments",
@@ -104,7 +116,9 @@ const CATEGORY = {
 const catOf = (basename) => CATEGORY[basename] ?? DEFAULT_CATEGORY;
 
 const usedImproved = new Set(PRIORITY.filter((p) => !p.root).map((p) => p.f));
-const allImproved = (await readdir(IMPROVED)).filter((f) => /\.(png|jpe?g|webp)$/i.test(f));
+const allImproved = (await readdir(IMPROVED)).filter(
+  (f) => /\.(png|jpe?g|webp)$/i.test(f) && !EXCLUDE.has(f),
+);
 const rest = allImproved.filter((f) => !usedImproved.has(f)).sort();
 
 const items = [];

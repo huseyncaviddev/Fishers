@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, useInView, useScroll, useTransform } from "framer-motion";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { PageTransition } from "@/components/ui/PageTransition";
@@ -20,7 +20,7 @@ const CERTIFICATE_IMAGES = [
   },
 ] as const;
 
-const CERTIFICATE_INTERVAL_MS = 5500;
+const CERTIFICATE_INTERVAL_MS = 4500;
 
 const VALUE_ICONS = [
   <svg key="0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" /><circle cx="12" cy="12" r="4" /></svg>,
@@ -282,26 +282,31 @@ export function AboutContent() {
                 onFocusCapture={() => setCertPaused(true)}
                 onBlurCapture={() => setCertPaused(false)}
               >
+                {/* Both slides stay mounted; opacity crossfades between them
+                    via a CSS transition (not framer-motion), so the transition
+                    keeps running even when rAF-driven animations are throttled
+                    — background tabs, hidden panes, etc.
+                    aria-hidden on the inactive slide keeps AT users on the
+                    active certificate only. */}
                 <motion.div style={{ y: qualityImgY }} className="absolute inset-0">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={CERTIFICATE_IMAGES[certIdx].src}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-                      className="absolute inset-0"
+                  {CERTIFICATE_IMAGES.map((cert, i) => (
+                    <div
+                      key={cert.src}
+                      className={`absolute inset-0 transition-opacity duration-700 ease-out ${
+                        certIdx === i ? "opacity-100" : "opacity-0"
+                      }`}
+                      aria-hidden={certIdx !== i}
                     >
                       <Image
-                        src={CERTIFICATE_IMAGES[certIdx].src}
-                        alt={CERTIFICATE_IMAGES[certIdx].alt}
+                        src={cert.src}
+                        alt={cert.alt}
                         fill
                         className="object-contain p-4 sm:p-6"
                         sizes="(max-width: 1024px) 100vw, 50vw"
-                        priority={certIdx === 0}
+                        priority={i === 0}
                       />
-                    </motion.div>
-                  </AnimatePresence>
+                    </div>
+                  ))}
                 </motion.div>
 
                 {/* Dot navigation — small enough to sit alongside the floating

@@ -1,14 +1,15 @@
 "use client";
 
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import Image from "next/image";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { useI18n } from "@/i18n/I18nProvider";
 
-// Certificate scans shown in the quality section — the state licence and the
-// honorary order recognising the founder's contribution to fishery.
-// The carousel below auto-cycles between them.
+// The state licence (AZ № 0191) is the primary credential — shown up front.
+// The Fəxri Fərman honorary order sits behind it as a peeking card so the
+// viewer sees "there is more" without a slideshow doing it for them. Hover
+// on either card brings that one forward and grows it to a legible size.
 const CERTIFICATE_IMAGES = [
   {
     src: "/images/improved/ChatGPT Image Sep 7, 2026, 10_24_53 PM.png",
@@ -19,8 +20,6 @@ const CERTIFICATE_IMAGES = [
     alt: "Fəxri Fərman — Aqrar Sahə İşçilərinin Həmkarlar İttifaqı Birliyi",
   },
 ] as const;
-
-const CERTIFICATE_INTERVAL_MS = 4500;
 
 const VALUE_ICONS = [
   <svg key="0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-7 h-7"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" /><circle cx="12" cy="12" r="4" /></svg>,
@@ -54,20 +53,6 @@ export function AboutContent() {
   const qualityParallaxRef = useRef(null);
   const { scrollYProgress: qualityScrollY } = useScroll({ target: qualityParallaxRef, offset: ["start end", "end start"] });
   const qualityImgY = useTransform(qualityScrollY, [0, 1], [20, -20]);
-
-  // Certificate carousel: auto-advances every ~5.5 s; hover pauses it so the
-  // viewer can read the certificate text without it swapping out from under
-  // them.
-  const [certIdx, setCertIdx] = useState(0);
-  const [certPaused, setCertPaused] = useState(false);
-  useEffect(() => {
-    if (certPaused) return;
-    const id = setInterval(
-      () => setCertIdx((i) => (i + 1) % CERTIFICATE_IMAGES.length),
-      CERTIFICATE_INTERVAL_MS,
-    );
-    return () => clearInterval(id);
-  }, [certPaused]);
 
   return (
     <PageTransition>
@@ -270,70 +255,63 @@ export function AboutContent() {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="relative"
             >
-              {/* Certificate carousel — the state licence (AZ № 0191) and the
-                  Fəxri Fərman award. `object-contain` on a soft mist ground
-                  because certificates have their own letterhead and framing
-                  that mustn't be cropped. The mist background also fills the
-                  4/3 card when a certificate's own aspect ratio doesn't. */}
-              <div
-                className="aspect-[4/3] rounded-2xl overflow-hidden relative border-glow bg-mist"
-                onMouseEnter={() => setCertPaused(true)}
-                onMouseLeave={() => setCertPaused(false)}
-                onFocusCapture={() => setCertPaused(true)}
-                onBlurCapture={() => setCertPaused(false)}
+              {/* Layered "peek" layout — the state licence sits in front, the
+                  Fəxri Fərman award peeks from behind. Hovering either card
+                  brings it forward, scales it up, and lifts it above the other
+                  so the viewer can read every line without a slideshow doing
+                  the reveal for them.
+                  The stage is aspect-[4/3] but keeps `overflow-visible` so the
+                  hovered card can grow past the frame; the scroll parallax
+                  still moves the whole assembly together. */}
+              <motion.div
+                style={{ y: qualityImgY }}
+                className="relative aspect-[4/3]"
               >
-                {/* Both slides stay mounted; opacity crossfades between them
-                    via a CSS transition (not framer-motion), so the transition
-                    keeps running even when rAF-driven animations are throttled
-                    — background tabs, hidden panes, etc.
-                    aria-hidden on the inactive slide keeps AT users on the
-                    active certificate only. */}
-                <motion.div style={{ y: qualityImgY }} className="absolute inset-0">
-                  {CERTIFICATE_IMAGES.map((cert, i) => (
-                    <div
-                      key={cert.src}
-                      className={`absolute inset-0 transition-opacity duration-700 ease-out ${
-                        certIdx === i ? "opacity-100" : "opacity-0"
-                      }`}
-                      aria-hidden={certIdx !== i}
-                    >
-                      <Image
-                        src={cert.src}
-                        alt={cert.alt}
-                        fill
-                        className="object-contain p-4 sm:p-6"
-                        sizes="(max-width: 1024px) 100vw, 50vw"
-                        priority={i === 0}
-                      />
-                    </div>
-                  ))}
-                </motion.div>
-
-                {/* Dot navigation — small enough to sit alongside the floating
-                    badge below without collision, and clickable for direct
-                    selection. */}
-                <div
-                  className="absolute bottom-3 sm:bottom-4 left-4 flex gap-2 z-10"
-                  role="tablist"
-                  aria-label={a.qualityBadgeLabel}
-                >
-                  {CERTIFICATE_IMAGES.map((cert, i) => (
-                    <button
-                      key={cert.src}
-                      type="button"
-                      role="tab"
-                      aria-selected={certIdx === i}
-                      aria-label={cert.alt}
-                      onClick={() => setCertIdx(i)}
-                      className={`h-2 rounded-full transition-all duration-500 ${
-                        certIdx === i
-                          ? "w-8 bg-ocean"
-                          : "w-2 bg-ocean/30 hover:bg-ocean/60"
-                      }`}
+                {/* Back card — Fəxri Fərman. Sits behind, offset up + right
+                    and lightly rotated so a visible slice always pokes out.
+                    `group/back` scopes the hover so scaling only fires for
+                    this specific card, not its sibling. `focus-within:` gives
+                    keyboard users the same effect via Tab. */}
+                <div className="group/back absolute inset-0 -translate-y-3 translate-x-6 sm:-translate-y-5 sm:translate-x-10 rotate-[3deg] hover:z-20 focus-within:z-20 transition-[transform,z-index] duration-500 ease-out">
+                  <div className="w-full h-full rounded-2xl overflow-hidden border-glow bg-mist shadow-xl shadow-navy/10 transition-transform duration-500 ease-out group-hover/back:scale-[1.06] group-hover/back:-rotate-[1deg] group-focus-within/back:scale-[1.06] cursor-zoom-in">
+                    <Image
+                      src={CERTIFICATE_IMAGES[1].src}
+                      alt={CERTIFICATE_IMAGES[1].alt}
+                      fill
+                      className="object-contain p-4 sm:p-6"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
                     />
-                  ))}
+                    {/* Real focusable element so keyboard users can also trigger the effect. */}
+                    <button
+                      type="button"
+                      className="absolute inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean/40 rounded-2xl"
+                      aria-label={CERTIFICATE_IMAGES[1].alt}
+                    />
+                  </div>
                 </div>
-              </div>
+
+                {/* Front card — the state licence (primary credential).
+                    Higher default z so it sits over the peek; on its own
+                    hover it lifts further and scales, mirroring the back
+                    card's behaviour. */}
+                <div className="group/front absolute inset-0 z-10 hover:z-30 focus-within:z-30 transition-[z-index] duration-500 ease-out">
+                  <div className="w-full h-full rounded-2xl overflow-hidden border-glow bg-mist shadow-xl shadow-navy/10 transition-transform duration-500 ease-out group-hover/front:scale-[1.05] group-focus-within/front:scale-[1.05] cursor-zoom-in">
+                    <Image
+                      src={CERTIFICATE_IMAGES[0].src}
+                      alt={CERTIFICATE_IMAGES[0].alt}
+                      fill
+                      className="object-contain p-4 sm:p-6"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      priority
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean/40 rounded-2xl"
+                      aria-label={CERTIFICATE_IMAGES[0].alt}
+                    />
+                  </div>
+                </div>
+              </motion.div>
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={qualityInView ? { opacity: 1, y: 0 } : {}}

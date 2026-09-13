@@ -44,6 +44,3 @@ next-env.d.ts
 
 # local video masters (backups, not served)
 /_video_masters
-
-# claude code local config
-/.claude

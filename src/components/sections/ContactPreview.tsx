@@ -127,7 +127,7 @@ export function ContactPreview() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 ring-2 ring-ocean/30">
                   <Image
-                    src="/images/ChatGPT Image Sep 6, 2026, 05_35_33 PM.png"
+                    src="/images/chatgpt-image-sep-6-2026-05_35_33-pm.png"
                     alt="United Fishers"
                     width={40}
                     height={40}

@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/ChatGPT Image Sep 6, 2026, 05_34_16 PM.png",
+        url: "/images/chatgpt-image-sep-6-2026-05_34_16-pm.png",
         width: 1675,
         height: 939,
         alt: "United Fishers Aquaculture",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     title: "United Fishers | Premium Aquaculture & Fishing Farm",
     description:
       "Davamlı akvakultura həlləri — ən yüksək keyfiyyətli dəniz məhsulları.",
-    images: ["/images/ChatGPT Image Sep 6, 2026, 05_34_16 PM.png"],
+    images: ["/images/chatgpt-image-sep-6-2026-05_34_16-pm.png"],
   },
   robots: {
     index: true,

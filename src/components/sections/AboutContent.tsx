@@ -12,11 +12,11 @@ import { useI18n } from "@/i18n/I18nProvider";
 // on either card brings that one forward and grows it to a legible size.
 const CERTIFICATE_IMAGES = [
   {
-    src: "/images/improved/ChatGPT Image Sep 7, 2026, 10_24_53 PM.png",
+    src: "/images/improved/chatgpt-image-sep-7-2026-10_24_53-pm.png",
     alt: "Şəhadətnamə AZ № 0191 — Balıqçılıq və Akvakultura Mərkəzi",
   },
   {
-    src: "/images/improved/ChatGPT Image Sep 7, 2026, 10_45_07 PM.png",
+    src: "/images/improved/chatgpt-image-sep-7-2026-10_45_07-pm.png",
     alt: "Fəxri Fərman — Aqrar Sahə İşçilərinin Həmkarlar İttifaqı Birliyi",
   },
 ] as const;
@@ -95,7 +95,7 @@ export function AboutContent() {
               <div className="aspect-[4/3] rounded-2xl overflow-hidden relative border-glow">
                 <motion.div style={{ y: imgY }} className="absolute inset-[-10%] w-[120%] h-[120%]">
                   <Image
-                    src="/images/ChatGPT Image Sep 6, 2026, 05_34_16 PM.png"
+                    src="/images/chatgpt-image-sep-6-2026-05_34_16-pm.png"
                     alt="United Fishers akvakultura təsərrüfatı"
                     fill
                     className="object-cover"

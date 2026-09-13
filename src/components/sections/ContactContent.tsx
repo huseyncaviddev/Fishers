@@ -219,7 +219,7 @@ export function ContactContent() {
               <div className="rounded-2xl overflow-hidden relative">
                 <div className="absolute inset-0">
                   <Image
-                    src="/images/ChatGPT Image Sep 6, 2026, 05_35_33 PM.png"
+                    src="/images/chatgpt-image-sep-6-2026-05_35_33-pm.png"
                     alt="United Fishers"
                     fill
                     className="object-cover"

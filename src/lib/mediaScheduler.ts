@@ -159,13 +159,15 @@ function confirmPainted(c: Client) {
     setState(c, "PLAYING");
   };
 
-  // rVFC fires on the first frame actually presented to the compositor.
+  // rVFC fires on the first frame actually presented to the compositor. Chrome
+  // has it; WebKit does not expose it at all (verified against Playwright's
+  // WebKit and Safari's own support tables), so on Safari the poll below is not
+  // a fallback but the only path — it has to be correct on its own.
   if (typeof el.requestVideoFrameCallback === "function") {
     c.paintHandle = el.requestVideoFrameCallback(settle);
   }
 
-  // Safety net for engines without rVFC, and for a stall where rVFC never
-  // fires: require decoded data AND a clock that has actually moved.
+  // Require decoded data AND a clock that has actually moved.
   const poll = () => {
     c.paintTimer = undefined;
     if (!clients.has(c.id) || !c.wantsPlay) return;

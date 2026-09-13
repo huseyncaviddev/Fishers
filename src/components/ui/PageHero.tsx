@@ -54,6 +54,7 @@ export function PageHero({
 
   return (
     <section
+      data-hero-container
       className={`relative h-[45vh] sm:h-[50vh] min-h-[300px] sm:min-h-[360px] flex justify-center overflow-hidden ${
         contentAlign === "bottom" ? "items-end" : "items-center"
       }`}

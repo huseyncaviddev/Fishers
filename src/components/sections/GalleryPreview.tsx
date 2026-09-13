@@ -11,7 +11,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 // the right tile — removing gallery-ai (AI monitoring overlay) and gallery-07
 // (net/cage hauling) would otherwise shift every caption after them by one.
 const GALLERY_ITEMS = [
-  { src: "/images/4.jpg", type: "image" as const, titleIdx: 0 },
+  { src: "/images/improved/chatgpt-image-sep-6-2026-04_21_26-pm.png", type: "image" as const, titleIdx: 0 },
   { src: "/videos/gallery-harvest.mp4", type: "video" as const, titleIdx: 1 },
   { src: "/images/3.jpg", type: "image" as const, titleIdx: 2 },
   { src: "/images/14.jpg", type: "image" as const, titleIdx: 4 },

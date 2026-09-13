@@ -84,8 +84,7 @@ export const en: Dictionary = {
     body: "We are transforming the aquaculture industry through innovative approaches and sustainable practices. Using modern technology, we preserve ecological balance while producing the highest quality seafood.",
     stats: [
       { num: "15+", label: "Years of Experience" },
-      { num: "50+", label: "Specialists" },
-      { num: "200+", label: "Partners" },
+      { num: "20+", label: "Specialists" },
     ],
     cta: "Learn More",
     badgeValue: "100%",
@@ -255,8 +254,7 @@ export const en: Dictionary = {
       "Our mission is to create healthy, sustainable and accessible aquaculture systems, support local communities, create jobs and make a real contribution to global food security. We do not just raise fish — we shape the future of the industry.",
     stats: [
       { num: "15+", label: "Years of Experience" },
-      { num: "50+", label: "Specialists" },
-      { num: "200+", label: "Partners" },
+      { num: "20+", label: "Specialists" },
     ],
     badgeValue: "100%",
     badgeLabel: "Sustainable Production",

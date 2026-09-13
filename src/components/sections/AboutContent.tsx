@@ -75,7 +75,7 @@ export function AboutContent() {
               <p className="mt-4 text-slate/80 text-lg leading-relaxed">
                 {a.missionBody2}
               </p>
-              <div className="mt-8 sm:mt-10 grid grid-cols-3 gap-4 sm:gap-6">
+              <div className="mt-8 sm:mt-10 grid grid-cols-2 gap-4 sm:gap-6">
                 {a.stats.map((s, i) => (
                   <div key={i}>
                     <div className="font-display text-2xl sm:text-3xl font-bold text-ocean">{s.num}</div>

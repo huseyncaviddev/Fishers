@@ -28,9 +28,8 @@ const EASE = [0.25, 0.1, 0.25, 1] as const;
 export function Navbar() {
   const { t } = useI18n();
   const pathname = usePathname();
-  const isHome = pathname === "/";
   const [mounted, setMounted] = useState(false);
-  const [scrolled, setScrolled] = useState(!isHome);
+  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -43,26 +42,23 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
-    if (!isHome) {
-      // Non-home pages always render the scrolled (solid) navbar.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setScrolled(true);
-      return;
-    }
+    // Every page carries a hero (the full home Hero, or the shorter
+    // PageHero banner) — both tag their root with data-hero-container so
+    // the navbar can measure it and fade from transparent to solid at
+    // roughly its midpoint, regardless of how tall that hero is.
     let heroHeight = 0;
     const onScroll = () => {
       if (!heroHeight) {
         const hero = document.querySelector("[data-hero-container]");
         if (hero) heroHeight = hero.getBoundingClientRect().height;
       }
-      const threshold =
-        heroHeight > 0 ? heroHeight - window.innerHeight * 0.5 : 50;
+      const threshold = heroHeight > 0 ? heroHeight * 0.5 : 50;
       setScrolled(window.scrollY > threshold);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [isHome]);
+  }, [pathname]);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen || searchOpen ? "hidden" : "";

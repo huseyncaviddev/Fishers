@@ -82,8 +82,7 @@ export const az = {
     body: "Biz innovativ yanaşmalar və davamlı təcrübələrlə akvakultura sənayesini dəyişdiririk. Müasir texnologiyalardan istifadə edərək ekoloji tarazlığı qorumaqla yanaşı, ən yüksək keyfiyyətli dəniz məhsulları istehsal edirik.",
     stats: [
       { num: "15+", label: "İllik Təcrübə" },
-      { num: "50+", label: "Mütəxəssis" },
-      { num: "200+", label: "Tərəfdaş" },
+      { num: "20+", label: "Mütəxəssis" },
     ],
     cta: "Ətraflı Oxuyun",
     badgeValue: "100%",
@@ -253,8 +252,7 @@ export const az = {
       "Missiyamız sağlam, davamlı və əlçatan akvakultura sistemləri yaratmaq, yerli icmaları dəstəkləmək, iş yerləri açmaq və qlobal ərzaq təhlükəsizliyinə real töhfə verməkdir. Biz sadəcə balıq yetişdirmirik — sənayenin gələcəyini formalaşdırırıq.",
     stats: [
       { num: "15+", label: "İllik Təcrübə" },
-      { num: "50+", label: "Mütəxəssis" },
-      { num: "200+", label: "Tərəfdaş" },
+      { num: "20+", label: "Mütəxəssis" },
     ],
     badgeValue: "100%",
     badgeLabel: "Davamlı İstehsal",

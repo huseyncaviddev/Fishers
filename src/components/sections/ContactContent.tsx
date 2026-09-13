@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { useI18n } from "@/i18n/I18nProvider";
-import { SOCIAL_ICON_PATHS, configuredSocials, type SocialKey } from "@/lib/socialIcons";
+import { SOCIAL_ICON_PATHS, SOCIAL_LABELS, configuredSocials } from "@/lib/socialIcons";
 import { buildMailto, openMailto } from "@/lib/mailto";
 
 const CONTACT_ICONS = [
@@ -23,12 +23,6 @@ const CONTACT_ICONS = [
     <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>,
 ];
-
-const SOCIAL_LABELS: Record<SocialKey, string> = {
-  facebook: "Facebook",
-  tiktok: "TikTok",
-  whatsapp: "WhatsApp",
-};
 
 /**
  * The published company address. The form hands off to the visitor's own mail
@@ -94,7 +88,7 @@ export function ContactContent() {
                 <div className="w-14 h-14 mx-auto rounded-xl bg-ocean-light text-ocean flex items-center justify-center group-hover:bg-ocean group-hover:text-white transition-all duration-500">
                   {CONTACT_ICONS[i]}
                 </div>
-                <h3 className="mt-4 font-semibold text-navy">{item.title}</h3>
+                <h2 className="mt-4 font-semibold text-navy">{item.title}</h2>
                 {item.lines.map((line, j) => (
                   <p key={j} className="text-slate/70 text-sm mt-1">
                     {line}
@@ -113,15 +107,16 @@ export function ContactContent() {
               onSubmit={handleSubmit}
             >
               <div className="w-10 h-[2px] bg-sand mb-5" />
-              <h3 className="font-display text-2xl font-bold text-navy mb-6">
+              <h2 className="font-display text-2xl font-bold text-navy mb-6">
                 {cc.formTitle}
-              </h3>
+              </h2>
               <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-navy mb-2">
+                  <label htmlFor="contact-name" className="block text-sm font-medium text-navy mb-2">
                     {cc.nameLabel}
                   </label>
                   <input
+                    id="contact-name"
                     type="text"
                     name="name"
                     autoComplete="name"
@@ -131,10 +126,11 @@ export function ContactContent() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-navy mb-2">
+                  <label htmlFor="contact-email" className="block text-sm font-medium text-navy mb-2">
                     {cc.emailLabel}
                   </label>
                   <input
+                    id="contact-email"
                     type="email"
                     name="email"
                     autoComplete="email"
@@ -145,10 +141,11 @@ export function ContactContent() {
                 </div>
               </div>
               <div className="mt-5">
-                <label className="block text-sm font-medium text-navy mb-2">
+                <label htmlFor="contact-phone" className="block text-sm font-medium text-navy mb-2">
                   {cc.phoneLabel}
                 </label>
                 <input
+                  id="contact-phone"
                   type="tel"
                   name="phone"
                   autoComplete="tel"
@@ -157,10 +154,10 @@ export function ContactContent() {
                 />
               </div>
               <div className="mt-5">
-                <label className="block text-sm font-medium text-navy mb-2">
+                <label htmlFor="contact-subject" className="block text-sm font-medium text-navy mb-2">
                   {cc.subjectLabel}
                 </label>
-                <select name="subject" className="w-full px-4 py-3 rounded-xl border border-ocean-muted/30 bg-white text-navy focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-all">
+                <select id="contact-subject" name="subject" required className="w-full px-4 py-3 rounded-xl border border-ocean-muted/30 bg-white text-navy focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-all">
                   <option value="">{cc.subjectPlaceholder}</option>
                   <option value="partnership">{cc.subjects.partnership}</option>
                   <option value="purchase">{cc.subjects.purchase}</option>
@@ -170,10 +167,11 @@ export function ContactContent() {
                 </select>
               </div>
               <div className="mt-5">
-                <label className="block text-sm font-medium text-navy mb-2">
+                <label htmlFor="contact-message" className="block text-sm font-medium text-navy mb-2">
                   {cc.messageLabel}
                 </label>
                 <textarea
+                  id="contact-message"
                   rows={5}
                   name="message"
                   placeholder={cc.messagePlaceholder}
@@ -228,9 +226,9 @@ export function ContactContent() {
                   <div className="absolute inset-0 bg-ocean/85 backdrop-blur-sm" />
                 </div>
                 <div className="relative z-10 p-8">
-                  <h3 className="font-display text-xl font-bold text-white">
+                  <h2 className="font-display text-xl font-bold text-white">
                     {cc.followTitle}
-                  </h3>
+                  </h2>
                   <p className="text-white/70 mt-2 text-sm">
                     {cc.followBody}
                   </p>

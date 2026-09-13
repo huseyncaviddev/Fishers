@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -9,7 +9,8 @@ import { useI18n } from "@/i18n/I18nProvider";
 // The state licence (AZ № 0191) is the primary credential — shown up front.
 // The Fəxri Fərman honorary order sits behind it as a peeking card so the
 // viewer sees "there is more" without a slideshow doing it for them. Hover
-// on either card brings that one forward and grows it to a legible size.
+// previews either card; click, tap or Enter brings it to the front for good,
+// so the second document is reachable on touch screens and from the keyboard.
 const CERTIFICATE_IMAGES = [
   {
     src: "/images/improved/chatgpt-image-sep-7-2026-10_24_53-pm.png",
@@ -54,6 +55,9 @@ export function AboutContent() {
   const { scrollYProgress: qualityScrollY } = useScroll({ target: qualityParallaxRef, offset: ["start end", "end start"] });
   const qualityImgY = useTransform(qualityScrollY, [0, 1], [20, -20]);
 
+  // Which certificate is in front: 0 = state licence, 1 = honorary order.
+  const [frontCertificate, setFrontCertificate] = useState(0);
+
   return (
     <PageTransition>
       <section className="py-20 lg:py-28 bg-white" ref={missionRef}>
@@ -65,7 +69,7 @@ export function AboutContent() {
               transition={{ duration: 0.8 }}
             >
               <div className="w-12 h-[2px] bg-sand mb-6" />
-              <span className="text-ocean font-medium text-sm tracking-widest uppercase">{a.missionEyebrow}</span>
+              <span className="text-ocean-dark font-medium text-sm tracking-widest uppercase">{a.missionEyebrow}</span>
               <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">
                 {a.missionTitleLead} <span className="text-gradient-ocean">{a.missionTitleAccent}</span> {a.missionTitleTail}
               </h2>
@@ -165,7 +169,7 @@ export function AboutContent() {
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={areasInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }}
             className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-ocean font-medium text-sm tracking-widest uppercase">{a.areasEyebrow}</span>
+            <span className="text-ocean-dark font-medium text-sm tracking-widest uppercase">{a.areasEyebrow}</span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy">
               {a.areasTitleLead} <span className="text-gradient-ocean">{a.areasTitleAccent}</span>
             </h2>
@@ -194,7 +198,7 @@ export function AboutContent() {
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={valuesInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }}
             className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-ocean font-medium text-sm tracking-widest uppercase">{a.valuesEyebrow}</span>
+            <span className="text-ocean-dark font-medium text-sm tracking-widest uppercase">{a.valuesEyebrow}</span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy">
               {a.valuesTitleLead} <span className="text-gradient-ocean">{a.valuesTitleAccent}</span>
             </h2>
@@ -221,7 +225,7 @@ export function AboutContent() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div initial={{ opacity: 0, x: -30 }} animate={qualityInView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.7 }}>
               <div className="w-12 h-[2px] bg-sand mb-6" />
-              <span className="text-ocean font-medium text-sm tracking-widest uppercase">{a.qualityEyebrow}</span>
+              <span className="text-ocean-dark font-medium text-sm tracking-widest uppercase">{a.qualityEyebrow}</span>
               <h2 className="mt-4 font-display text-3xl sm:text-4xl font-bold text-navy leading-tight">
                 {a.qualityTitleLead} <span className="text-gradient-ocean">{a.qualityTitleAccent}</span>
               </h2>
@@ -255,68 +259,58 @@ export function AboutContent() {
               transition={{ duration: 0.7, delay: 0.2 }}
               className="relative"
             >
-              {/* Layered "peek" layout — the state licence sits in front, the
-                  Fəxri Fərman award peeks from behind. Hovering either card
-                  brings it forward, scales it up, and lifts it above the other
-                  so the viewer can read every line without a slideshow doing
-                  the reveal for them.
-                  The stage is aspect-[4/3] but keeps `overflow-visible` so the
-                  hovered card can grow past the frame; the scroll parallax
-                  still moves the whole assembly together. */}
+              {/* Layered "peek" layout. The stage reserves its own top/right
+                  margin for the back card's offset, so the peeking card stays
+                  inside the grid column instead of hanging past the viewport
+                  edge (it used to be clipped at 1280-1440px and all phones).
+                  `overflow-visible` lets a hovered card grow past the frame;
+                  the scroll parallax moves the whole assembly together. */}
               <motion.div
                 style={{ y: qualityImgY }}
-                className="relative aspect-[4/3]"
+                className="relative mt-7 mr-7 aspect-[4/3] sm:mt-9 sm:mr-12"
               >
-                {/* Back card — Fəxri Fərman. Sits behind, offset up + right
-                    and lightly rotated so a visible slice always pokes out.
-                    `group/back` scopes the hover so scaling only fires for
-                    this specific card, not its sibling. `focus-within:` gives
-                    keyboard users the same effect via Tab. */}
-                <div className="group/back absolute inset-0 -translate-y-3 translate-x-6 sm:-translate-y-5 sm:translate-x-10 rotate-[3deg] hover:z-20 focus-within:z-20 transition-[transform,z-index] duration-500 ease-out">
-                  <div className="w-full h-full rounded-2xl overflow-hidden border-glow bg-mist shadow-xl shadow-navy/10 transition-transform duration-500 ease-out group-hover/back:scale-[1.06] group-hover/back:-rotate-[1deg] group-focus-within/back:scale-[1.06] cursor-zoom-in">
-                    <Image
-                      src={CERTIFICATE_IMAGES[1].src}
-                      alt={CERTIFICATE_IMAGES[1].alt}
-                      fill
-                      className="object-contain p-4 sm:p-6"
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                    />
-                    {/* Real focusable element so keyboard users can also trigger the effect. */}
-                    <button
-                      type="button"
-                      className="absolute inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean/40 rounded-2xl"
-                      aria-label={CERTIFICATE_IMAGES[1].alt}
-                    />
-                  </div>
-                </div>
-
-                {/* Front card — the state licence (primary credential).
-                    Higher default z so it sits over the peek; on its own
-                    hover it lifts further and scales, mirroring the back
-                    card's behaviour. */}
-                <div className="group/front absolute inset-0 z-10 hover:z-30 focus-within:z-30 transition-[z-index] duration-500 ease-out">
-                  <div className="w-full h-full rounded-2xl overflow-hidden border-glow bg-mist shadow-xl shadow-navy/10 transition-transform duration-500 ease-out group-hover/front:scale-[1.05] group-focus-within/front:scale-[1.05] cursor-zoom-in">
-                    <Image
-                      src={CERTIFICATE_IMAGES[0].src}
-                      alt={CERTIFICATE_IMAGES[0].alt}
-                      fill
-                      className="object-contain p-4 sm:p-6"
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                      priority
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean/40 rounded-2xl"
-                      aria-label={CERTIFICATE_IMAGES[0].alt}
-                    />
-                  </div>
-                </div>
+                {CERTIFICATE_IMAGES.map((cert, i) => {
+                  const isFront = frontCertificate === i;
+                  return (
+                    <div
+                      key={cert.src}
+                      className={`group absolute inset-0 transition-transform duration-500 ease-out hover:z-30 focus-within:z-30 ${
+                        isFront
+                          ? "z-20"
+                          : "z-10 -translate-y-5 translate-x-6 rotate-[2.5deg] sm:-translate-y-7 sm:translate-x-10"
+                      }`}
+                    >
+                      <div className="h-full w-full cursor-zoom-in overflow-hidden rounded-2xl border-glow bg-mist shadow-xl shadow-navy/10 transition-transform duration-500 ease-out group-hover:scale-[1.05] group-focus-within:scale-[1.05]">
+                        <Image
+                          src={cert.src}
+                          alt={cert.alt}
+                          fill
+                          className="object-contain p-4 sm:p-6"
+                          sizes="(max-width: 1024px) 100vw, 50vw"
+                        />
+                        {/* A real control: brings this document to the front.
+                            Hover already previews it; this is what makes the
+                            back card usable on touch and from the keyboard. */}
+                        <button
+                          type="button"
+                          onClick={() => setFrontCertificate(i)}
+                          aria-pressed={isFront}
+                          aria-label={cert.alt}
+                          className="absolute inset-0 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean/40"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </motion.div>
+              {/* Floats over the stage's corner from `sm` up. On phones it sits
+                  in flow beneath the cards — there it was covering the
+                  certificate text. */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={qualityInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.6 }}
-                className="absolute -bottom-5 -right-3 sm:-bottom-6 sm:-right-6 glass-ocean rounded-xl p-4 sm:p-5 shadow-xl"
+                className="relative mt-4 inline-block sm:absolute sm:mt-0 sm:-bottom-6 sm:-right-6 glass-ocean rounded-xl p-4 sm:p-5 shadow-xl"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-ocean flex items-center justify-center">
@@ -339,7 +333,7 @@ export function AboutContent() {
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={timelineInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.7 }}
             className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-ocean font-medium text-sm tracking-widest uppercase">{a.timelineEyebrow}</span>
+            <span className="text-ocean-dark font-medium text-sm tracking-widest uppercase">{a.timelineEyebrow}</span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy">
               {a.timelineTitleLead} <span className="text-gradient-ocean">{a.timelineTitleAccent}</span>
             </h2>

@@ -45,7 +45,6 @@ export function LanguageSwitcher({ scrolled }: LanguageSwitcherProps) {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={t.nav.language}
         className={`flex items-center gap-1.5 h-10 sm:h-9 px-2.5 rounded-full text-[13px] font-semibold tracking-[0.04em] transition-all duration-300 gold-focus ${
           scrolled
             ? "text-[var(--color-deep-900)] hover:bg-[rgba(22,165,184,0.08)]"
@@ -62,6 +61,9 @@ export function LanguageSwitcher({ scrolled }: LanguageSwitcherProps) {
           <circle cx="12" cy="12" r="9" />
           <path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" />
         </svg>
+        {/* The visible "AZ" must be part of the accessible name (WCAG 2.5.3),
+            so the purpose is a hidden prefix rather than an aria-label. */}
+        <span className="sr-only">{t.nav.language}: </span>
         <span>{LOCALE_SHORT[locale]}</span>
         <svg
           className={`w-3 h-3 transition-transform duration-300 ${open ? "rotate-180" : ""}`}

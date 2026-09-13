@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Image, { type ImageProps } from "next/image";
 import Link from "next/link";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -12,8 +11,6 @@ interface PageHeroProps {
   pageKey?: PageKey;
   productSlug?: ProductSlug;
   image?: ImageProps["src"];
-  /** Preserve a prepared photo without another resize or lossy encode. */
-  imageUnoptimized?: boolean;
   /** Decorative texture can be omitted when photographic detail matters. */
   showGrain?: boolean;
   /** CSS object-position for the background image's focal point. */
@@ -32,7 +29,6 @@ export function PageHero({
   pageKey,
   productSlug,
   image,
-  imageUnoptimized = false,
   showGrain = true,
   imagePosition = "center",
   overlayClassName = DEFAULT_OVERLAY,
@@ -68,7 +64,6 @@ export function PageHero({
           style={{ objectPosition: imagePosition }}
           sizes="100vw"
           quality={90}
-          unoptimized={imageUnoptimized}
           priority
           fetchPriority="high"
           {...(imageBlurDataURL
@@ -84,40 +79,25 @@ export function PageHero({
           contentAlign === "bottom" ? "pt-20 pb-10 sm:pb-14" : "pt-20"
         }`}
       >
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.6 }}
-          className="w-12 h-[1px] bg-sand mx-auto mb-6 origin-center"
-        />
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="font-display text-3xl sm:text-4xl lg:text-6xl font-bold text-white [text-shadow:0_2px_24px_rgba(4,34,44,0.55)]"
-        >
+        {/* CSS entrance (.hero-enter): the title is painted with the first
+            HTML byte instead of waiting for hydration — see Hero.tsx. */}
+        <div className="hero-enter hero-enter--bar w-12 h-[1px] bg-sand mx-auto mb-6 origin-center" />
+        <h1 className="hero-enter hero-enter--1 font-display text-3xl sm:text-4xl lg:text-6xl font-bold text-white [text-shadow:0_2px_24px_rgba(4,34,44,0.55)]">
           {title}
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="mt-3 sm:mt-4 text-sm sm:text-base lg:text-lg text-white/70 max-w-2xl mx-auto px-2 font-light [text-shadow:0_1px_16px_rgba(4,34,44,0.5)]"
-        >
+        </h1>
+        <p className="hero-enter hero-enter--2 mt-3 sm:mt-4 text-sm sm:text-base lg:text-lg text-white/70 max-w-2xl mx-auto px-2 font-light [text-shadow:0_1px_16px_rgba(4,34,44,0.5)]">
           {subtitle}
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-6 flex items-center justify-center gap-2 text-white/30 text-xs tracking-wider"
+        </p>
+        <nav
+          aria-label="Breadcrumb"
+          className="hero-enter hero-enter--3 mt-6 flex items-center justify-center gap-2 text-white/30 text-xs tracking-wider"
         >
           <Link href="/" className="hover:text-white transition-colors duration-300">
             {t.common.home}
           </Link>
-          <span className="text-white/15">/</span>
-          <span className="text-white/60">{title}</span>
-        </motion.div>
+          <span aria-hidden="true" className="text-white/15">/</span>
+          <span className="text-white/60" aria-current="page">{title}</span>
+        </nav>
       </div>
     </section>
   );

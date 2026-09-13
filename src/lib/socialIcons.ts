@@ -11,6 +11,13 @@ export const SOCIAL_ICON_PATHS: Record<SocialKey, string> = {
 
 export const SOCIAL_KEYS: ReadonlyArray<SocialKey> = ["facebook", "tiktok", "whatsapp"];
 
+/** Accessible names for icon-only social links. */
+export const SOCIAL_LABELS: Record<SocialKey, string> = {
+  facebook: "Facebook",
+  tiktok: "TikTok",
+  whatsapp: "WhatsApp",
+};
+
 export const SOCIAL_URLS: Record<SocialKey, string> = {
   facebook:
     process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK || "https://www.facebook.com/ABB.informasiya",

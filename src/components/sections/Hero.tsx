@@ -359,44 +359,27 @@ export function Hero() {
             transition={{ duration: 0.55, ease: EASE }}
             className="max-w-5xl"
           >
-            <motion.div
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ delay: 0.2, duration: 0.8, ease: EASE }}
-              className="w-12 h-[2px] bg-sand mx-auto mb-6 origin-left"
-            />
+            {/* The copy's entrance is a CSS animation (see .hero-enter in
+                globals.css), not a Framer `initial` state. Framer's initial
+                serialises as `opacity:0` into the server HTML, so on a phone
+                the headline — the page's LCP element — stayed invisible until
+                the JS bundle had downloaded and hydrated (LCP ~6.5 s under
+                simulated 4G). CSS keyframes start at first paint, keep the same
+                staggered fade-up, and the wrapper above still slides between
+                slides with Framer. */}
+            <div className="hero-enter hero-enter--bar w-12 h-[2px] bg-sand mx-auto mb-6 origin-left" />
 
-            <motion.span
-              className="text-sand/90 text-xs sm:text-sm tracking-[0.3em] uppercase font-light block mb-4"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.6, ease: EASE }}
-            >
+            <span className="hero-enter hero-enter--1 text-sand/90 text-xs sm:text-sm tracking-[0.3em] uppercase font-light block mb-4">
               {t.hero.eyebrow}
-            </motion.span>
+            </span>
 
-            <motion.h1
-              className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-bold text-white leading-[1.05] tracking-tight"
-              initial={{ opacity: 0, y: 25 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.8, ease: EASE }}
-            >
+            <h1 className="hero-enter hero-enter--2 font-display text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-bold text-white leading-[1.05] tracking-tight">
               {t.hero.slides[current].title}
-            </motion.h1>
-            <motion.p
-              className="mt-5 sm:mt-7 text-base sm:text-lg md:text-xl text-white/70 font-light max-w-2xl mx-auto leading-relaxed"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.7, ease: EASE }}
-            >
+            </h1>
+            <p className="hero-enter hero-enter--3 mt-5 sm:mt-7 text-base sm:text-lg md:text-xl text-white/70 font-light max-w-2xl mx-auto leading-relaxed">
               {t.hero.slides[current].subtitle}
-            </motion.p>
-            <motion.div
-              className="mt-9 sm:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45, duration: 0.7, ease: EASE }}
-            >
+            </p>
+            <div className="hero-enter hero-enter--4 mt-9 sm:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
               <Link href="/about" className="btn btn-primary btn-lg btn-glow">
                 <span>{t.hero.discover}</span>
                 <svg className="w-4 h-4 btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -406,24 +389,31 @@ export function Hero() {
               <Link href="/products" className="btn btn-ghost btn-lg">
                 {t.hero.products}
               </Link>
-            </motion.div>
+            </div>
           </motion.div>
         </AnimatePresence>
       </div>
 
       <div
         ref={indicatorRef}
-        className="absolute right-5 sm:right-8 lg:right-10 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2.5 z-20"
+        // gap-0.5 + the buttons' py-1 keeps the bars 10px apart, as before.
+        className="absolute right-5 sm:right-8 lg:right-10 top-1/2 -translate-y-1/2 flex flex-col items-center gap-0.5 z-20"
       >
         {SLIDES.map((_, i) => (
           <button
             key={i}
             onClick={() => goToSlide(i)}
-            className="relative group"
+            // The visible bar is 3px wide; the button itself provides the
+            // 24x24 minimum target (WCAG 2.5.8) instead of an invisible
+            // overlay div, so the accessible box matches the clickable box.
+            className="relative group flex w-6 justify-center py-1"
             aria-label={`Slayd ${i + 1}`}
+            aria-current={i === current ? "true" : undefined}
           >
+            {/* `relative` so the track/fill layers below size to this 3px bar,
+                not to the (wider) button around it. */}
             <div
-              className="w-[3px] rounded-full overflow-hidden transition-all duration-700 ease-out"
+              className="relative w-[3px] rounded-full overflow-hidden transition-all duration-700 ease-out"
               style={{ height: i === current ? 40 : 16 }}
             >
               <div
@@ -440,7 +430,6 @@ export function Hero() {
                 />
               )}
             </div>
-            <div className="absolute -left-2 -right-2 -top-1 -bottom-1" />
           </button>
         ))}
       </div>

@@ -142,20 +142,6 @@ export const az = {
       { num: "24/7", label: "Monitorinq" },
     ],
   },
-  imageShowcase: {
-    eyebrow: "Təsərrüfatımız",
-    titleLead: "Mükəmməlliyin",
-    titleAccent: "arxasında",
-    subtitle: "Müasir texnologiya ilə təbiətin harmoniyasını yaradırıq",
-    images: [
-      "Aerial akvakultura əməliyyatları",
-      "Açıq su balıq qəfəsləri",
-      "Balıq yaxın plan",
-      "Qapalı RAS müəssisəsi",
-      "Balıq emalı",
-      "Torpaq əsaslı dairəvi hovuzlar",
-    ],
-  },
   galleryPreview: {
     eyebrow: "Qalereya",
     titleLead: "Təsərrüfatımızdan",
@@ -210,8 +196,6 @@ export const az = {
     ctaBody: "Komandamızla əlaqə saxlayın",
     ctaButton: "Əlaqə Saxlayın",
     colCompany: "United Fishers",
-    colInfo: "Məlumat",
-    infoItems: ["Sertifikatlar", "Davamlılıq", "Tərəfdaşlıq", "Xəbərlər"],
     colAddress: "Ünvanımız",
     addressLines: ["Neftçala", "Azərbaycan"],
     colContact: "Əlaqə",
@@ -527,7 +511,7 @@ export const az = {
         shortDesc:
           "Neftçala hovuzlarında Kür çayının suyu ilə yetişdirilən Azərbaycan Çəkisi — dolğun ləzzət və zəngin qidalılıq dəyəri.",
         fullDesc:
-          "Çəki (Cyprinus carpio) — Neftçala rayonundakı 7 süni balıqyetişdirmə hovurunda, Kür çayından götürülən suyun (150 l/san) axını ilə yetişdirilir. AZ № 0191 dövlət şəhadətnaməsi çərçivəsində qeydiyyatdan keçmiş istehsal, illik 35 tona qədər əmtəəlik balıq təchizatını dəstəkləyir.\n\nƏti yumşaq, ağ və dolğun ləzzətlidir. Yerli restoranlar, bazarlar və birbaşa istehlakçı sifarişləri üçün bütöv, təmizlənmiş və porsiyalanmış formatlarda təqdim olunur.\n\nAçıq su hovuzlarında təbiətə uyğun yetişdirmə prinsipləri ilə istehsal edilir — antibiotik-free və hormonsuz.",
+          "Çəki (Cyprinus carpio) — Neftçala rayonundakı 7 süni balıqyetişdirmə hovuzunda, Kür çayından götürülən suyun (150 l/san) axını ilə yetişdirilir. AZ № 0191 dövlət şəhadətnaməsi çərçivəsində qeydiyyatdan keçmiş istehsal, illik 35 tona qədər əmtəəlik balıq təchizatını dəstəkləyir.\n\nƏti yumşaq, ağ və dolğun ləzzətlidir. Yerli restoranlar, bazarlar və birbaşa istehlakçı sifarişləri üçün bütöv, təmizlənmiş və porsiyalanmış formatlarda təqdim olunur.\n\nAçıq su hovuzlarında təbiətə uyğun yetişdirmə prinsipləri ilə istehsal edilir — antibiotik-free və hormonsuz.",
         specs: [
           { label: "Növ", value: "Cyprinus carpio" },
           { label: "Orta Çəki", value: "1.2–2.5 kq" },
@@ -547,7 +531,7 @@ export const az = {
           "Balıqçılıq və Akvakultura Mərkəzi qeydiyyatı",
         ],
         uses: [
-          "Restoran və kafeler",
+          "Restoran və kafelər",
           "Yerli bazarlar və balıq dükanları",
           "Toy, mərasim və katerinq təchizatı",
           "Birbaşa istehlakçıya çatdırılma",
@@ -613,7 +597,7 @@ export const az = {
           "Kür çayının suyu ilə yetişdirilir",
         ],
         uses: [
-          "Restoran və kafeler",
+          "Restoran və kafelər",
           "Yerli bazarlar və balıq mağazaları",
           "Toy və mərasim təchizatı",
           "Hovuz təsərrüfatlarına toxum təchizatı",

@@ -53,7 +53,7 @@ export function Services() {
             transition={{ delay: 0.1, duration: 0.6 }}
             className="w-12 h-[2px] bg-ocean mx-auto mb-6 origin-center"
           />
-          <span className="text-ocean font-medium text-xs tracking-[0.2em] uppercase">
+          <span className="text-ocean-dark font-medium text-xs tracking-[0.2em] uppercase">
             {t.services.eyebrow}
           </span>
           <TextReveal

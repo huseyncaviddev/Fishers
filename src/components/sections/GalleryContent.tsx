@@ -1,9 +1,10 @@
 "use client";
 
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useI18n } from "@/i18n/I18nProvider";
+import { useOverlay } from "@/lib/useOverlay";
 import {
   GALLERY_IMAGES,
   type GalleryImage,
@@ -46,6 +47,8 @@ export function GalleryContent() {
   const [activeCategory, setActiveCategory] = useState<FilterKey>("all");
   const [selected, setSelected] = useState<number | null>(null);
   const columnCount = useColumnCount();
+  const lightboxRef = useRef<HTMLDivElement>(null);
+  const closeLightbox = useCallback(() => setSelected(null), []);
 
   // `selected` indexes into `filtered`, so switching filters would point it at
   // the wrong photo — close the lightbox whenever the filter changes.
@@ -58,17 +61,13 @@ export function GalleryContent() {
   );
   const total = filtered.length;
 
-  // Keyboard control for the lightbox: Escape closes, arrows page through.
-  useEffect(() => {
-    if (selected === null) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelected(null);
-      else if (e.key === "ArrowLeft") setSelected((s) => (s === null ? s : (s - 1 + total) % total));
-      else if (e.key === "ArrowRight") setSelected((s) => (s === null ? s : (s + 1) % total));
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [selected, total]);
+  // The lightbox is modal: Escape closes it, Tab stays inside, and focus goes
+  // back to the tile that opened it. Arrow keys page through the photos.
+  useOverlay(selected !== null, closeLightbox, lightboxRef);
+  const onLightboxKey = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowLeft") setSelected((s) => (s === null ? s : (s - 1 + total) % total));
+    else if (e.key === "ArrowRight") setSelected((s) => (s === null ? s : (s + 1) % total));
+  };
 
   // Greedy shortest-column packing keeps the columns visually balanced (no one
   // column running much taller) while preserving each photo's natural ratio.
@@ -87,14 +86,18 @@ export function GalleryContent() {
     return cols;
   }, [filtered, columnCount]);
 
+  // Each tile is a real button: the previous clickable <div> could not be
+  // reached or activated from the keyboard, so the lightbox was mouse-only.
   const renderTile = (item: GalleryImage, index: number) => (
-    <motion.div
+    <motion.button
       key={item.src}
+      type="button"
       initial={{ opacity: 0, y: 16 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: Math.min(0.03 * index, 0.4) }}
-      className="group cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl bg-mist border-glow"
+      className="group block w-full text-left cursor-pointer overflow-hidden rounded-xl sm:rounded-2xl bg-mist border-glow"
       onClick={() => setSelected(index)}
+      aria-label={`${gc.categories[item.category]} — ${gc.momentsCaption} ${index + 1}`}
     >
       <div className="relative overflow-hidden img-hover-zoom">
         <Image
@@ -123,7 +126,7 @@ export function GalleryContent() {
           </span>
         </div>
       </div>
-    </motion.div>
+    </motion.button>
   );
 
   return (
@@ -173,6 +176,11 @@ export function GalleryContent() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-navy/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
             onClick={() => setSelected(null)}
+            onKeyDown={onLightboxKey}
+            ref={lightboxRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${gc.categories[filtered[selected].category]} — ${selected + 1} / ${total}`}
           >
             <motion.div
               initial={{ scale: 0.85, opacity: 0 }}

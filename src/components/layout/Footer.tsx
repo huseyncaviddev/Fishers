@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { useI18n } from "@/i18n/I18nProvider";
-import { SOCIAL_ICON_PATHS, configuredSocials } from "@/lib/socialIcons";
+import { SOCIAL_ICON_PATHS, SOCIAL_LABELS, configuredSocials } from "@/lib/socialIcons";
 
 const COMPANY_LINKS = [
   { key: "about", href: "/about" },
@@ -36,9 +36,9 @@ export function Footer() {
         <div className="border-b border-white/[0.06]">
           <div className="mx-auto max-w-[1400px] px-6 lg:px-12 py-12 lg:py-16 flex flex-col lg:flex-row justify-between items-center gap-6">
             <div>
-              <h3 className="font-display text-2xl lg:text-3xl font-bold text-white">
+              <h2 className="font-display text-2xl lg:text-3xl font-bold text-white">
                 {t.footer.ctaTitleLead} <span className="text-gradient-gold">{t.footer.ctaTitleAccent}</span>
-              </h3>
+              </h2>
               <p className="text-white/40 text-sm mt-2 font-light">{t.footer.ctaBody}</p>
             </div>
             <MagneticButton href="/contact" className="btn btn-primary btn-glow">
@@ -53,9 +53,9 @@ export function Footer() {
         <div className="mx-auto max-w-[1400px] px-6 lg:px-12 pt-12 sm:pt-16 lg:pt-20 pb-8">
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
             <div>
-              <h4 className="font-display text-sm font-semibold tracking-wide text-sand">
+              <h3 className="font-display text-sm font-semibold tracking-wide text-sand">
                 {t.footer.colCompany}
-              </h4>
+              </h3>
               <ul className="mt-5 space-y-3">
                 {COMPANY_LINKS.map((link) => (
                   <li key={link.key}>
@@ -72,9 +72,9 @@ export function Footer() {
             </div>
 
             <div>
-              <h4 className="font-display text-sm font-semibold tracking-wide text-sand">
+              <h3 className="font-display text-sm font-semibold tracking-wide text-sand">
                 {t.footer.colAddress}
-              </h4>
+              </h3>
               <div className="mt-5 text-sm text-white/40 space-y-1 font-light">
                 {t.footer.addressLines.map((line) => (
                   <p key={line}>{line}</p>
@@ -83,9 +83,9 @@ export function Footer() {
             </div>
 
             <div>
-              <h4 className="font-display text-sm font-semibold tracking-wide text-sand">
+              <h3 className="font-display text-sm font-semibold tracking-wide text-sand">
                 {t.footer.colContact}
-              </h4>
+              </h3>
               <div className="mt-5 text-sm text-white/40 space-y-1 font-light">
                 <p><a href="tel:+994519115511" className="hover:text-white transition-colors duration-300">+994 51 911 55 11</a></p>
                 {/* `break-words` on the address: it is one 31-character token
@@ -138,7 +138,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-white/30 hover:bg-ocean hover:text-white hover:scale-110 transition-all duration-500"
-                  aria-label={key}
+                  aria-label={SOCIAL_LABELS[key]}
                 >
                   <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                     <path d={SOCIAL_ICON_PATHS[key]} />

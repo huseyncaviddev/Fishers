@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { useI18n } from "@/i18n/I18nProvider";
-import { SOCIAL_ICON_PATHS, configuredSocials } from "@/lib/socialIcons";
+import { SOCIAL_ICON_PATHS, SOCIAL_LABELS, configuredSocials } from "@/lib/socialIcons";
 import { searchSite } from "@/lib/siteSearch";
+import { useOverlay } from "@/lib/useOverlay";
 
 const NAV_LINKS = [
   { key: "about", href: "/about" },
@@ -34,6 +35,18 @@ export function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const results = useMemo(() => searchSite(query, t), [query, t]);
+
+  // Both overlays are modal: Escape closes them, Tab stays inside, and focus
+  // returns to the control that opened them. Previously neither responded to
+  // Escape and focus was left on the (now covered) trigger button.
+  const menuPanelRef = useRef<HTMLDivElement>(null);
+  const menuCloseRef = useRef<HTMLButtonElement>(null);
+  const searchPanelRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
+  useOverlay(menuOpen, closeMenu, menuPanelRef, menuCloseRef);
+  useOverlay(searchOpen, closeSearch, searchPanelRef, searchInputRef);
 
   useEffect(() => {
     // Mount flag for hydration-safe animation of the active-link indicator.
@@ -97,7 +110,6 @@ export function Navbar() {
             <Link
               href="/"
               className="flex min-w-0 items-center gap-2.5 sm:gap-3 group gold-focus rounded-lg"
-              aria-label="United Fishers — Ana səhifə"
             >
               <div
                 className={`relative w-10 h-10 sm:w-11 sm:h-11 shrink-0 rounded-full flex items-center justify-center transition-all duration-500 ${
@@ -139,6 +151,9 @@ export function Navbar() {
                 >
                   {t.brand.tagline}
                 </span>
+                {/* Visible text stays the accessible name (WCAG 2.5.3);
+                    this only adds the link's purpose for screen readers. */}
+                <span className="sr-only">— {t.common.home}</span>
               </div>
             </Link>
 
@@ -194,6 +209,8 @@ export function Navbar() {
               <MagneticButton strength={0.15}>
                 <button
                   onClick={() => setSearchOpen(true)}
+                  aria-expanded={searchOpen}
+                  aria-controls="site-search-panel"
                   className={`w-10 h-10 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all duration-300 gold-focus ${
                     scrolled
                       ? "text-[var(--color-ink-500)] hover:text-[var(--color-gold-600)] hover:bg-[rgba(22,165,184,0.08)]"
@@ -210,6 +227,8 @@ export function Navbar() {
               <MagneticButton strength={0.15}>
                 <button
                   onClick={() => setMenuOpen(true)}
+                  aria-expanded={menuOpen}
+                  aria-controls="site-menu-panel"
                   className={`w-10 h-10 sm:w-9 sm:h-9 flex flex-col justify-center items-center gap-[5px] rounded-sm transition-colors duration-300 gold-focus ${
                     scrolled
                       ? "text-[var(--color-deep-900)] hover:text-[var(--color-gold-600)]"
@@ -235,6 +254,11 @@ export function Navbar() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: EASE }}
             className="fixed inset-0 z-[60] bg-navy"
+            id="site-menu-panel"
+            ref={menuPanelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t.nav.menu}
           >
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
               <div className="absolute inset-0 film-grain" />
@@ -243,6 +267,7 @@ export function Navbar() {
             </div>
 
             <button
+              ref={menuCloseRef}
               onClick={() => setMenuOpen(false)}
               className="absolute top-6 right-6 lg:right-12 w-12 h-12 flex items-center justify-center text-white/60 hover:text-white transition-colors z-10 rounded-full hover:bg-white/5"
               aria-label={t.nav.close}
@@ -331,7 +356,7 @@ export function Navbar() {
                       <p>{t.footer.addressLines[2]}</p>
                       <div className="flex gap-3 pt-4">
                         {configuredSocials().map((s) => (
-                          <a key={s.key} href={s.url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/[0.06] flex items-center justify-center hover:bg-ocean hover:text-white text-white/40 transition-all duration-300" aria-label={s.key}>
+                          <a key={s.key} href={s.url} target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full bg-white/[0.06] flex items-center justify-center hover:bg-ocean hover:text-white text-white/40 transition-all duration-300" aria-label={SOCIAL_LABELS[s.key]}>
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                               <path d={SOCIAL_ICON_PATHS[s.key]} />
                             </svg>
@@ -355,6 +380,11 @@ export function Navbar() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: EASE }}
             className="fixed inset-0 z-[60] bg-navy/95 backdrop-blur-xl flex items-center justify-center"
+            id="site-search-panel"
+            ref={searchPanelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t.nav.searchLabel}
           >
             <div className="absolute inset-0 film-grain pointer-events-none" />
             <button onClick={() => setSearchOpen(false)}
@@ -368,11 +398,11 @@ export function Navbar() {
                   <label htmlFor="site-search" className="sr-only">{t.nav.searchLabel}</label>
                   <input
                     id="site-search"
+                    ref={searchInputRef}
                     type="search"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder={t.nav.searchPlaceholder}
-                    autoFocus
                     autoComplete="off"
                     className="w-full bg-transparent text-white text-2xl lg:text-3xl font-display font-light border-b border-white/15 pb-4 pr-10 placeholder:text-white/20 focus:outline-none focus:border-white/40 transition-colors" />
                   <svg className="absolute right-0 bottom-5 w-6 h-6 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

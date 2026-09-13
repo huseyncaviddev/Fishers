@@ -7,7 +7,16 @@
  * a synthetic click on an anchor inherits the activation from the submit that
  * triggered it, which is the behaviour we want.
  */
+// A double-click or a repeated Enter would open the visitor's mail client
+// twice with the same draft. Handoffs inside this window are ignored.
+const DUPLICATE_WINDOW_MS = 1500;
+let lastHandoff = 0;
+
 export function openMailto(url: string): void {
+  const now = Date.now();
+  if (now - lastHandoff < DUPLICATE_WINDOW_MS) return;
+  lastHandoff = now;
+
   const a = document.createElement("a");
   a.href = url;
   a.rel = "noopener";

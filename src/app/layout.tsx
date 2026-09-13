@@ -1,13 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AppShell } from "@/components/ui/AppShell";
 import { I18nProvider } from "@/i18n/I18nProvider";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.united-fishers.com";
+import { SITE_URL } from "@/lib/site";
+import { configuredSocials } from "@/lib/socialIcons";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -48,6 +47,9 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
+  // Self-referencing canonical for the homepage; every other route sets its
+  // own via `pageMetadata` so no URL is left without one.
+  alternates: { canonical: "/" },
   openGraph: {
     title: "United Fishers | Premium Aquaculture & Fishing Farm",
     description:
@@ -92,7 +94,6 @@ const jsonLd = {
   description:
     "Davamlı akvakultura həlləri — ən yüksək keyfiyyətli dəniz məhsulları.",
   url: SITE_URL,
-  logo: `${SITE_URL}/images/7.jpg`,
   address: {
     "@type": "PostalAddress",
     addressLocality: "Neftçala",
@@ -107,7 +108,10 @@ const jsonLd = {
     areaServed: "AZ",
     availableLanguage: ["az", "en"],
   },
-  sameAs: [],
+  // Only profile pages count as "same entity" — WhatsApp is a messaging link.
+  sameAs: configuredSocials()
+    .filter((s) => s.key !== "whatsapp")
+    .map((s) => s.url),
 };
 
 export default function RootLayout({
@@ -116,7 +120,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="az" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="az" className={GeistSans.variable}>
       <head>
         <script
           type="application/ld+json"
@@ -127,10 +131,13 @@ export default function RootLayout({
           first frame, so an artificial overlay could only ever delay the very
           content it was pretending to wait for. */}
       <body className="min-h-screen flex flex-col antialiased" suppressHydrationWarning>
+        <a href="#main" className="skip-link">
+          Əsas məzmuna keç
+        </a>
         <AppShell />
         <I18nProvider>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main id="main" tabIndex={-1} className="flex-1">{children}</main>
           <Footer />
         </I18nProvider>
       </body>

@@ -3,6 +3,7 @@
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { PageTransition } from "@/components/ui/PageTransition";
 import { useI18n } from "@/i18n/I18nProvider";
 
@@ -64,7 +65,7 @@ export function TeamContent() {
             className="text-center max-w-3xl mx-auto mb-16"
           >
             <div className="w-12 h-[2px] bg-sand mx-auto mb-6" />
-            <span className="text-ocean font-medium text-sm tracking-widest uppercase">{tc.leadershipEyebrow}</span>
+            <span className="text-ocean-dark font-medium text-sm tracking-widest uppercase">{tc.leadershipEyebrow}</span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy">
               {tc.leadershipTitleLead} <span className="text-gradient-ocean">{tc.leadershipTitleAccent}</span>
             </h2>
@@ -126,7 +127,7 @@ export function TeamContent() {
               transition={{ duration: 0.7 }}
             >
               <div className="w-12 h-[2px] bg-sand mb-6" />
-              <span className="text-ocean font-medium text-sm tracking-widest uppercase">{tc.cultureEyebrow}</span>
+              <span className="text-ocean-dark font-medium text-sm tracking-widest uppercase">{tc.cultureEyebrow}</span>
               <h2 className="mt-4 font-display text-3xl sm:text-4xl font-bold text-navy leading-tight">
                 {tc.cultureTitleLead} <span className="text-gradient-ocean">{tc.cultureTitleAccent}</span>
               </h2>
@@ -208,18 +209,18 @@ export function TeamContent() {
               <div className="absolute inset-0 bg-gradient-to-r from-ocean/90 to-ocean-dark/90" />
             </div>
             <div className="relative z-10 p-10 lg:p-14 text-center film-grain">
-              <h3 className="font-display text-2xl lg:text-3xl font-bold text-white">
+              <h2 className="font-display text-2xl lg:text-3xl font-bold text-white">
                 {tc.joinTitle}
-              </h3>
+              </h2>
               <p className="mt-4 text-white/80 text-lg max-w-2xl mx-auto">
                 {tc.joinBody}
               </p>
-              <a href="/contact" className="btn btn-white mt-8">
+              <Link href="/contact" className="btn btn-white mt-8">
                 <span>{tc.joinButton}</span>
                 <svg className="w-4 h-4 btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </a>
+              </Link>
             </div>
           </motion.div>
         </div>

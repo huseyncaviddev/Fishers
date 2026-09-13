@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 interface MagneticButtonProps {
@@ -59,7 +60,13 @@ export function MagneticButton({
   );
 
   if (href) {
-    return <a href={href}>{content}</a>;
+    // Internal routes use the client router (prefetch, no full reload);
+    // anything else stays a plain anchor.
+    return href.startsWith("/") ? (
+      <Link href={href}>{content}</Link>
+    ) : (
+      <a href={href}>{content}</a>
+    );
   }
 
   return content;

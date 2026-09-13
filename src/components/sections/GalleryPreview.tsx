@@ -45,7 +45,7 @@ export function GalleryPreview() {
               transition={{ delay: 0.1, duration: 0.6 }}
               className="w-10 h-[2px] bg-ocean mb-6 origin-left"
             />
-            <span className="text-ocean font-medium text-xs tracking-[0.2em] uppercase">
+            <span className="text-ocean-dark font-medium text-xs tracking-[0.2em] uppercase">
               {t.galleryPreview.eyebrow}
             </span>
             <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-navy leading-tight">

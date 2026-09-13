@@ -107,9 +107,11 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 <span className="text-slate/50 text-xs">{item.type}</span>
               </div>
 
-              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">
+              {/* The route's H1 is the hero banner above; repeating it here
+                  produced two H1s per product page. */}
+              <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">
                 {item.name}
-              </h1>
+              </h2>
 
               <p className="mt-5 text-slate/70 text-lg leading-relaxed">
                 {item.shortDesc}

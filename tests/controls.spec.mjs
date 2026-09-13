@@ -30,12 +30,12 @@ const browser = await chromium.launch();
   const input = page.locator("#site-search");
   check("search: overlay exposes a real input", await input.count() === 1);
 
-  // Typed without local diacritics — folding must still match "Xəzər Nərəsi".
-  await input.fill("nere");
+  // Typed without local diacritics — folding must still match "Çəki".
+  await input.fill("ceki");
   await page.waitForTimeout(400);
   const results = page.locator("[data-search-results] a");
   const hits = await results.count();
-  check("search: 'nere' finds the sturgeon product (diacritic folding)", hits > 0, `${hits} results`);
+  check("search: 'ceki' finds the carp product (diacritic folding)", hits > 0, `${hits} results`);
 
   await input.fill("qalereya");
   await page.waitForTimeout(400);

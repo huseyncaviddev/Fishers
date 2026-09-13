@@ -63,7 +63,9 @@
 
   --font-display: var(--font-geist-sans), "Segoe UI", system-ui, sans-serif;
   --font-body: var(--font-geist-sans), "Segoe UI", system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  /* No monospace face is shipped: nothing on the site sets a mono font, and
+     the Geist Mono file was a 71 KB render-blocking preload on every page. */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 /* Metallic gold gradient — for text, hairlines, accents only. Use sparingly. */
@@ -145,6 +147,67 @@ body {
   outline: 2px solid var(--color-gold-500);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* Skip link: visually hidden until focused, then pinned above the fixed
+   navbar so keyboard and screen-reader users can bypass it in one Tab. */
+.skip-link {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  border-radius: 9999px;
+  background: var(--color-deep-900);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transform: translateY(-200%);
+  opacity: 0;
+  transition: transform var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-ui);
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+  opacity: 1;
+  outline: 2px solid var(--color-gold-300);
+  outline-offset: 2px;
+}
+/* The target is programmatically focusable only; keep its focus ring off. */
+main:focus {
+  outline: none;
+}
+
+/* Hero copy entrance. Pure CSS so it runs from first paint (no JS needed):
+   the headline/subtitle is the LCP element and must never wait for hydration.
+   Each element rises with a stagger; the hairline scales in. Re-runs whenever
+   the slide copy remounts, which is what the carousel wants.
+   The fade deliberately starts at 0.4, not 0: Chrome skips text painted at
+   opacity 0 for LCP and (with compositor-driven opacity) may never see it
+   become visible, so a 0→1 fade made the hero copy invisible to the metric
+   and pushed LCP to whichever tiny element painted next. */
+@keyframes hero-fade-up {
+  from { opacity: 0.4; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-bar-in {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.hero-enter {
+  animation: hero-fade-up 0.7s var(--ease-ui) both;
+}
+.hero-enter--bar {
+  animation: hero-bar-in 0.8s var(--ease-ui) 0.2s both;
+}
+.hero-enter--1 { animation-delay: 0.1s; }
+.hero-enter--2 { animation-delay: 0.15s; }
+.hero-enter--3 { animation-delay: 0.3s; }
+.hero-enter--4 { animation-delay: 0.45s; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-enter,
+  .hero-enter--bar {
+    animation: none;
+  }
 }
 
 /* Custom .gold-focus overrides the outline with an inset ring — remove default */

@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+// Next already emits `noindex` for the not-found boundary; only the title is
+// ours to set — without it the 404 carried the homepage title.
+export const metadata: Metadata = {
+  title: "Səhifə Tapılmadı",
+};
 
 export default function NotFound() {
   return (

@@ -101,9 +101,9 @@ export function ProductsContent() {
                     </div>
 
                     <div className="p-5 sm:p-6">
-                      <h3 className="font-display text-lg sm:text-xl font-semibold text-navy group-hover:text-ocean transition-colors duration-300">
+                      <h2 className="font-display text-lg sm:text-xl font-semibold text-navy group-hover:text-ocean transition-colors duration-300">
                         {item.name}
-                      </h3>
+                      </h2>
                       <p className="mt-2 text-slate/60 text-sm leading-relaxed line-clamp-2">
                         {item.shortDesc}
                       </p>

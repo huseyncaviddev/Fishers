@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/site";
 import { PageHero } from "@/components/ui/PageHero";
 import { TeamContent } from "@/components/sections/TeamContent";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Komanda",
   description:
     "United Fishers komandası — rəhbərlik, mütəxəssislər və peşəkar əməkdaşlarımız haqqında məlumat.",
-};
+  path: "/team",
+});
 
 export default function TeamPage() {
   return (
